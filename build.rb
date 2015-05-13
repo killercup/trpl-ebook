@@ -104,12 +104,16 @@ index = <<-eos
     <meta charset="UTF-8">
     <title>Download 'The Rust Programming Language'</title>
     <style>
-        body { max-width: 32em; margin: 10em auto; font-size: 16px; font-family: sans-serif; }
+        body { max-width: 32em; margin: 10em auto; font-size: 16px; font-family: sans-serif; line-height: 1.3; }
+        li { margin-bottom: 0.5em; }
     </style>
 </head>
 <body>
     <h1>The Rust Programming Language</h1>
     <ul>
+        <li>
+            <strong><a href="http://doc.rust-lang.org/book/">The original on rust-lang.org</a></strong>
+        </li>
         #{Dir["dist/trpl*"].map {|file|
             file = file.gsub("dist/", "")
             "<li><a href='#{file}'>#{file}</li>"
