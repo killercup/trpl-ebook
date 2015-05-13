@@ -73,17 +73,44 @@ end
 
 File.open("dist/trpl-#{RELEASE_DATE}.md", "w") { |file|
     file.write(book)
-    puts "[x] Markdown"
+    puts "[✓] Markdown"
 }
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --table-of-contents --template=lib/template.html --css=lib/pandoc.css --to=html5 --output=dist/trpl-#{RELEASE_DATE}.html`
-puts "[x] HTML"
+puts "[✓] HTML"
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --table-of-contents --output=dist/trpl-#{RELEASE_DATE}.epub`
-puts "[x] EPUB"
+puts "[✓] EPUB"
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='a4paper' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-a4.pdf`
-puts "[x] PDF (A4)"
+puts "[✓] PDF (A4)"
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='letterpaper' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-letter.pdf`
-puts "[x] PDF (Letter)"
+puts "[✓] PDF (Letter)"
+
+index = <<-eos
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download 'The Rust Programming Language'</title>
+    <style>
+        body { max-width: 32em; margin: 10em auto; font-size: 16px; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    <h1>The Rust Programming Language</h1>
+    <ul>
+        #{Dir["dist/trpl*"].map {|file|
+            file = file.gsub("dist/", "")
+            "<li><a href='#{file}'>#{file}</li>"
+        }.join("\n")}
+    </ul>
+</body>
+</html>
+eos
+
+File.open("dist/index.html", "w") { |file|
+    file.write(index)
+    puts "[✓] Index page"
+}
