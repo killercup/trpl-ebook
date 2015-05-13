@@ -567,7 +567,7 @@ code > span.er { font-weight: bold; }
   }</code></pre></div>
   <p>There’s a lot here! Let’s go over it, bit by bit.</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">use</span> std::io;</code></pre></div>
-  <p>We’ll need to take user input, and then print the result as output. As such, we need the <code>io</code> library from the standard library. Rust only imports a few things into every program, <a href="../std/prelude/index.html">the ‘prelude’</a>. If it’s not in the prelude, you’ll have to <code>use</code> it directly.</p>
+  <p>We’ll need to take user input, and then print the result as output. As such, we need the <code>io</code> library from the standard library. Rust only imports a few things into every program, <a href="http://doc.rust-lang.org/std/prelude/index.html">the ‘prelude’</a>. If it’s not in the prelude, you’ll have to <code>use</code> it directly.</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> main() {</code></pre></div>
   <p>As you’ve seen before, the <code>main()</code> function is the entry point into your program. The <code>fn</code> syntax declares a new function, the <code>()</code>s indicate that there are no arguments, and <code>{</code> starts the body of the function. Because we didn’t include a return type, it’s assumed to be <code>()</code>, an empty <a href="primitive-types.html#tuples">tuple</a>.</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">    <span class="ot">println!</span>(<span class="st">&quot;Guess the number!&quot;</span>);
@@ -583,7 +583,7 @@ code > span.er { font-weight: bold; }
   let mut bar = 5; // mutable</code></pre>
   <p>Oh, and <code>//</code> will start a comment, until the end of the line. Rust ignores everything in <a href="comments.html">comments</a>.</p>
   <p>So now we know that <code>let mut guess</code> will introduce a mutable binding named <code>guess</code>, but we have to look at the other side of the <code>=</code> for what it’s bound to: <code>String::new()</code>.</p>
-  <p><code>String</code> is a string type, provided by the standard library. A <a href="../std/string/struct.String.html"><code>String</code></a> is a growable, UTF-8 encoded bit of text.</p>
+  <p><code>String</code> is a string type, provided by the standard library. A <a href="http://doc.rust-lang.org/std/string/struct.String.html"><code>String</code></a> is a growable, UTF-8 encoded bit of text.</p>
   <p>The <code>::new()</code> syntax uses <code>::</code> because this is an ‘associated function’ of a particular type. That is to say, it’s associated with <code>String</code> itself, rather than a particular instance of a <code>String</code>. Some languages call this a ‘static method’.</p>
   <p>This function is named <code>new()</code>, because it creates a new, empty <code>String</code>. You’ll find a <code>new()</code> function on many types, as it’s a common name for making a new value of some kind.</p>
   <p>Let’s move forward:</p>
@@ -593,10 +593,10 @@ code > span.er { font-weight: bold; }
   <p>That’s a lot more! Let’s go bit-by-bit. The first line has two parts. Here’s the first:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">io::stdin()</code></pre></div>
   <p>Remember how we <code>use</code>d <code>std::io</code> on the first line of the program? We’re now calling an associated function on it. If we didn’t <code>use std::io</code>, we could have written this line as <code>std::io::stdin()</code>.</p>
-  <p>This particular function returns a handle to the standard input for your terminal. More specifically, a <a href="../std/io/struct.Stdin.html">std::io::Stdin</a>.</p>
+  <p>This particular function returns a handle to the standard input for your terminal. More specifically, a <a href="http://doc.rust-lang.org/std/io/struct.Stdin.html">std::io::Stdin</a>.</p>
   <p>The next part will use this handle to get input from the user:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">.read_line(&amp;<span class="kw">mut</span> guess)</code></pre></div>
-  <p>Here, we call the <a href="../std/io/struct.Stdin.html#method.read_line"><code>read_line()</code></a> method on our handle. <a href="methods.html">Method</a>s are like associated functions, but are only available on a particular instance of a type, rather than the type itself. We’re also passing one argument to <code>read_line()</code>: <code>&amp;mut guess</code>.</p>
+  <p>Here, we call the <a href="http://doc.rust-lang.org/std/io/struct.Stdin.html#method.read_line"><code>read_line()</code></a> method on our handle. <a href="methods.html">Method</a>s are like associated functions, but are only available on a particular instance of a type, rather than the type itself. We’re also passing one argument to <code>read_line()</code>: <code>&amp;mut guess</code>.</p>
   <p>Remember how we bound <code>guess</code> above? We said it was mutable. However, <code>read_line</code> doesn’t take a <code>String</code> as an argument: it takes a <code>&amp;mut String</code>. Rust has a feature called ‘<a href="references-and-borrowing.html">references</a>’, which allows you to have multiple references to one piece of data, which can reduce copying. References are a complex feature, as one of Rust’s major selling points is how safe and easy it is to use references. We don’t need to know a lot of those details to finish our program right now, though. For now, all we need to know is that like <code>let</code> bindings, references are immutable by default. Hence, we need to write <code>&amp;mut guess</code>, rather than <code>&amp;guess</code>.</p>
   <p>Why does <code>read_line()</code> take a mutable reference to a string? Its job is to take what the user types into standard input, and place that into a string. So it takes that string as an argument, and in order to add the input, it needs to be mutable.</p>
   <p>But we’re not quite done with this line of code, though. While it’s a single line of text, it’s only the first part of the single logical line of code:</p>
@@ -604,8 +604,8 @@ code > span.er { font-weight: bold; }
           .expect(<span class="st">&quot;Failed to read line&quot;</span>);</code></pre></div>
   <p>When you call a method with the <code>.foo()</code> syntax, you may introduce a newline and other whitespace. This helps you split up long lines. We <em>could</em> have done:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">    io::stdin().read_line(&amp;<span class="kw">mut</span> guess).ok().expect(<span class="st">&quot;failed to read line&quot;</span>);</code></pre></div>
-  <p>But that gets hard to read. So we’ve split it up, three lines for three method calls. We already talked about <code>read_line()</code>, but what about <code>ok()</code> and <code>expect()</code>? Well, we already mentioned that <code>read_line()</code> puts what the user types into the <code>&amp;mut String</code> we pass it. But it also returns a value: in this case, an <a href="../std/io/type.Result.html"><code>io::Result</code></a>. Rust has a number of types named <code>Result</code> in its standard library: a generic <a href="../std/result/enum.Result.html"><code>Result</code></a>, and then specific versions for sub-libraries, like <code>io::Result</code>.</p>
-  <p>The purpose of these <code>Result</code> types is to encode error handling information. Values of the <code>Result</code> type, like any type, have methods defined on them. In this case, <code>io::Result</code> has an <code>ok()</code> method, which says ‘we want to assume this value is a successful one. If not, just throw away the error information’. Why throw it away? Well, for a basic program, we just want to print a generic error, as basically any issue means we can’t continue. The <a href="../std/result/enum.Result.html#method.ok"><code>ok()</code> method</a> returns a value which has another method defined on it: <code>expect()</code>. The <a href="../std/option/enum.Option.html#method.expect"><code>expect()</code> method</a> takes a value it’s called on, and if it isn’t a successful one, <a href="error-handling.html"><code>panic!</code></a>s with a message you passed it. A <code>panic!</code> like this will cause our program to crash, displaying the message.</p>
+  <p>But that gets hard to read. So we’ve split it up, three lines for three method calls. We already talked about <code>read_line()</code>, but what about <code>ok()</code> and <code>expect()</code>? Well, we already mentioned that <code>read_line()</code> puts what the user types into the <code>&amp;mut String</code> we pass it. But it also returns a value: in this case, an <a href="http://doc.rust-lang.org/std/io/type.Result.html"><code>io::Result</code></a>. Rust has a number of types named <code>Result</code> in its standard library: a generic <a href="http://doc.rust-lang.org/std/result/enum.Result.html"><code>Result</code></a>, and then specific versions for sub-libraries, like <code>io::Result</code>.</p>
+  <p>The purpose of these <code>Result</code> types is to encode error handling information. Values of the <code>Result</code> type, like any type, have methods defined on them. In this case, <code>io::Result</code> has an <code>ok()</code> method, which says ‘we want to assume this value is a successful one. If not, just throw away the error information’. Why throw it away? Well, for a basic program, we just want to print a generic error, as basically any issue means we can’t continue. The <a href="http://doc.rust-lang.org/std/result/enum.Result.html#method.ok"><code>ok()</code> method</a> returns a value which has another method defined on it: <code>expect()</code>. The <a href="http://doc.rust-lang.org/std/option/enum.Option.html#method.expect"><code>expect()</code> method</a> takes a value it’s called on, and if it isn’t a successful one, <a href="error-handling.html"><code>panic!</code></a>s with a message you passed it. A <code>panic!</code> like this will cause our program to crash, displaying the message.</p>
   <p>If we leave off calling these two methods, our program will compile, but we’ll get a warning:</p>
   <pre><code>$ cargo build
      Compiling guessing_game v0.1.0 (file:///home/you/projects/guessing_game)
@@ -750,7 +750,7 @@ code > span.er { font-weight: bold; }
       Baz,
   }</code></pre></div>
   <p>With this definition, anything of type <code>Foo</code> can be either a <code>Foo::Bar</code> or a <code>Foo::Baz</code>. We use the <code>::</code> to indicate the namespace for a particular <code>enum</code> variant.</p>
-  <p>The <a href="../std/cmp/enum.Ordering.html"><code>Ordering</code></a> enum has three possible variants: <code>Less</code>, <code>Equal</code>, and <code>Greater</code>. The <code>match</code> statement takes a value of a type, and lets you create an ‘arm’ for each possible value. Since we have three types of <code>Ordering</code>, we have three arms:</p>
+  <p>The <a href="http://doc.rust-lang.org/std/cmp/enum.Ordering.html"><code>Ordering</code></a> enum has three possible variants: <code>Less</code>, <code>Equal</code>, and <code>Greater</code>. The <code>match</code> statement takes a value of a type, and lets you create an ‘arm’ for each possible value. Since we have three types of <code>Ordering</code>, we have three arms:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">match</span> guess.cmp(&amp;secret_number) {
       Ordering::Less    =&gt; <span class="ot">println!</span>(<span class="st">&quot;Too small!&quot;</span>),
       Ordering::Greater =&gt; <span class="ot">println!</span>(<span class="st">&quot;Too big!&quot;</span>),
@@ -810,7 +810,7 @@ code > span.er { font-weight: bold; }
   <p>Wait a minute, I thought we already had a <code>guess</code>? We do, but Rust allows us to ‘shadow’ the previous <code>guess</code> with a new one. This is often used in this exact situation, where <code>guess</code> starts as a <code>String</code>, but we want to convert it to an <code>u32</code>. Shadowing lets us re-use the <code>guess</code> name, rather than forcing us to come up with two unique names like <code>guess_str</code> and <code>guess</code>, or something else.</p>
   <p>We bind <code>guess</code> to an expression that looks like something we wrote earlier:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">guess.trim().parse()</code></pre></div>
-  <p>Followed by an <code>ok().expect()</code> invocation. Here, <code>guess</code> refers to the old <code>guess</code>, the one that was a <code>String</code> with our input in it. The <code>trim()</code> method on <code>String</code>s will eliminate any white space at the beginning and end of our string. This is important, as we had to press the ‘return’ key to satisfy <code>read_line()</code>. This means that if we type <code>5</code> and hit return, <code>guess</code> looks like this: <code>5\n</code>. The <code>\n</code> represents ‘newline’, the enter key. <code>trim()</code> gets rid of this, leaving our string with just the <code>5</code>. The <a href="../std/primitive.str.html#method.parse"><code>parse()</code> method on strings</a> parses a string into some kind of number. Since it can parse a variety of numbers, we need to give Rust a hint as to the exact type of number we want. Hence, <code>let guess: u32</code>. The colon (<code>:</code>) after <code>guess</code> tells Rust we’re going to annotate its type. <code>u32</code> is an unsigned, thirty-two bit integer. Rust has <a href="primitive-types.html#numeric-types">a number of built-in number types</a>, but we’ve chosen <code>u32</code>. It’s a good default choice for a small positive number.</p>
+  <p>Followed by an <code>ok().expect()</code> invocation. Here, <code>guess</code> refers to the old <code>guess</code>, the one that was a <code>String</code> with our input in it. The <code>trim()</code> method on <code>String</code>s will eliminate any white space at the beginning and end of our string. This is important, as we had to press the ‘return’ key to satisfy <code>read_line()</code>. This means that if we type <code>5</code> and hit return, <code>guess</code> looks like this: <code>5\n</code>. The <code>\n</code> represents ‘newline’, the enter key. <code>trim()</code> gets rid of this, leaving our string with just the <code>5</code>. The <a href="http://doc.rust-lang.org/std/primitive.str.html#method.parse"><code>parse()</code> method on strings</a> parses a string into some kind of number. Since it can parse a variety of numbers, we need to give Rust a hint as to the exact type of number we want. Hence, <code>let guess: u32</code>. The colon (<code>:</code>) after <code>guess</code> tells Rust we’re going to annotate its type. <code>u32</code> is an unsigned, thirty-two bit integer. Rust has <a href="primitive-types.html#numeric-types">a number of built-in number types</a>, but we’ve chosen <code>u32</code>. It’s a good default choice for a small positive number.</p>
   <p>Just like <code>read_line()</code>, our call to <code>parse()</code> could cause an error. What if our string contained <code>A👍%</code>? There’d be no way to convert that to a number. As such, we’ll do the same thing we did with <code>read_line()</code>: use the <code>ok()</code> and <code>expect()</code> methods to crash if there’s an error.</p>
   <p>Let’s try our program out!</p>
   <pre><code>$ cargo run
@@ -1380,7 +1380,7 @@ code > span.er { font-weight: bold; }
       <span class="ot">println!</span>(<span class="st">&quot;{} is done eating.&quot;</span>, <span class="kw">self</span>.name);
   }</code></pre></div>
   <p>We have two new lines. We’ve also added an argument, <code>table</code>. We access the <code>Table</code>’s list of forks, and then use <code>self.left</code> and <code>self.right</code> to access the fork at that particular index. That gives us access to the <code>Mutex</code> at that index, and we call <code>lock()</code> on it. If the mutex is currently being accessed by someone else, we’ll block until it becomes available.</p>
-  <p>The call to <code>lock()</code> might fail, and if it does, we want to crash. In this case, the error that could happen is that the mutex is <a href="../std/sync/struct.Mutex.html#poisoning">‘poisoned’</a>, which is what happens when the thread panics while the lock is held. Since this shouldn’t happen, we just use <code>unwrap()</code>.</p>
+  <p>The call to <code>lock()</code> might fail, and if it does, we want to crash. In this case, the error that could happen is that the mutex is <a href="http://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning">‘poisoned’</a>, which is what happens when the thread panics while the lock is held. Since this shouldn’t happen, we just use <code>unwrap()</code>.</p>
   <p>One other odd thing about these lines: we’ve named the results <code>_left</code> and <code>_right</code>. What’s up with that underscore? Well, we aren’t planning on <em>using</em> the value inside the lock. We just want to acquire it. As such, Rust will warn us that we never use the value. By using the underscore, we tell Rust that this is what we intended, and it won’t throw a warning.</p>
   <p>What about releasing the lock? Well, that will happen when <code>_left</code> and <code>_right</code> go out of scope, automatically.</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">    <span class="kw">let</span> table = Arc::new(Table { forks: <span class="ot">vec!</span>[
@@ -1830,7 +1830,7 @@ code > span.er { font-weight: bold; }
   <p>And then we’re done. Getting the hang of it? It’s like piling up dishes: you add to the top, you take away from the top.</p>
   <h3 id="the-heap">The Heap</h3>
   <p>Now, this works pretty well, but not everything can work like this. Sometimes, you need to pass some memory between different functions, or keep it alive for longer than a single function’s execution. For this, we can use the heap.</p>
-  <p>In Rust, you can allocate memory on the heap with the <a href="../std/boxed/index.html"><code>Box&lt;T&gt;</code> type</a>. Here’s an example:</p>
+  <p>In Rust, you can allocate memory on the heap with the <a href="http://doc.rust-lang.org/std/boxed/index.html"><code>Box&lt;T&gt;</code> type</a>. Here’s an example:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> main() {
       <span class="kw">let</span> x = Box::new(<span class="dv">5</span>);
       <span class="kw">let</span> y = <span class="dv">42</span>;
@@ -3384,7 +3384,7 @@ code > span.er { font-weight: bold; }
       .take(<span class="dv">5</span>)
       .collect::&lt;Vec&lt;<span class="kw">i32</span>&gt;&gt;();</code></pre></div>
   <p>This will give you a vector containing <code>6</code>, <code>12</code>, <code>18</code>, <code>24</code>, and <code>30</code>.</p>
-  <p>This is just a small taste of what iterators, iterator adapters, and consumers can help you with. There are a number of really useful iterators, and you can write your own as well. Iterators provide a safe, efficient way to manipulate all kinds of lists. They’re a little unusual at first, but if you play with them, you’ll get hooked. For a full list of the different iterators and consumers, check out the <a href="../std/iter/index.html">iterator module documentation</a>.</p>
+  <p>This is just a small taste of what iterators, iterator adapters, and consumers can help you with. There are a number of really useful iterators, and you can write your own as well. Iterators provide a safe, efficient way to manipulate all kinds of lists. They’re a little unusual at first, but if you play with them, you’ll get hooked. For a full list of the different iterators and consumers, check out the <a href="http://doc.rust-lang.org/std/iter/index.html">iterator module documentation</a>.</p>
   <h2 id="concurrency">Concurrency</h2>
   <p>Concurrency and parallelism are incredibly important topics in computer science, and are also a hot topic in industry today. Computers are gaining more and more cores, yet many programmers aren’t prepared to fully utilize them.</p>
   <p>Rust’s memory safety features also apply to its concurrency story too. Even concurrent Rust programs must be memory safe, having no data races. Rust’s type system is up to the thread, and gives you powerful ways to reason about concurrent code at compile time.</p>
@@ -3392,11 +3392,11 @@ code > span.er { font-weight: bold; }
   <h4 id="background-send-and-sync">Background: <code>Send</code> and <code>Sync</code></h4>
   <p>Concurrency is difficult to reason about. In Rust, we have a strong, static type system to help us reason about our code. As such, Rust gives us two traits to help us make sense of code that can possibly be concurrent.</p>
   <h5 id="send"><code>Send</code></h5>
-  <p>The first trait we’re going to talk about is <a href="../std/marker/trait.Send.html"><code>Send</code></a>. When a type <code>T</code> implements <code>Send</code>, it indicates to the compiler that something of this type is able to have ownership transferred safely between threads.</p>
+  <p>The first trait we’re going to talk about is <a href="http://doc.rust-lang.org/std/marker/trait.Send.html"><code>Send</code></a>. When a type <code>T</code> implements <code>Send</code>, it indicates to the compiler that something of this type is able to have ownership transferred safely between threads.</p>
   <p>This is important to enforce certain restrictions. For example, if we have a channel connecting two threads, we would want to be able to send some data down the channel and to the other thread. Therefore, we’d ensure that <code>Send</code> was implemented for that type.</p>
   <p>In the opposite way, if we were wrapping a library with FFI that isn’t threadsafe, we wouldn’t want to implement <code>Send</code>, and so the compiler will help us enforce that it can’t leave the current thread.</p>
   <h5 id="sync"><code>Sync</code></h5>
-  <p>The second of these traits is called <a href="../std/marker/trait.Sync.html"><code>Sync</code></a>. When a type <code>T</code> implements <code>Sync</code>, it indicates to the compiler that something of this type has no possibility of introducing memory unsafety when used from multiple threads concurrently.</p>
+  <p>The second of these traits is called <a href="http://doc.rust-lang.org/std/marker/trait.Sync.html"><code>Sync</code></a>. When a type <code>T</code> implements <code>Sync</code>, it indicates to the compiler that something of this type has no possibility of introducing memory unsafety when used from multiple threads concurrently.</p>
   <p>For example, sharing immutable data with an atomic reference count is threadsafe. Rust provides a type like this, <code>Arc&lt;T&gt;</code>, and it implements <code>Sync</code>, so it is safe to share between threads.</p>
   <p>These two traits allow you to use the type system to make strong guarantees about the properties of your code under concurrency. Before we demonstrate why, we need to learn how to create a concurrent Rust program in the first place!</p>
   <h4 id="threads">Threads</h4>
@@ -3468,7 +3468,7 @@ code > span.er { font-weight: bold; }
   &lt;anon&gt;:9:9: 9:22 note: `std::sync::mutex::MutexGuard&lt;'_, collections::vec::Vec&lt;u32&gt;&gt;` cannot be sent between threads safely
   &lt;anon&gt;:11         thread::spawn(move || {
                     ^~~~~~~~~~~~~</code></pre>
-  <p>You see, <a href="../std/sync/struct.Mutex.html"><code>Mutex</code></a> has a <a href="../std/sync/struct.Mutex.html#method.lock"><code>lock</code></a> method which has this signature:</p>
+  <p>You see, <a href="http://doc.rust-lang.org/std/sync/struct.Mutex.html"><code>Mutex</code></a> has a <a href="http://doc.rust-lang.org/std/sync/struct.Mutex.html#method.lock"><code>lock</code></a> method which has this signature:</p>
   <pre><code>fn lock(&amp;self) -&gt; LockResult&lt;MutexGuard&lt;T&gt;&gt;</code></pre>
   <p>Because <code>Send</code> is not implemented for <code>MutexGuard&lt;T&gt;</code>, we can’t transfer the guard across thread boundaries, which gives us our error.</p>
   <p>We can use <code>Arc&lt;T&gt;</code> to fix this. Here’s the working version:</p>
@@ -3731,7 +3731,7 @@ code > span.er { font-weight: bold; }
   }</code></pre></div>
   <p>Wrapping an expression in <code>try!</code> will result in the unwrapped success (<code>Ok</code>) value, unless the result is <code>Err</code>, in which case <code>Err</code> is returned early from the enclosing function.</p>
   <p>It’s worth noting that you can only use <code>try!</code> from a function that returns a <code>Result</code>, which means that you cannot use <code>try!</code> inside of <code>main()</code>, because <code>main()</code> doesn’t return anything.</p>
-  <p><code>try!</code> makes use of <a href="../std/convert/trait.From.html"><code>From&lt;Error&gt;</code></a> to determine what to return in the error case.</p>
+  <p><code>try!</code> makes use of <a href="http://doc.rust-lang.org/std/convert/trait.From.html"><code>From&lt;Error&gt;</code></a> to determine what to return in the error case.</p>
   <h2 id="ffi">FFI</h2>
   <h3 id="introduction-1">Introduction</h3>
   <p>This guide will use the <a href="https://github.com/google/snappy">snappy</a> compression/decompression library as an introduction to writing bindings for foreign code. Rust is currently unable to call directly into a C++ library, but snappy includes a C interface (documented in <a href="https://github.com/google/snappy/blob/master/snappy-c.h"><code>snappy-c.h</code></a>).</p>
@@ -3846,7 +3846,7 @@ code > span.er { font-weight: bold; }
   <p>For reference, the examples used here are also available as a <a href="https://github.com/thestinger/rust-snappy">library on GitHub</a>.</p>
   <h3 id="destructors">Destructors</h3>
   <p>Foreign libraries often hand off ownership of resources to the calling code. When this occurs, we must use Rust’s destructors to provide safety and guarantee the release of these resources (especially in the case of panic).</p>
-  <p>For more about destructors, see the <a href="../std/ops/trait.Drop.html">Drop trait</a>.</p>
+  <p>For more about destructors, see the <a href="http://doc.rust-lang.org/std/ops/trait.Drop.html">Drop trait</a>.</p>
   <h3 id="callbacks-from-c-code-to-rust-functions">Callbacks from C code to Rust functions</h3>
   <p>Some external libraries require the usage of callbacks to report back their current state or intermediate data to the caller. It is possible to pass functions defined in Rust to an external library. The requirement for this is that the callback function is marked as <code>extern</code> with the correct calling convention to make it callable from C code.</p>
   <p>The callback function can then be sent through a registration call to the C library and afterwards be invoked from there.</p>
@@ -4039,10 +4039,10 @@ code > span.er { font-weight: bold; }
   # fn main() {}</code></pre>
   <p>The <code>extern</code> makes this function adhere to the C calling convention, as discussed above in “<a href="ffi.html#foreign-calling-conventions">Foreign Calling Conventions</a>”. The <code>no_mangle</code> attribute turns off Rust’s name mangling, so that it is easier to link to.</p>
   <h2 id="borrow-and-asref">Borrow and AsRef</h2>
-  <p>The <a href="../std/borrow/trait.Borrow.html"><code>Borrow</code></a> and <a href="../std/convert/trait.AsRef.html"><code>AsRef</code></a> traits are very similar, but different. Here’s a quick refresher on what these two traits mean.</p>
+  <p>The <a href="http://doc.rust-lang.org/std/borrow/trait.Borrow.html"><code>Borrow</code></a> and <a href="http://doc.rust-lang.org/std/convert/trait.AsRef.html"><code>AsRef</code></a> traits are very similar, but different. Here’s a quick refresher on what these two traits mean.</p>
   <h3 id="borrow">Borrow</h3>
   <p>The <code>Borrow</code> trait is used when you’re writing a datastructure, and you want to use either an owned or borrowed type as synonymous for some purpose.</p>
-  <p>For example, <a href="../std/collections/struct.HashMap.html"><code>HashMap</code></a> has a <a href="../std/collections/struct.HashMap.html#method.get"><code>get</code> method</a> which uses <code>Borrow</code>:</p>
+  <p>For example, <a href="http://doc.rust-lang.org/std/collections/struct.HashMap.html"><code>HashMap</code></a> has a <a href="http://doc.rust-lang.org/std/collections/struct.HashMap.html#method.get"><code>get</code> method</a> which uses <code>Borrow</code>:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get&lt;Q: ?<span class="kw">Sized</span>&gt;(&amp;<span class="kw">self</span>, k: &amp;Q) -&gt; <span class="kw">Option</span>&lt;&amp;V&gt;
       where K: Borrow&lt;Q&gt;,
             Q: Hash + <span class="kw">Eq</span></code></pre></div>
@@ -4165,7 +4165,7 @@ code > span.er { font-weight: bold; }
   Could not compile `hello_world`.</code></pre>
   <p>Rust will not let us use a value that has not been initialized. Next, let’s talk about this stuff we’ve added to <code>println!</code>.</p>
   <p>If you include two curly braces (<code>{}</code>, some call them moustaches…) in your string to print, Rust will interpret this as a request to interpolate some sort of value. <em>String interpolation</em> is a computer science term that means “stick in the middle of a string.” We add a comma, and then <code>x</code>, to indicate that we want <code>x</code> to be the value we’re interpolating. The comma is used to separate arguments we pass to functions and macros, if you’re passing more than one.</p>
-  <p>When you just use the curly braces, Rust will attempt to display the value in a meaningful way by checking out its type. If you want to specify the format in a more detailed manner, there are a <a href="../std/fmt/index.html">wide number of options available</a>. For now, we’ll just stick to the default: integers aren’t very complicated to print.</p>
+  <p>When you just use the curly braces, Rust will attempt to display the value in a meaningful way by checking out its type. If you want to specify the format in a more detailed manner, there are a <a href="http://doc.rust-lang.org/std/fmt/index.html">wide number of options available</a>. For now, we’ll just stick to the default: integers aren’t very complicated to print.</p>
   <h2 id="functions">Functions</h2>
   <p>Every Rust program has at least one function, the <code>main</code> function:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> main() {
@@ -4272,13 +4272,13 @@ code > span.er { font-weight: bold; }
   
   <span class="kw">let</span> y: <span class="kw">bool</span> = <span class="kw">false</span>;</code></pre></div>
   <p>A common use of booleans is in <a href="if.html"><code>if</code> conditionals</a>.</p>
-  <p>You can find more documentation for <code>bool</code>s <a href="../std/primitive.bool.html">in the standard library documentation</a>.</p>
+  <p>You can find more documentation for <code>bool</code>s <a href="http://doc.rust-lang.org/std/primitive.bool.html">in the standard library documentation</a>.</p>
   <h3 id="char"><code>char</code></h3>
   <p>The <code>char</code> type represents a single Unicode scalar value. You can create <code>char</code>s with a single tick: (<code>'</code>)</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> x = <span class="ch">'x'</span>;
   <span class="kw">let</span> two_hearts = <span class="ch">'💕'</span>;</code></pre></div>
   <p>Unlike some other languages, this means that Rust’s <code>char</code> is not a single byte, but four.</p>
-  <p>You can find more documentation for <code>char</code>s <a href="../std/primitive.char.html">in the standard library documentation</a>.</p>
+  <p>You can find more documentation for <code>char</code>s <a href="http://doc.rust-lang.org/std/primitive.char.html">in the standard library documentation</a>.</p>
   <h3 id="numeric-types">Numeric types</h3>
   <p>Rust has a variety of numeric types in a few categories: signed and unsigned, fixed and variable, floating-point and integer.</p>
   <p>These types consist of two parts: the category, and the size. For example, <code>u16</code> is an unsigned type with sixteen bits of size. More bits lets you have bigger numbers.</p>
@@ -4288,18 +4288,18 @@ code > span.er { font-weight: bold; }
   <span class="kw">let</span> y = <span class="dv">1.0</span>; <span class="co">// y has type f64</span></code></pre></div>
   <p>Here’s a list of the different numeric types, with links to their documentation in the standard library:</p>
   <ul>
-  <li><a href="../std/primitive.i8.html">i8</a></li>
-  <li><a href="../std/primitive.i16.html">i16</a></li>
-  <li><a href="../std/primitive.i32.html">i32</a></li>
-  <li><a href="../std/primitive.i64.html">i64</a></li>
-  <li><a href="../std/primitive.u8.html">u8</a></li>
-  <li><a href="../std/primitive.u16.html">u16</a></li>
-  <li><a href="../std/primitive.u32.html">u32</a></li>
-  <li><a href="../std/primitive.u64.html">u64</a></li>
-  <li><a href="../std/primitive.isize.html">isize</a></li>
-  <li><a href="../std/primitive.usize.html">usize</a></li>
-  <li><a href="../std/primitive.f32.html">f32</a></li>
-  <li><a href="../std/primitive.f64.html">f64</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.i8.html">i8</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.i16.html">i16</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.i32.html">i32</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.i64.html">i64</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.u8.html">u8</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.u16.html">u16</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.u32.html">u32</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.u64.html">u64</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.isize.html">isize</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.usize.html">usize</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.f32.html">f32</a></li>
+  <li><a href="http://doc.rust-lang.org/std/primitive.f64.html">f64</a></li>
   </ul>
   <p>Let’s go over them by category:</p>
   <h4 id="signed-and-unsigned">Signed and Unsigned</h4>
@@ -4327,17 +4327,17 @@ code > span.er { font-weight: bold; }
   
   <span class="ot">println!</span>(<span class="st">&quot;The second name is: {}&quot;</span>, names[<span class="dv">1</span>]);</code></pre></div>
   <p>Subscripts start at zero, like in most programming languages, so the first name is <code>names[0]</code> and the second name is <code>names[1]</code>. The above example prints <code>The second name is: Brian</code>. If you try to use a subscript that is not in the array, you will get an error: array access is bounds-checked at run-time. Such errant access is the source of many bugs in other systems programming languages.</p>
-  <p>You can find more documentation for <code>array</code>s <a href="../std/primitive.array.html">in the standard library documentation</a>.</p>
+  <p>You can find more documentation for <code>array</code>s <a href="http://doc.rust-lang.org/std/primitive.array.html">in the standard library documentation</a>.</p>
   <h3 id="slices">Slices</h3>
   <p>A ‘slice’ is a reference to (or “view” into) another data structure. They are useful for allowing safe, efficient access to a portion of an array without copying. For example, you might want to reference just one line of a file read into memory. By nature, a slice is not created directly, but from an existing variable. Slices have a length, can be mutable or not, and in many ways behave like arrays:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> a = [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>];
   <span class="kw">let</span> middle = &amp;a[<span class="dv">1.</span>.<span class="dv">4</span>]; <span class="co">// A slice of a: just the elements 1, 2, and 3</span>
   <span class="kw">let</span> complete = &amp;a[..]; <span class="co">// A slice containing all of the elements in a</span></code></pre></div>
   <p>Slices have type <code>&amp;[T]</code>. We’ll talk about that <code>T</code> when we cover <a href="generics.html">generics</a>.</p>
-  <p>You can find more documentation for slices <a href="../std/primitive.slice.html">in the standard library documentation</a>.</p>
+  <p>You can find more documentation for slices <a href="http://doc.rust-lang.org/std/primitive.slice.html">in the standard library documentation</a>.</p>
   <h3 id="str"><code>str</code></h3>
   <p>Rust’s <code>str</code> type is the most primitive string type. As an <a href="unsized-types.html">unsized type</a>, it’s not very useful by itself, but becomes useful when placed behind a reference, like <a href="strings.html"><code>&amp;str</code></a>. As such, we’ll just leave it at that.</p>
-  <p>You can find more documentation for <code>str</code> <a href="../std/primitive.str.html">in the standard library documentation</a>.</p>
+  <p>You can find more documentation for <code>str</code> <a href="http://doc.rust-lang.org/std/primitive.str.html">in the standard library documentation</a>.</p>
   <h3 id="tuples">Tuples</h3>
   <p>A tuple is an ordered list of fixed size. Like this:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> x = (<span class="dv">1</span>, <span class="st">&quot;hello&quot;</span>);</code></pre></div>
@@ -4368,7 +4368,7 @@ code > span.er { font-weight: bold; }
   
   <span class="ot">println!</span>(<span class="st">&quot;x is {}&quot;</span>, x);</code></pre></div>
   <p>Like array indexing, it starts at zero, but unlike array indexing, it uses a <code>.</code>, rather than <code>[]</code>s.</p>
-  <p>You can find more documentation for tuples <a href="../std/primitive.tuple.html">in the standard library documentation</a>.</p>
+  <p>You can find more documentation for tuples <a href="http://doc.rust-lang.org/std/primitive.tuple.html">in the standard library documentation</a>.</p>
   <h3 id="functions-1">Functions</h3>
   <p>Functions also have a type! They look like this:</p>
   <pre><code>fn foo(x: i32) -&gt; i32 { x }
@@ -4528,7 +4528,7 @@ code > span.er { font-weight: bold; }
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> foo() {
       <span class="kw">let</span> v = <span class="ot">vec!</span>[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>];
   }</code></pre></div>
-  <p>When <code>v</code> comes into scope, a new <a href="../std/vec/struct.Vec.html"><code>Vec&lt;T&gt;</code></a> is created. In this case, the vector also allocates space on <a href="the-stack-and-the-heap.html">the heap</a>, for the three elements. When <code>v</code> goes out of scope at the end of <code>foo()</code>, Rust will clean up everything related to the vector, even the heap-allocated memory. This happens deterministically, at the end of the scope.</p>
+  <p>When <code>v</code> comes into scope, a new <a href="http://doc.rust-lang.org/std/vec/struct.Vec.html"><code>Vec&lt;T&gt;</code></a> is created. In this case, the vector also allocates space on <a href="the-stack-and-the-heap.html">the heap</a>, for the three elements. When <code>v</code> goes out of scope at the end of <code>foo()</code>, Rust will clean up everything related to the vector, even the heap-allocated memory. This happens deterministically, at the end of the scope.</p>
   <h3 id="move-semantics">Move semantics</h3>
   <p>There’s some more subtlety here, though: Rust ensures that there is <em>exactly one</em> binding to any given resource. For example, if we have a vector, we can assign it to another binding:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> v = <span class="ot">vec!</span>[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>];
@@ -4971,7 +4971,7 @@ code > span.er { font-weight: bold; }
   
   <span class="kw">fn</span> foo(<span class="kw">mut</span> x: <span class="kw">i32</span>) {</code></pre></div>
   <h3 id="interior-vs.exterior-mutability">Interior vs. Exterior Mutability</h3>
-  <p>However, when we say something is ‘immutable’ in Rust, that doesn’t mean that it’s not able to be changed: We mean something has ‘exterior mutability’. Consider, for example, <a href="../std/sync/struct.Arc.html"><code>Arc&lt;T&gt;</code></a>:</p>
+  <p>However, when we say something is ‘immutable’ in Rust, that doesn’t mean that it’s not able to be changed: We mean something has ‘exterior mutability’. Consider, for example, <a href="http://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc&lt;T&gt;</code></a>:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">use</span> std::sync::Arc;
   
   <span class="kw">let</span> x = Arc::new(<span class="dv">5</span>);
@@ -4986,7 +4986,7 @@ code > span.er { font-weight: bold; }
   </ul>
   </blockquote>
   <p>So, that’s the real definition of ‘immutability’: is this safe to have two pointers to? In <code>Arc&lt;T&gt;</code>’s case, yes: the mutation is entirely contained inside the structure itself. It’s not user facing. For this reason, it hands out <code>&amp;T</code> with <code>clone()</code>. If it handed out <code>&amp;mut T</code>s, though, that would be a problem.</p>
-  <p>Other types, like the ones in the <a href="../std/cell/index.html"><code>std::cell</code></a> module, have the opposite: interior mutability. For example:</p>
+  <p>Other types, like the ones in the <a href="http://doc.rust-lang.org/std/cell/index.html"><code>std::cell</code></a> module, have the opposite: interior mutability. For example:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">use</span> std::cell::RefCell;
   
   <span class="kw">let</span> x = RefCell::new(<span class="dv">42</span>);
@@ -5520,7 +5520,7 @@ code > span.er { font-weight: bold; }
   }</code></pre>
   <p>What we’ve done here is make another struct, <code>CircleBuilder</code>. We’ve defined our builder methods on it. We’ve also defined our <code>area()</code> method on <code>Circle</code>. We also made one more method on <code>CircleBuilder</code>: <code>finalize()</code>. This method creates our final <code>Circle</code> from the builder. Now, we’ve used the type system to enforce our concerns: we can use the methods on <code>CircleBuilder</code> to constrain making <code>Circle</code>s in any way we choose.</p>
   <h2 id="vectors">Vectors</h2>
-  <p>A ‘vector’ is a dynamic or ‘growable’ array, implemented as the standard library type <a href="../std/vec/index.html"><code>Vec&lt;T&gt;</code></a>. The <code>T</code> means that we can have vectors of any type (see the chapter on <a href="generics.html">generics</a> for more). Vectors always allocate their data on the heap. You can create them with the <code>vec!</code> macro:</p>
+  <p>A ‘vector’ is a dynamic or ‘growable’ array, implemented as the standard library type <a href="http://doc.rust-lang.org/std/vec/index.html"><code>Vec&lt;T&gt;</code></a>. The <code>T</code> means that we can have vectors of any type (see the chapter on <a href="generics.html">generics</a> for more). Vectors always allocate their data on the heap. You can create them with the <code>vec!</code> macro:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> v = <span class="ot">vec!</span>[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>]; <span class="co">// v: Vec&lt;i32&gt;</span></code></pre></div>
   <p>(Notice that unlike the <code>println!</code> macro we’ve used in the past, we use square brackets <code>[]</code> with <code>vec!</code> macro. Rust allows you to use either in either situation, this is just convention.)</p>
   <p>There’s an alternate form of <code>vec!</code> for repeating an initial value:</p>
@@ -5546,7 +5546,7 @@ code > span.er { font-weight: bold; }
   <span class="kw">for</span> i in v {
       <span class="ot">println!</span>(<span class="st">&quot;Take ownership of the vector and its element {}&quot;</span>, i);
   }</code></pre></div>
-  <p>Vectors have many more useful methods, which you can read about in <a href="../std/vec/index.html">their API documentation</a>.</p>
+  <p>Vectors have many more useful methods, which you can read about in <a href="http://doc.rust-lang.org/std/vec/index.html">their API documentation</a>.</p>
   <h2 id="strings">Strings</h2>
   <p>Strings are an important concept for any programmer to master. Rust’s string handling system is a bit different from other languages, due to its systems focus. Any time you have a data structure of variable size, things can get tricky, and strings are a re-sizable data structure. That being said, Rust’s strings also work differently than in some other systems languages, such as C.</p>
   <p>Let’s dig into the details. A ‘string’ is a sequence of Unicode scalar values encoded as a stream of UTF-8 bytes. All strings are guaranteed to be a valid encoding of UTF-8 sequences. Additionally, unlike some systems languages, strings are not null-terminated and can contain null bytes.</p>
@@ -5773,7 +5773,7 @@ code > span.er { font-weight: bold; }
   
   <span class="dv">5.</span>area();</code></pre></div>
   <p>It is considered poor style to implement methods on such primitive types, even though it is possible.</p>
-  <p>This may seem like the Wild West, but there are two other restrictions around implementing traits that prevent this from getting out of hand. The first is that if the trait isn’t defined in your scope, it doesn’t apply. Here’s an example: the standard library provides a <a href="../std/io/trait.Write.html"><code>Write</code></a> trait which adds extra functionality to <code>File</code>s, for doing file I/O. By default, a <code>File</code> won’t have its methods:</p>
+  <p>This may seem like the Wild West, but there are two other restrictions around implementing traits that prevent this from getting out of hand. The first is that if the trait isn’t defined in your scope, it doesn’t apply. Here’s an example: the standard library provides a <a href="http://doc.rust-lang.org/std/io/trait.Write.html"><code>Write</code></a> trait which adds extra functionality to <code>File</code>s, for doing file I/O. By default, a <code>File</code> won’t have its methods:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> <span class="kw">mut</span> f = std::fs::File::open(<span class="st">&quot;foo.txt&quot;</span>).ok().expect(<span class="st">&quot;Couldn’t open foo.txt&quot;</span>);
   <span class="kw">let</span> result = f.write(<span class="st">&quot;whatever&quot;</span>.as_bytes());</code></pre></div>
   <p>Here’s the error:</p>
@@ -5914,7 +5914,7 @@ code > span.er { font-weight: bold; }
   <p>If we forget to implement <code>Foo</code>, Rust will tell us:</p>
   <pre><code>error: the trait `main::Foo` is not implemented for the type `main::Baz` [E0277]</code></pre>
   <h2 id="drop">Drop</h2>
-  <p>Now that we’ve discussed traits, let’s talk about a particular trait provided by the Rust standard library, <a href="../std/ops/trait.Drop.html"><code>Drop</code></a>. The <code>Drop</code> trait provides a way to run some code when a value goes out of scope. For example:</p>
+  <p>Now that we’ve discussed traits, let’s talk about a particular trait provided by the Rust standard library, <a href="http://doc.rust-lang.org/std/ops/trait.Drop.html"><code>Drop</code></a>. The <code>Drop</code> trait provides a way to run some code when a value goes out of scope. For example:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">struct</span> HasDrop;
   
   <span class="kw">impl</span> <span class="kw">Drop</span> <span class="kw">for</span> HasDrop {
@@ -5949,7 +5949,7 @@ code > span.er { font-weight: bold; }
   <pre><code>BOOM times 100!!!
   BOOM times 1!!!</code></pre>
   <p>The TNT goes off before the firecracker does, because it was declared afterwards. Last in, first out.</p>
-  <p>So what is <code>Drop</code> good for? Generally, <code>Drop</code> is used to clean up any resources associated with a <code>struct</code>. For example, the <a href="../std/sync/struct.Arc.html"><code>Arc&lt;T&gt;</code> type</a> is a reference-counted type. When <code>Drop</code> is called, it will decrement the reference count, and if the total number of references is zero, will clean up the underlying value.</p>
+  <p>So what is <code>Drop</code> good for? Generally, <code>Drop</code> is used to clean up any resources associated with a <code>struct</code>. For example, the <a href="http://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc&lt;T&gt;</code> type</a> is a reference-counted type. When <code>Drop</code> is called, it will decrement the reference count, and if the total number of references is zero, will clean up the underlying value.</p>
   <h2 id="if-let">if let</h2>
   <p><code>if let</code> allows you to combine <code>if</code> and <code>let</code> together to reduce the overhead of certain kinds of pattern matches.</p>
   <p>For example, let’s say we have some sort of <code>Option&lt;T&gt;</code>. We want to call a function on it if it’s <code>Some&lt;T&gt;</code>, but do nothing if it’s <code>None</code>. That looks like this:</p>
@@ -6065,7 +6065,7 @@ code > span.er { font-weight: bold; }
   <h5 id="representation">Representation</h5>
   <p>The methods of the trait can be called on a trait object via a special record of function pointers traditionally called a ‘vtable’ (created and managed by the compiler).</p>
   <p>Trait objects are both simple and complicated: their core representation and layout is quite straight-forward, but there are some curly error messages and surprising behaviors to discover.</p>
-  <p>Let’s start simple, with the runtime representation of a trait object. The <code>std::raw</code> module contains structs with layouts that are the same as the complicated built-in types, <a href="../std/raw/struct.TraitObject.html">including trait objects</a>:</p>
+  <p>Let’s start simple, with the runtime representation of a trait object. The <code>std::raw</code> module contains structs with layouts that are the same as the complicated built-in types, <a href="http://doc.rust-lang.org/std/raw/struct.TraitObject.html">including trait objects</a>:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">pub</span> <span class="kw">struct</span> TraitObject {
       <span class="kw">pub</span> data: *<span class="kw">mut</span> (),
       <span class="kw">pub</span> vtable: *<span class="kw">mut</span> (),
@@ -6776,7 +6776,7 @@ code > span.er { font-weight: bold; }
   <p>Or even keys and values:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">#[</span>cfg<span class="ot">(</span>target_os <span class="ot">=</span> <span class="st">&quot;macos&quot;</span><span class="ot">)]</span>
   <span class="kw">mod</span> macos_only {</code></pre></div>
-  <p>Rust attributes are used for a number of different things. There is a full list of attributes <a href="../reference.html#attributes">in the reference</a>. Currently, you are not allowed to create your own attributes, the Rust compiler defines them.</p>
+  <p>Rust attributes are used for a number of different things. There is a full list of attributes <a href="http://doc.rust-lang.org/reference.html#attributes">in the reference</a>. Currently, you are not allowed to create your own attributes, the Rust compiler defines them.</p>
   <h2 id="type-aliases"><code>type</code> aliases</h2>
   <p>The <code>type</code> keyword lets you declare an alias of another type:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">type</span> Name = String;</code></pre></div>
@@ -6818,7 +6818,7 @@ code > span.er { font-weight: bold; }
   }
   
   <span class="kw">type</span> Result&lt;T&gt; = result::<span class="kw">Result</span>&lt;T, ConcreteError&gt;;</code></pre></div>
-  <p>This creates a specialized version of the <code>Result</code> type, which always has a <code>ConcreteError</code> for the <code>E</code> part of <code>Result&lt;T, E&gt;</code>. This is commonly used in the standard library to create custom errors for each subsection. For example, <a href="../std/io/type.Result.html">io::Result</a>.</p>
+  <p>This creates a specialized version of the <code>Result</code> type, which always has a <code>ConcreteError</code> for the <code>E</code> part of <code>Result&lt;T, E&gt;</code>. This is commonly used in the standard library to create custom errors for each subsection. For example, <a href="http://doc.rust-lang.org/std/io/type.Result.html">io::Result</a>.</p>
   <h2 id="casting-between-types">Casting between types</h2>
   <p>Rust, with its focus on safety, provides two different ways of casting different types between each other. The first, <code>as</code>, is for safe casts. In contrast, <code>transmute</code> allows for arbitrary casting, and is one of the most dangerous features of Rust!</p>
   <h3 id="as"><code>as</code></h3>
@@ -6990,8 +6990,8 @@ code > span.er { font-weight: bold; }
       <span class="ot">println!</span>(<span class="st">&quot;{:?}&quot;</span>, p3);
   }</code></pre></div>
   <p>In <code>main</code>, we can use <code>+</code> on our two <code>Point</code>s, since we’ve implemented <code>Add&lt;Output=Point&gt;</code> for <code>Point</code>.</p>
-  <p>There are a number of operators that can be overloaded this way, and all of their associated traits live in the <a href="../std/ops/index.html"><code>std::ops</code></a> module. Check out its documentation for the full list.</p>
-  <p>Implementing these traits follows a pattern. Let’s look at <a href="../std/ops/trait.Add.html"><code>Add</code></a> in more detail:</p>
+  <p>There are a number of operators that can be overloaded this way, and all of their associated traits live in the <a href="http://doc.rust-lang.org/std/ops/index.html"><code>std::ops</code></a> module. Check out its documentation for the full list.</p>
+  <p>Implementing these traits follows a pattern. Let’s look at <a href="http://doc.rust-lang.org/std/ops/trait.Add.html"><code>Add</code></a> in more detail:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">pub</span> <span class="kw">trait</span> <span class="kw">Add</span>&lt;RHS = <span class="kw">Self</span>&gt; {
       <span class="kw">type</span> Output;
   
@@ -7009,7 +7009,7 @@ code > span.er { font-weight: bold; }
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">let</span> p: Point = <span class="co">// ...</span>
   <span class="kw">let</span> x: <span class="kw">f64</span> = p + <span class="dv">2i32</span>;</code></pre></div>
   <h2 id="deref-coercions">Deref coercions</h2>
-  <p>The standard library provides a special trait, <a href="../std/ops/trait.Deref.html"><code>Deref</code></a>. It’s normally used to overload <code>*</code>, the dereference operator:</p>
+  <p>The standard library provides a special trait, <a href="http://doc.rust-lang.org/std/ops/trait.Deref.html"><code>Deref</code></a>. It’s normally used to overload <code>*</code>, the dereference operator:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">use</span> std::ops::Deref;
   
   <span class="kw">struct</span> DerefExample&lt;T&gt; {
@@ -7115,7 +7115,7 @@ code > span.er { font-weight: bold; }
   <h4 id="matching">Matching</h4>
   <p>The macro is defined through a series of rules, which are pattern-matching cases. Above, we had</p>
   <pre><code>( $( $x:expr ),* ) =&gt; { ... };</code></pre>
-  <p>This is like a <code>match</code> expression arm, but the matching happens on Rust syntax trees, at compile time. The semicolon is optional on the last (here, only) case. The “pattern” on the left-hand side of <code>=&gt;</code> is known as a ‘matcher’. These have <a href="../reference.html#macros">their own little grammar</a> within the language.</p>
+  <p>This is like a <code>match</code> expression arm, but the matching happens on Rust syntax trees, at compile time. The semicolon is optional on the last (here, only) case. The “pattern” on the left-hand side of <code>=&gt;</code> is known as a ‘matcher’. These have <a href="http://doc.rust-lang.org/reference.html#macros">their own little grammar</a> within the language.</p>
   <p>The matcher <code>$x:expr</code> will match any Rust expression, binding that syntax tree to the ‘metavariable’ <code>$x</code>. The identifier <code>expr</code> is a ‘fragment specifier’; the full possibilities are enumerated later in this chapter. Surrounding the matcher with <code>$(...),*</code> will match zero or more expressions, separated by commas.</p>
   <p>Aside from the special matcher syntax, any Rust tokens that appear in a matcher must match exactly. For example,</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">macro_rules!</span> foo {
@@ -7241,7 +7241,7 @@ code > span.er { font-weight: bold; }
       <span class="ot">foo!</span>(x);
       <span class="ot">println!</span>(<span class="st">&quot;{}&quot;</span>, x);
   }</code></pre></div>
-  <p>This holds for <code>let</code> bindings and loop labels, but not for <a href="../reference.html#items">items</a>. So the following code does compile:</p>
+  <p>This holds for <code>let</code> bindings and loop labels, but not for <a href="http://doc.rust-lang.org/reference.html#items">items</a>. So the following code does compile:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">macro_rules!</span> foo {
       () =&gt; (<span class="kw">fn</span> x() { });
   }
@@ -7316,7 +7316,7 @@ code > span.er { font-weight: bold; }
   <li><code>pat</code>: a pattern. Examples: <code>Some(t)</code>; <code>(17, 'a')</code>; <code>_</code>.</li>
   <li><code>stmt</code>: a single statement. Example: <code>let x = 3</code>.</li>
   <li><code>block</code>: a brace-delimited sequence of statements. Example: <code>{ log(error, &quot;hi&quot;); return 12; }</code>.</li>
-  <li><code>item</code>: an <a href="../reference.html#items">item</a>. Examples: <code>fn foo() { }</code>; <code>struct Bar;</code>.</li>
+  <li><code>item</code>: an <a href="http://doc.rust-lang.org/reference.html#items">item</a>. Examples: <code>fn foo() { }</code>; <code>struct Bar;</code>.</li>
   <li><code>meta</code>: a “meta item”, as found in attributes. Example: <code>cfg(target_os = &quot;windows&quot;)</code>.</li>
   <li><code>tt</code>: a single token tree.</li>
   </ul>
@@ -7370,7 +7370,7 @@ code > span.er { font-weight: bold; }
   
   <span class="co">// visible here: m1, m3, m4</span></code></pre></div>
   <p>When this library is loaded with <code>#[macro_use] extern crate</code>, only <code>m2</code> will be imported.</p>
-  <p>The Rust Reference has a <a href="../reference.html#macro-related-attributes">listing of macro-related attributes</a>.</p>
+  <p>The Rust Reference has a <a href="http://doc.rust-lang.org/reference.html#macro-related-attributes">listing of macro-related attributes</a>.</p>
   <h3 id="the-variable-crate">The variable <code>$crate</code></h3>
   <p>A further difficulty occurs when a macro is used in multiple crates. Say that <code>mylib</code> defines</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">pub</span> <span class="kw">fn</span> increment(x: <span class="kw">u32</span>) -&gt; <span class="kw">u32</span> {
@@ -7513,7 +7513,7 @@ code > span.er { font-weight: bold; }
   <span class="kw">let</span> points_at = <span class="kw">unsafe</span> { *raw };
   
   <span class="ot">println!</span>(<span class="st">&quot;raw points at {}&quot;</span>, points_at);</code></pre></div>
-  <p>For more operations on raw pointers, see <a href="../std/primitive.pointer.html">their API documentation</a>.</p>
+  <p>For more operations on raw pointers, see <a href="http://doc.rust-lang.org/std/primitive.pointer.html">their API documentation</a>.</p>
   <h3 id="ffi-1">FFI</h3>
   <p>Raw pointers are useful for FFI: Rust’s <code>*const T</code> and <code>*mut T</code> are similar to C’s <code>const T*</code> and <code>T*</code>, respectfully. For more about this use, consult the <a href="ffi.html">FFI chapter</a>.</p>
   <h3 id="references-and-raw-pointers">References and raw pointers</h3>
@@ -7625,12 +7625,12 @@ code > span.er { font-weight: bold; }
   <h2 id="compiler-plugins">Compiler Plugins</h2>
   <h3 id="introduction-2">Introduction</h3>
   <p><code>rustc</code> can load compiler plugins, which are user-provided libraries that extend the compiler’s behavior with new syntax extensions, lint checks, etc.</p>
-  <p>A plugin is a dynamic library crate with a designated <em>registrar</em> function that registers extensions with <code>rustc</code>. Other crates can load these extensions using the crate attribute <code>#![plugin(...)]</code>. See the <a href="../rustc/plugin/index.html"><code>rustc::plugin</code></a> documentation for more about the mechanics of defining and loading a plugin.</p>
-  <p>If present, arguments passed as <code>#![plugin(foo(... args ...))]</code> are not interpreted by rustc itself. They are provided to the plugin through the <code>Registry</code>’s <a href="../rustc/plugin/registry/struct.Registry.html#method.args"><code>args</code> method</a>.</p>
+  <p>A plugin is a dynamic library crate with a designated <em>registrar</em> function that registers extensions with <code>rustc</code>. Other crates can load these extensions using the crate attribute <code>#![plugin(...)]</code>. See the <a href="http://doc.rust-lang.org/rustc/plugin/index.html"><code>rustc::plugin</code></a> documentation for more about the mechanics of defining and loading a plugin.</p>
+  <p>If present, arguments passed as <code>#![plugin(foo(... args ...))]</code> are not interpreted by rustc itself. They are provided to the plugin through the <code>Registry</code>’s <a href="http://doc.rust-lang.org/rustc/plugin/registry/struct.Registry.html#method.args"><code>args</code> method</a>.</p>
   <p>In the vast majority of cases, a plugin should <em>only</em> be used through <code>#![plugin]</code> and not through an <code>extern crate</code> item. Linking a plugin would pull in all of libsyntax and librustc as dependencies of your crate. This is generally unwanted unless you are building another plugin. The <code>plugin_as_library</code> lint checks these guidelines.</p>
   <p>The usual practice is to put compiler plugins in their own crate, separate from any <code>macro_rules!</code> macros or ordinary Rust code meant to be used by consumers of a library.</p>
   <h3 id="syntax-extensions">Syntax extensions</h3>
-  <p>Plugins can extend Rust’s syntax in various ways. One kind of syntax extension is the procedural macro. These are invoked the same way as <a href="macros.html">ordinary macros</a>, but the expansion is performed by arbitrary Rust code that manipulates <a href="../syntax/ast/index.html">syntax trees</a> at compile time.</p>
+  <p>Plugins can extend Rust’s syntax in various ways. One kind of syntax extension is the procedural macro. These are invoked the same way as <a href="macros.html">ordinary macros</a>, but the expansion is performed by arbitrary Rust code that manipulates <a href="http://doc.rust-lang.org/syntax/ast/index.html">syntax trees</a> at compile time.</p>
   <p>Let’s write a plugin <a href="https://github.com/rust-lang/rust/tree/master/src/test/auxiliary/roman_numerals.rs"><code>roman_numerals.rs</code></a> that implements Roman numeral integer literals.</p>
   <pre><code>#![crate_type=&quot;dylib&quot;]
   #![feature(plugin_registrar, rustc_private)]
@@ -7697,10 +7697,10 @@ code > span.er { font-weight: bold; }
   <li>Input validation is also performed at compile time.</li>
   <li>It can be extended to allow use in patterns, which effectively gives a way to define new literal syntax for any data type.</li>
   </ul>
-  <p>In addition to procedural macros, you can define new <a href="../reference.html#derive"><code>derive</code></a>-like attributes and other kinds of extensions. See <a href="../rustc/plugin/registry/struct.Registry.html#method.register_syntax_extension"><code>Registry::register_syntax_extension</code></a> and the <a href="http://doc.rust-lang.org/syntax/ext/base/enum.SyntaxExtension.html"><code>SyntaxExtension</code> enum</a>. For a more involved macro example, see <a href="https://github.com/rust-lang/regex/blob/master/regex_macros/src/lib.rs"><code>regex_macros</code></a>.</p>
+  <p>In addition to procedural macros, you can define new <a href="http://doc.rust-lang.org/reference.html#derive"><code>derive</code></a>-like attributes and other kinds of extensions. See <a href="http://doc.rust-lang.org/rustc/plugin/registry/struct.Registry.html#method.register_syntax_extension"><code>Registry::register_syntax_extension</code></a> and the <a href="http://doc.rust-lang.org/syntax/ext/base/enum.SyntaxExtension.html"><code>SyntaxExtension</code> enum</a>. For a more involved macro example, see <a href="https://github.com/rust-lang/regex/blob/master/regex_macros/src/lib.rs"><code>regex_macros</code></a>.</p>
   <h4 id="tips-and-tricks">Tips and tricks</h4>
   <p>Some of the <a href="macros.html#debugging-macro-code">macro debugging tips</a> are applicable.</p>
-  <p>You can use <a href="../syntax/parse/index.html"><code>syntax::parse</code></a> to turn token trees into higher-level syntax elements like expressions:</p>
+  <p>You can use <a href="http://doc.rust-lang.org/syntax/parse/index.html"><code>syntax::parse</code></a> to turn token trees into higher-level syntax elements like expressions:</p>
   <pre><code>fn expand_foo(cx: &amp;mut ExtCtxt, sp: Span, args: &amp;[TokenTree])
           -&gt; Box&lt;MacResult+'static&gt; {
   
@@ -7708,12 +7708,12 @@ code > span.er { font-weight: bold; }
   
       let expr: P&lt;Expr&gt; = parser.parse_expr();</code></pre>
   <p>Looking through <a href="https://github.com/rust-lang/rust/blob/master/src/libsyntax/parse/parser.rs"><code>libsyntax</code> parser code</a> will give you a feel for how the parsing infrastructure works.</p>
-  <p>Keep the <a href="../syntax/codemap/struct.Span.html"><code>Span</code>s</a> of everything you parse, for better error reporting. You can wrap <a href="../syntax/codemap/struct.Spanned.html"><code>Spanned</code></a> around your custom data structures.</p>
-  <p>Calling <a href="../syntax/ext/base/struct.ExtCtxt.html#method.span_fatal"><code>ExtCtxt::span_fatal</code></a> will immediately abort compilation. It’s better to instead call <a href="../syntax/ext/base/struct.ExtCtxt.html#method.span_err"><code>ExtCtxt::span_err</code></a> and return <a href="../syntax/ext/base/struct.DummyResult.html"><code>DummyResult</code></a>, so that the compiler can continue and find further errors.</p>
-  <p>To print syntax fragments for debugging, you can use <a href="../syntax/ext/base/struct.ExtCtxt.html#method.span_note"><code>span_note</code></a> together with <a href="http://doc.rust-lang.org/syntax/print/pprust/index.html#functions"><code>syntax::print::pprust::*_to_string</code></a>.</p>
-  <p>The example above produced an integer literal using <a href="../syntax/ext/build/trait.AstBuilder.html#tymethod.expr_usize"><code>AstBuilder::expr_usize</code></a>. As an alternative to the <code>AstBuilder</code> trait, <code>libsyntax</code> provides a set of <a href="../syntax/ext/quote/index.html">quasiquote macros</a>. They are undocumented and very rough around the edges. However, the implementation may be a good starting point for an improved quasiquote as an ordinary plugin library.</p>
+  <p>Keep the <a href="http://doc.rust-lang.org/syntax/codemap/struct.Span.html"><code>Span</code>s</a> of everything you parse, for better error reporting. You can wrap <a href="http://doc.rust-lang.org/syntax/codemap/struct.Spanned.html"><code>Spanned</code></a> around your custom data structures.</p>
+  <p>Calling <a href="http://doc.rust-lang.org/syntax/ext/base/struct.ExtCtxt.html#method.span_fatal"><code>ExtCtxt::span_fatal</code></a> will immediately abort compilation. It’s better to instead call <a href="http://doc.rust-lang.org/syntax/ext/base/struct.ExtCtxt.html#method.span_err"><code>ExtCtxt::span_err</code></a> and return <a href="http://doc.rust-lang.org/syntax/ext/base/struct.DummyResult.html"><code>DummyResult</code></a>, so that the compiler can continue and find further errors.</p>
+  <p>To print syntax fragments for debugging, you can use <a href="http://doc.rust-lang.org/syntax/ext/base/struct.ExtCtxt.html#method.span_note"><code>span_note</code></a> together with <a href="http://doc.rust-lang.org/syntax/print/pprust/index.html#functions"><code>syntax::print::pprust::*_to_string</code></a>.</p>
+  <p>The example above produced an integer literal using <a href="http://doc.rust-lang.org/syntax/ext/build/trait.AstBuilder.html#tymethod.expr_usize"><code>AstBuilder::expr_usize</code></a>. As an alternative to the <code>AstBuilder</code> trait, <code>libsyntax</code> provides a set of <a href="http://doc.rust-lang.org/syntax/ext/quote/index.html">quasiquote macros</a>. They are undocumented and very rough around the edges. However, the implementation may be a good starting point for an improved quasiquote as an ordinary plugin library.</p>
   <h3 id="lint-plugins">Lint plugins</h3>
-  <p>Plugins can extend <a href="../reference.html#lint-check-attributes">Rust’s lint infrastructure</a> with additional checks for code style, safety, etc. You can see <a href="https://github.com/rust-lang/rust/blob/master/src/test/auxiliary/lint_plugin_test.rs"><code>src/test/auxiliary/lint_plugin_test.rs</code></a> for a full example, the core of which is reproduced here:</p>
+  <p>Plugins can extend <a href="http://doc.rust-lang.org/reference.html#lint-check-attributes">Rust’s lint infrastructure</a> with additional checks for code style, safety, etc. You can see <a href="https://github.com/rust-lang/rust/blob/master/src/test/auxiliary/lint_plugin_test.rs"><code>src/test/auxiliary/lint_plugin_test.rs</code></a> for a full example, the core of which is reproduced here:</p>
   <pre><code>declare_lint!(TEST_LINT, Warn,
                 &quot;Warn about items named 'lintme'&quot;);
   
@@ -7746,12 +7746,12 @@ code > span.er { font-weight: bold; }
            ^~~~~~~~~~~~~~~</code></pre>
   <p>The components of a lint plugin are:</p>
   <ul>
-  <li><p>one or more <code>declare_lint!</code> invocations, which define static <a href="../rustc/lint/struct.Lint.html"><code>Lint</code></a> structs;</p></li>
+  <li><p>one or more <code>declare_lint!</code> invocations, which define static <a href="http://doc.rust-lang.org/rustc/lint/struct.Lint.html"><code>Lint</code></a> structs;</p></li>
   <li><p>a struct holding any state needed by the lint pass (here, none);</p></li>
-  <li><p>a <a href="../rustc/lint/trait.LintPass.html"><code>LintPass</code></a> implementation defining how to check each syntax element. A single <code>LintPass</code> may call <code>span_lint</code> for several different <code>Lint</code>s, but should register them all through the <code>get_lints</code> method.</p></li>
+  <li><p>a <a href="http://doc.rust-lang.org/rustc/lint/trait.LintPass.html"><code>LintPass</code></a> implementation defining how to check each syntax element. A single <code>LintPass</code> may call <code>span_lint</code> for several different <code>Lint</code>s, but should register them all through the <code>get_lints</code> method.</p></li>
   </ul>
   <p>Lint passes are syntax traversals, but they run at a late stage of compilation where type information is available. <code>rustc</code>’s <a href="https://github.com/rust-lang/rust/blob/master/src/librustc/lint/builtin.rs">built-in lints</a> mostly use the same infrastructure as lint plugins, and provide examples of how to access type information.</p>
-  <p>Lints defined by plugins are controlled by the usual <a href="../reference.html#lint-check-attributes">attributes and compiler flags</a>, e.g. <code>#[allow(test_lint)]</code> or <code>-A test-lint</code>. These identifiers are derived from the first argument to <code>declare_lint!</code>, with appropriate case and punctuation conversion.</p>
+  <p>Lints defined by plugins are controlled by the usual <a href="http://doc.rust-lang.org/reference.html#lint-check-attributes">attributes and compiler flags</a>, e.g. <code>#[allow(test_lint)]</code> or <code>-A test-lint</code>. These identifiers are derived from the first argument to <code>declare_lint!</code>, with appropriate case and punctuation conversion.</p>
   <p>You can run <code>rustc -W help foo.rs</code> to see a list of lints known to <code>rustc</code>, including those provided by plugins loaded by <code>foo.rs</code>.</p>
   <h2 id="inline-assembly">Inline Assembly</h2>
   <p>For extremely low-level manipulations and performance reasons, one might wish to control the CPU directly. Rust supports using inline assembly to do this via the <code>asm!</code> macro. The syntax roughly matches that of GCC &amp; Clang:</p>
@@ -7905,12 +7905,12 @@ code > span.er { font-weight: bold; }
   # // fn main() {} tricked you, rustdoc!</code></pre>
   <p>The compiler currently makes a few assumptions about symbols which are available in the executable to call. Normally these functions are provided by the standard library, but without it you must define your own.</p>
   <p>The first of these three functions, <code>stack_exhausted</code>, is invoked whenever stack overflow is detected. This function has a number of restrictions about how it can be called and what it must do, but if the stack limit register is not being maintained then a thread always has an “infinite stack” and this function shouldn’t get triggered.</p>
-  <p>The second of these three functions, <code>eh_personality</code>, is used by the failure mechanisms of the compiler. This is often mapped to GCC’s personality function (see the <a href="../std/rt/unwind/index.html">libstd implementation</a> for more information), but crates which do not trigger a panic can be assured that this function is never called. The final function, <code>panic_fmt</code>, is also used by the failure mechanisms of the compiler.</p>
+  <p>The second of these three functions, <code>eh_personality</code>, is used by the failure mechanisms of the compiler. This is often mapped to GCC’s personality function (see the <a href="http://doc.rust-lang.org/std/rt/unwind/index.html">libstd implementation</a> for more information), but crates which do not trigger a panic can be assured that this function is never called. The final function, <code>panic_fmt</code>, is also used by the failure mechanisms of the compiler.</p>
   <h4 id="using-libcore">Using libcore</h4>
   <blockquote>
   <p><strong>Note</strong>: the core library’s structure is unstable, and it is recommended to use the standard library instead wherever possible.</p>
   </blockquote>
-  <p>With the above techniques, we’ve got a bare-metal executable running some Rust code. There is a good deal of functionality provided by the standard library, however, that is necessary to be productive in Rust. If the standard library is not sufficient, then <a href="../core/index.html">libcore</a> is designed to be used instead.</p>
+  <p>With the above techniques, we’ve got a bare-metal executable running some Rust code. There is a good deal of functionality provided by the standard library, however, that is necessary to be productive in Rust. If the standard library is not sufficient, then <a href="http://doc.rust-lang.org/core/index.html">libcore</a> is designed to be used instead.</p>
   <p>The core library has very few dependencies and is much more portable than the standard library itself. Additionally, the core library has most of the necessary functionality for writing idiomatic and effective Rust code.</p>
   <p>As an example, here is a program that will calculate the dot product of two vectors provided from C, using idiomatic Rust practices.</p>
   <pre><code>#![feature(lang_items, start, no_std, core, libc)]
