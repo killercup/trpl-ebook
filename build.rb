@@ -41,6 +41,7 @@ def normalizeLinks(input)
     .gsub("../rustc", "http://doc.rust-lang.org/rustc")
     .gsub("../syntax", "http://doc.rust-lang.org/syntax")
     .gsub("../core", "http://doc.rust-lang.org/core")
+    .gsub(/\]\(([\w\-\_]+)\.html\)/, '](#sec--\1)') # internal links: each file begins with <hX id="#sec-FILEANME">TITLE</hX>
 end
 
 def pandoc(file, header_level=3)
@@ -74,7 +75,7 @@ File.open("src/SUMMARY.md", "r").each_line do |line|
     link = TOC_LINK_REGEX.match(line)
     if link
         level = link[:indent].length == 0 ? "#" : "##"
-        book << "#{level} #{normalize_title link[:title]}\n\n"
+        book << "#{level} #{normalize_title link[:title]} {#sec--#{File.basename(link[:filename], '.*')}}\n\n"
         book << pandoc("src/#{link[:filename]}")
         book << "\n\n"
     end
