@@ -34,10 +34,19 @@ def normalize_title(title)
     title.sub /(([IV]+):\s)/, ''
 end
 
+def normalizeLinks(input)
+    input
+    .gsub("../std", "http://doc.rust-lang.org/std")
+    .gsub("../reference", "http://doc.rust-lang.org/reference")
+    .gsub("../rustc", "http://doc.rust-lang.org/rustc")
+    .gsub("../syntax", "http://doc.rust-lang.org/syntax")
+    .gsub("../core", "http://doc.rust-lang.org/core")
+end
+
 def pandoc(file, header_level=3)
     normalizeTables = 'sed -E \'s/^\+-([+-]+)-\+$/| \1 |/\''
 
-    normalizeCodeSnipetts `cat #{file} | #{normalizeTables} | pandoc --from=#{MARKDOWN_OPTIONS} --to markdown_github --base-header-level=#{header_level} --indented-code-classes=rust --atx-headers`
+    normalizeCodeSnipetts normalizeLinks `cat #{file} | #{normalizeTables} | pandoc --from=#{MARKDOWN_OPTIONS} --to markdown_github --base-header-level=#{header_level} --indented-code-classes=rust --atx-headers`
 end
 
 RELEASE_DATE = Time.new().strftime("%Y-%m-%d")
