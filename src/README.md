@@ -170,12 +170,10 @@ fn main() {
 }
 ```
 
-Rust has [move semantics][move] by default, so if we want to make a copy of some
+Rust has move semantics by default, so if we want to make a copy of some
 data, we call the `clone()` method. In this example, `y` is no longer a reference
 to the vector stored in `x`, but a copy of its first element, `"Hello"`. Now
 that we don’t have a reference, our `push()` works just fine.
-
-[move]: move-semantics.html
 
 If we truly want a reference, we need the other option: ensure that our reference
 goes out of scope before we try to do the mutation. That looks like this:

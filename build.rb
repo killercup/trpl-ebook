@@ -6,7 +6,7 @@ HIDDEN_CODE = Regexp.new("^# ")
 RUST_CODE_START = Regexp.new("^```(.*)rust(.*)")
 CODE_BLOCK_END = Regexp.new("^```")
 
-MARKDOWN_OPTIONS = "markdown+grid_tables+pipe_tables+raw_html+implicit_figures+footnotes+intraword_underscores+auto_identifiers"
+MARKDOWN_OPTIONS = "markdown+grid_tables+pipe_tables+raw_html+implicit_figures+footnotes+intraword_underscores+auto_identifiers-inline_code_attributes"
 
 def normalizeCodeSnipetts(input)
     in_code_block = false
@@ -47,7 +47,7 @@ end
 def pandoc(file, header_level=3)
     normalizeTables = 'sed -E \'s/^\+-([+-]+)-\+$/| \1 |/\''
 
-    normalizeCodeSnipetts normalizeLinks `cat #{file} | #{normalizeTables} | pandoc --from=#{MARKDOWN_OPTIONS} --to markdown_github --base-header-level=#{header_level} --indented-code-classes=rust --atx-headers`
+    normalizeCodeSnipetts normalizeLinks `cat #{file} | #{normalizeTables} | pandoc --from=#{MARKDOWN_OPTIONS} --to=#{MARKDOWN_OPTIONS} --base-header-level=#{header_level} --indented-code-classes=rust --atx-headers`
 end
 
 RELEASE_DATE = Time.new().strftime("%Y-%m-%d")
