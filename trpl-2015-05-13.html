@@ -224,7 +224,7 @@ code > span.er { font-weight: bold; }
   <li><a href="#exporting-a-public-interface">Exporting a Public Interface</a></li>
   <li><a href="#importing-modules-with-use">Importing Modules with <code>use</code></a></li>
   </ul></li>
-  <li><a href="#const-and-static"><code>const</code> and <code id="sec--const-and-static">static</code></a><ul>
+  <li><a href="#sec--const-and-static"><code>const</code> and <code>static</code></a><ul>
   <li><a href="#static-1"><code>static</code></a></li>
   <li><a href="#initializing">Initializing</a></li>
   <li><a href="#which-construct-should-i-use">Which construct should I use?</a></li>
@@ -258,7 +258,7 @@ code > span.er { font-weight: bold; }
   <li><a href="#ffi">FFI</a></li>
   <li><a href="#references-and-raw-pointers">References and raw pointers</a></li>
   </ul></li>
-  <li><a href="#unsafe"><code id="sec--unsafe">unsafe</code></a><ul>
+  <li><a href="#sec--unsafe"><code>unsafe</code></a><ul>
   <li><a href="#what-does-safe-mean">What does ‘safe’ mean?</a></li>
   <li><a href="#unsafe-superpowers">Unsafe Superpowers</a></li>
   </ul></li>
@@ -350,7 +350,7 @@ code > span.er { font-weight: bold; }
   
       x.push(<span class="st">&quot;foo&quot;</span>);
   }</code></pre></div>
-  <p>Rust has <a href="#sec--move-semantics">move semantics</a> by default, so if we want to make a copy of some data, we call the <code>clone()</code> method. In this example, <code>y</code> is no longer a reference to the vector stored in <code>x</code>, but a copy of its first element, <code>&quot;Hello&quot;</code>. Now that we don’t have a reference, our <code>push()</code> works just fine.</p>
+  <p>Rust has move semantics by default, so if we want to make a copy of some data, we call the <code>clone()</code> method. In this example, <code>y</code> is no longer a reference to the vector stored in <code>x</code>, but a copy of its first element, <code>&quot;Hello&quot;</code>. Now that we don’t have a reference, our <code>push()</code> works just fine.</p>
   <p>If we truly want a reference, we need the other option: ensure that our reference goes out of scope before we try to do the mutation. That looks like this:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> main() {
       <span class="kw">let</span> <span class="kw">mut</span> x = <span class="ot">vec!</span>[<span class="st">&quot;Hello&quot;</span>, <span class="st">&quot;world&quot;</span>];
@@ -3555,7 +3555,7 @@ code > span.er { font-weight: bold; }
   <p>Our <code>Thread</code> gives us a <code>Result</code> back, which allows us to check if the thread has panicked or not.</p>
   <h2 id="sec--error-handling">Error Handling</h2>
   <blockquote>
-  <p>The best-laid plans of mice and men Often go awry</p>
+  <p>The best-laid plans of mice and men<br />Often go awry</p>
   <p>“Tae a Moose”, Robert Burns</p>
   </blockquote>
   <p>Sometimes, things just go wrong. It’s important to have a plan for when the inevitable happens. Rust has rich support for handling errors that may (let’s be honest: will) occur in your programs.</p>
@@ -6723,7 +6723,7 @@ code > span.er { font-weight: bold; }
   Goodbye in English: Goodbye.
   Hello in Japanese: こんにちは
   Goodbye in Japanese: さようなら</code></pre>
-  <h2 id="const-and-static"><code>const</code> and <code id="sec--const-and-static">static</code></h2>
+  <h2 id="sec--const-and-static"><code>const</code> and <code>static</code></h2>
   <p>Rust has a way of defining constants with the <code>const</code> keyword:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust">const N: <span class="kw">i32</span> = <span class="dv">5</span>;</code></pre></div>
   <p>Unlike <a href="#sec--variable-bindings"><code>let</code></a> bindings, you must annotate the type of a <code>const</code>.</p>
@@ -7097,7 +7097,7 @@ code > span.er { font-weight: bold; }
       temp_vec.push(<span class="dv">3</span>);
       temp_vec
   };</code></pre></div>
-  <p>We can implement this shorthand, using a macro: [1]</p>
+  <p>We can implement this shorthand, using a macro: <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">macro_rules!</span> vec {
       ( $( $x:expr ),* ) =&gt; {
           {
@@ -7478,7 +7478,6 @@ code > span.er { font-weight: bold; }
   <p>The <code>unimplemented!</code> macro can be used when you’re trying to get your functions to typecheck, and don’t want to worry about writing out the body of the function. One example of this situation is implementing a trait with multiple required methods, where you want to tackle one at a time. Define the others as <code>unimplemented!</code> until you’re ready to write them.</p>
   <h3 id="procedural-macros">Procedural macros</h3>
   <p>If Rust’s macro system can’t do what you need, you may want to write a <a href="#sec--compiler-plugins">compiler plugin</a> instead. Compared to <code>macro_rules!</code> macros, this is significantly more work, the interfaces are much less stable, and bugs can be much harder to track down. In exchange you get the flexibility of running arbitrary Rust code within the compiler. Syntax extension plugins are sometimes called ‘procedural macros’ for this reason.</p>
-  <p>[1] The actual definition of <code>vec!</code> in libcollections differs from the one presented here, for reasons of efficiency and reusability.</p>
   <h2 id="sec--raw-pointers">Raw Pointers</h2>
   <p>Rust has a number of different smart pointer types in its standard library, but there are two types that are extra-special. Much of Rust’s safety comes from compile-time checks, but raw pointers don’t have such guarantees, and are <a href="#sec--unsafe">unsafe</a> to use.</p>
   <p><code>*const T</code> and <code>*mut T</code> are called ‘raw pointers’ in Rust. Sometimes, when writing certain kinds of libraries, you’ll need to get around Rust’s safety guarantees for some reason. In this case, you can use raw pointers to implement your library, while exposing a safe interface for your users. For example, <code>*</code> pointers are allowed to alias, allowing them to be used to write shared-ownership types, and even thread-safe shared memory types (the <code>Rc&lt;T&gt;</code> and <code>Arc&lt;T&gt;</code> types are both implemented entirely in Rust).</p>
@@ -7534,7 +7533,7 @@ code > span.er { font-weight: bold; }
       <span class="kw">let</span> ref_mut: &amp;<span class="kw">mut</span> <span class="kw">u32</span> = &amp;<span class="kw">mut</span> *p_mut;
   }</code></pre></div>
   <p>The <code>&amp;*x</code> dereferencing style is preferred to using a <code>transmute</code>. The latter is far more powerful than necessary, and the more restricted operation is harder to use incorrectly; for example, it requires that <code>x</code> is a pointer (unlike <code>transmute</code>).</p>
-  <h2 id="unsafe"><code id="sec--unsafe">unsafe</code></h2>
+  <h2 id="sec--unsafe"><code>unsafe</code></h2>
   <p>Rust’s main draw is its powerful static guarantees about behavior. But safety checks are conservative by nature: there are some programs that are actually safe, but the compiler is not able to verify this is true. To write these kinds of programs, we need to tell the compiler to relax its restrictions a bit. For this, Rust has a keyword, <code>unsafe</code>. Code using <code>unsafe</code> has less restrictions than normal code does.</p>
   <p>Let’s go over the syntax, and then we’ll talk semantics. <code>unsafe</code> is used in two contexts. The first one is to mark a function as unsafe:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">unsafe</span> <span class="kw">fn</span> danger_will_robinson() {
@@ -8342,6 +8341,12 @@ code > span.er { font-weight: bold; }
   <li><a href="http://www.cs.indiana.edu/~eholk/papers/hips2013.pdf">GPU programming in Rust</a></li>
   <li><a href="https://www.usenix.org/conference/hotpar12/parallel-closures-new-twist-old-idea">Parallel closures: a new twist on an old idea</a> - not exactly about rust, but by nmatsakis</li>
   </ul>
+  <section class="footnotes">
+  <hr />
+  <ol>
+  <li id="fn1"><p>The actual definition of <code>vec!</code> in libcollections differs from the one presented here, for reasons of efficiency and reusability.<a href="#fnref1">↩</a></p></li>
+  </ol>
+  </section>
 </article>
 
 </body>
