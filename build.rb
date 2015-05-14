@@ -1,5 +1,8 @@
 #! env ruby
 
+# The date of the src/ files
+RELEASE_DATE = "2015-05-13"
+
 TOC_LINK_REGEX = /(?<indent>\s*?)\* \[(?<title>.+?)\]\((?<filename>.+?)\)/
 
 HIDDEN_CODE = Regexp.new("^# ")
@@ -49,8 +52,6 @@ def pandoc(file, header_level=3)
 
     normalizeCodeSnipetts normalizeLinks `cat #{file} | #{normalizeTables} | pandoc --from=#{MARKDOWN_OPTIONS} --to=#{MARKDOWN_OPTIONS} --base-header-level=#{header_level} --indented-code-classes=rust --atx-headers`
 end
-
-RELEASE_DATE = Time.new().strftime("%Y-%m-%d")
 
 book = <<-eos
 ---
