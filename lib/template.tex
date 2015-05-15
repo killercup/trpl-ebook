@@ -22,6 +22,7 @@ $endif$
 
 \usepackage{longtable}
 \usepackage{booktabs}
+\usepackage[htt]{hyphenat}
 
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -158,16 +159,27 @@ $endif$
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
 
-% Für Grafiken, siehe unten
-\usepackage{tikz}
-\usetikzlibrary{arrows}
-\usetikzlibrary{shapes,trees}
-
 \usepackage[font={footnotesize,sf}]{caption}
 
-% Für Definitionen, Beispiele, usw:
-\newtheorem{definition}{Definition}
-\newtheorem{example}[definition]{Beispiel}
+% - - -
+% Make it fancy
+
+% Headers and page numbering
+\usepackage{fancyhdr}
+
+% Set figure legends and captions to be smaller sized sans serif font
+\usepackage[font={footnotesize,sf}]{caption}
+
+% Chapter styling
+\usepackage[grey]{quotchap}
+\makeatletter
+\renewcommand*{\chapnumfont}{%
+  \usefont{T1}{\@defaultcnfont}{b}{n}\fontsize{80}{100}\selectfont% Default: 100/130
+  \color{chaptergrey}%
+}
+\makeatother
+
+% - - -
 
 $if(title)$
   \title{$title$}

@@ -10,7 +10,10 @@ Install:
 
 - pandoc
 - ruby
-- XeLaTeX (and probably some additional packages, I had to `sudo tlmgr install framed` for example)
+- XeLaTeX and probably some additional packages, I had to install (`sudo tlmgr install $pkg`) those:
+    + framed
+    + hyphenat
+    + quotchap
 - the DejaVu Sans Mono font
 
 Then run:
