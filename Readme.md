@@ -6,7 +6,14 @@ This repository contains stuff to convert [this book](http://doc.rust-lang.org/b
 
 ## DIY
 
-Install pandoc, ruby, and LaTeX (and probably some additional packages, I had to `sudo tlmgr install framed` for example).
+Install:
+
+- pandoc
+- ruby
+- XeLaTeX (and probably some additional packages, I had to `sudo tlmgr install framed` for example)
+- the DejaVu Sans Mono font
+
+Then run:
 
 ```sh
 $ ruby build.rb

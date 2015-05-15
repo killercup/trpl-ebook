@@ -93,10 +93,10 @@ puts "[✓] HTML"
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --epub-stylesheet=lib/epub.css --table-of-contents --output=dist/trpl-#{RELEASE_DATE}.epub`
 puts "[✓] EPUB"
 
-`pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='a4paper' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-a4.pdf`
+`pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='a4paper' --variable monofont='DejaVu Sans Mono' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-a4.pdf`
 puts "[✓] PDF (A4)"
 
-`pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='letterpaper' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-letter.pdf`
+`pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable monofont='DejaVu Sans Mono' --variable papersize='letterpaper' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-letter.pdf`
 puts "[✓] PDF (Letter)"
 
 index = <<-eos
