@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Download 'The Rust Programming Language'</title>
+    <meta name="viewport" content="width=device-width"/>
     <style>
-        body { max-width: 32em; margin: 10em auto; font-size: 16px; font-family: sans-serif; line-height: 1.3; }
+        body { max-width: 40em; margin: 10em auto 2em; font-size: 16px; font-family: sans-serif; line-height: 1.3; padding: 0.6em; }
+        article, header, footer, aside { display: block; }
         li { margin-bottom: 0.5em; }
+        footer { text-align: center; margin-top: 4em; font-size: 0.8em; }
+        aside { position: absolute; top: 0; right: 0; border: 0; }
+        aside img { border: 0; }
     </style>
 </head>
 <body>
-    <h1>The Rust Programming Language</h1>
-    <ul>
-        <li>
-            <strong><a href="http://doc.rust-lang.org/book/">The original on rust-lang.org</a></strong>
-        </li>
-        <li><h2>2015-05-15</h2><ul><li><a href='trpl-2015-05-15.mobi'> MOBI</a></li>
+    <article role="main">
+        <header>
+            <h1>The Rust Programming Language</h1>
+        </header>
+        <ul>
+            <li>
+                <strong><a href="http://doc.rust-lang.org/book/">The original on rust-lang.org</a></strong>
+            </li>
+            <li><h2>2015-05-15</h2><ul><li><a href='trpl-2015-05-15.mobi'> MOBI</a></li>
 <li><a href='trpl-2015-05-15.md'> MD</a></li>
 <li><a href='trpl-2015-05-15.html'> HTML</a></li>
 <li><a href='trpl-2015-05-15.epub'> EPUB</a></li>
@@ -25,9 +33,15 @@
 <li><a href='trpl-2015-05-13.epub'> EPUB</a></li>
 <li><a href='trpl-2015-05-13-letter.pdf'>LETTER PDF</a></li>
 <li><a href='trpl-2015-05-13-a4.pdf'>A4 PDF</a></li></ul></li>
-    </ul>
-    <a href="https://github.com/killercup/trpl-ebook">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/>
-      </a>
+        </ul>
+        <footer>
+            Made with ♥︎, too much RegEx and <a href="http://pandoc.org/">Pandoc</a> by <a href="http://pascalhertleif.de/">Pascal Hertleif</a>
+        </footer>
+    </article>
+    <aside>
+        <a href="https://github.com/killercup/trpl-ebook">
+            <img src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/>
+        </a>
+    </aside>
 </body>
 </html>
