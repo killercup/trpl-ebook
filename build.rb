@@ -7,9 +7,45 @@ TOC_LINK_REGEX = /(?<indent>\s*?)\* \[(?<title>.+?)\]\((?<filename>.+?)\)/
 
 HIDDEN_CODE = Regexp.new("^# ")
 RUST_CODE_START = Regexp.new("^```(.*)rust(.*)")
-CODE_BLOCK_END = Regexp.new("^```")
+CODE_BLOCK_START = CODE_BLOCK_END = Regexp.new("^```")
 
 MARKDOWN_OPTIONS = "markdown+grid_tables+pipe_tables+raw_html+implicit_figures+footnotes+intraword_underscores+auto_identifiers-inline_code_attributes"
+
+def break_long_lines(line, max_len=87, sep="↳ ")
+    return line if line.length <= max_len
+
+    output = ""
+
+    cursor = max_len
+    output << line[0..cursor - 1]
+    while line.length > cursor
+        new_cursor = cursor + (max_len - sep.length)
+        output << "\n"
+        output << sep
+        output << line[cursor..new_cursor - 1]
+        cursor = new_cursor
+    end
+    output
+end
+
+def break_long_code_lines(input)
+    in_code_block = false
+
+    input
+    .lines.reduce "" do |initial, line|
+        if in_code_block && line.match(CODE_BLOCK_END)
+            in_code_block = false
+            initial + line
+        elsif in_code_block
+            initial + break_long_lines(line)
+        elsif line.match(CODE_BLOCK_START)
+            in_code_block = true
+            initial + line
+        else
+            initial + line
+        end
+    end
+end
 
 def normalizeCodeSnipetts(input)
     in_code_block = false
@@ -93,11 +129,22 @@ puts "[✓] HTML"
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --epub-stylesheet=lib/epub.css --table-of-contents --output=dist/trpl-#{RELEASE_DATE}.epub`
 puts "[✓] EPUB"
 
+# again, with shorter code lines
+File.open("dist/trpl-#{RELEASE_DATE}.md", "w") { |file|
+    file.write(break_long_code_lines(book))
+    puts "[✓] Markdown"
+}
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='a4paper' --variable monofont='DejaVu Sans Mono' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-a4.pdf`
 puts "[✓] PDF (A4)"
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable monofont='DejaVu Sans Mono' --variable papersize='letterpaper' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-letter.pdf`
 puts "[✓] PDF (Letter)"
+
+# back to original line length
+File.open("dist/trpl-#{RELEASE_DATE}.md", "w") { |file|
+    file.write(book)
+    puts "[✓] Markdown"
+}
 
 FILE_PREFIX = /^trpl-(?<date>(\d+)-(\d+)-(\d+))/
 FILE_NAME = /^trpl-(?<date>(\d+)-(\d+)-(\d+))(?<name>.*)/
