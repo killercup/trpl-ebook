@@ -128,7 +128,6 @@ end
 
 File.open("dist/trpl-#{RELEASE_DATE}.md", "w") { |file|
     file.write(book)
-    puts "[✓] Markdown"
 }
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --table-of-contents --template=lib/template.html --css=lib/pandoc.css --to=html5 --output=dist/trpl-#{RELEASE_DATE}.html`
@@ -140,7 +139,6 @@ puts "[✓] EPUB"
 # again, with shorter code lines
 File.open("dist/trpl-#{RELEASE_DATE}.md", "w") { |file|
     file.write(removeEmoji break_long_code_lines book)
-    puts "[✓] Markdown"
 }
 
 `pandoc dist/trpl-#{RELEASE_DATE}.md --from=#{MARKDOWN_OPTIONS} --smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable papersize='a4paper' --variable monofont='DejaVu Sans Mono' --template=lib/template.tex --latex-engine=xelatex --to=latex --output=dist/trpl-#{RELEASE_DATE}-a4.pdf`
