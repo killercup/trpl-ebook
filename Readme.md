@@ -14,7 +14,8 @@ Install:
     + framed
     + hyphenat
     + quotchap
-- the DejaVu Sans Mono font
+- the DejaVu Sans Mono font: http://dejavu-fonts.org/
+- the IPA font for Japanese Text: http://ipafont.ipa.go.jp/ipaexfont/download.html#en
 
 Then run:
 
