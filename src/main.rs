@@ -48,7 +48,7 @@ fn main() {
             .map_err(|err| format!("normalize error: {}", err.description()))
             .unwrap();
 
-        book.push_str("\n");
+        book.push_str("\n\n");
         book.push_str(&chapter.headline);
         book.push_str("\n");
         book.push_str(&content);

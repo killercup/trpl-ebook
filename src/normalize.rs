@@ -21,6 +21,7 @@ pub fn normalize(input: &str) -> Result<String, Box<Error>> {
     let mut output;
 
     output = try!(break_code_blocks(&input, 87, "↳ "));
+    output = try!(normalize_code_start(&output));
     output = try!(normalize_links(&output));
 
     Ok(output)
