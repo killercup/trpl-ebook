@@ -1,3 +1,4 @@
 /target
 log.json
 .DS_Store
+dist/

@@ -30,7 +30,7 @@ fn main() {
         book.push_str(&chapter.headline);
     }
 
-    file::write_string_to_file(&book, "_all.md").unwrap();
+    file::write_string_to_file(&book, "dist/_all.md").unwrap();
 
     println!("Wrote {} lines.", book.lines().count());
 }
