@@ -6,4 +6,4 @@ pub const HTML: &'static str = "--smart --normalize --standalone --self-containe
 
 pub const EPUB: &'static str = "--smart --normalize --standalone --self-contained --highlight-style=tango --epub-stylesheet=lib/epub.css --table-of-contents";
 
-pub const LATEX: &'static str = "--smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --variable monofont='DejaVu Sans Mono' --template=lib/template.tex --latex-engine=xelatex --to=latex";
+pub const LATEX: &'static str = "--smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --template=lib/template.tex --latex-engine=xelatex --to=latex";

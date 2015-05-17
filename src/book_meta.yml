@@ -1,12 +1,13 @@
 ---
 title: "The Rust Programming Language"
 author: "The Rust Team"
-date: #{RELEASE_DATE}
+date: {release_date}
 description: "This book will teach you about the Rust Programming Language. Rust is a modern systems programming language focusing on safety and speed. It accomplishes these goals by being memory safe without using garbage collection."
 language: en
-lang: english
+# lang: english
 documentclass: book
 links-as-notes: true
 verbatim-in-note: true
 toc-depth: 2
+monofont: "DejaVu Sans Mono"
 ...

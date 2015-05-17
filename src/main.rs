@@ -37,7 +37,7 @@ fn save_as(book: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
 fn main() {
     let book = convert_book::markdown::to_single_file(
         "../src/SUMMARY.md",
-        include_str!("book_meta.yml")
+        &format!(include_str!("book_meta.yml"), release_date = options::RELEASE_DATE)
     ).unwrap();
 
     helpers::file::write_string_to_file(&book, "dist/_all.md").unwrap();
