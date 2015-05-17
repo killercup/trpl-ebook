@@ -12,11 +12,14 @@ extern crate itertools;
 pub mod line_breaks;
 pub mod code_line_breaks;
 pub mod remove_emojis;
+pub mod normalize;
+pub mod shell_pipe;
+pub mod pandoc;
 pub mod read_toc;
-pub mod read_file;
+pub mod file;
 
 fn main() {
-    let toc = read_file::get_file_content("../src/SUMMARY.md").unwrap();
+    let toc = file::get_file_content("../src/SUMMARY.md").unwrap();
 
     let mut book = String::new();
 
@@ -24,5 +27,7 @@ fn main() {
         book.push_str(&chapter.headline);
     }
 
-    println!("{}", book);
+    file::write_string_to_file(&book, "_all.md").unwrap();
+
+    println!("Wrote {} lines.", book.lines().count());
 }
