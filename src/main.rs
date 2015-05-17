@@ -46,10 +46,12 @@ fn main() {
     save_as(&book, "html", options::HTML).unwrap();
     save_as(&book, "epub", options::EPUB).unwrap();
     save_as(&book, "tex", options::LATEX).unwrap();
-    save_as(&book, "a4.pdf",
-        &format!("{} --variable papersize='a4paper'", options::LATEX)
+
+    let plain_book = helpers::remove_emojis::remove_emojis(&book);
+    save_as(&plain_book, "a4.pdf",
+        &format!(r"{} --variable papersize=a4paper", options::LATEX)
     ).unwrap();
-    save_as(&book, "letter.pdf",
-        &format!("{} --variable papersize='letterpaper'", options::LATEX)
+    save_as(&plain_book, "letter.pdf",
+        &format!(r"{} --variable papersize=letterpaper", options::LATEX)
     ).unwrap();
 }
