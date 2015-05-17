@@ -23,6 +23,9 @@ fn main() {
 
     let mut book = String::new();
 
+    book.push_str(include_str!("book_meta.yml"));
+    book.push_str("\n\n");
+
     for chapter in &read_toc::get_chapters(&toc) {
         book.push_str(&chapter.headline);
     }
