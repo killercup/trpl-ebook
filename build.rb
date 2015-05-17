@@ -165,7 +165,7 @@ file_listing = Dir["dist/trpl*"]
         html = "<li><h2>#{prefix.match(FILE_PREFIX)[:date]}</h2><ul>"
         html << files.map {|file|
             "<li><a href='#{file}'>#{
-                file.match(FILE_NAME)[:name].gsub('-', '').gsub('.', ' ').upcase
+                file.match(FILE_NAME)[:name].gsub('-', '').gsub('.', ' ').upcase.strip
             }</a></li>"
         }.join("\n")
         html << "</ul></li>"
@@ -177,10 +177,10 @@ index = <<-eos
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Download 'The Rust Programming Language'</title>
+    <title>Download 'The Rust Programming Language' E-Books (PDF, EPUB, MOBI)</title>
     <meta name="viewport" content="width=device-width"/>
     <style>
-        body { max-width: 40em; margin: 10em auto 2em; font-size: 16px; font-family: sans-serif; line-height: 1.3; padding: 0.6em; }
+        body { max-width: 40em; margin: 6em auto 2em; font-size: 16px; font-family: sans-serif; line-height: 1.3; padding: 0.6em; }
         article, header, footer, aside { display: block; }
         li { margin-bottom: 0.5em; }
         footer { text-align: center; margin-top: 4em; font-size: 0.8em; }
@@ -191,7 +191,7 @@ index = <<-eos
 <body>
     <article role="main">
         <header>
-            <h1>The Rust Programming Language</h1>
+            <h1>'The Rust Programming Language' E-Books</h1>
         </header>
         <ul>
             <li>
