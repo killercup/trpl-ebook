@@ -35,7 +35,7 @@ pub fn normalize_code_start(input: &str) -> Result<String, Box<Error>> {
     let output = input.lines()
     .fold(String::new(), |initial, line| {
         if in_code_block && hidden_code.is_match(line) {
-            initial + "\n"
+            initial
         } else if rust_code_block_start.is_match(line) {
             in_code_block = true;
             initial + "```rust\n"
@@ -101,6 +101,7 @@ let x = true;
 ```
 
 ```rust
+# use magic::from_the_future::*;
 let x = true;
 ```
 ";
