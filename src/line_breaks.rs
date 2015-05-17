@@ -1,11 +1,9 @@
-use itertools::Itertools;
-
 use std::error::Error;
 
 pub fn break_long_line(line: &str, max_len: usize, sep: &str) -> Result<String, Box<Error>> {
     let sep_length = sep.chars().count() as usize;
     let mut output = String::with_capacity(line.len());
-    
+
     // First time: `max_len`, after that `max_len - sep_length`
     let mut line_end = max_len;
 
@@ -17,6 +15,7 @@ pub fn break_long_line(line: &str, max_len: usize, sep: &str) -> Result<String, 
         }
         output.push(ch);
     }
+
     Ok(output)
 }
 

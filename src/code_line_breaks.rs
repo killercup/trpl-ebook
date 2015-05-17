@@ -1,5 +1,5 @@
 use std::error::Error;
-use line_breaks::break_long_line;
+pub use line_breaks;
 
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
@@ -10,7 +10,8 @@ pub fn break_code_blocks(input: &str, max_len: usize, sep: &str) -> Result<Strin
   .fold(String::new(), |initial, line| {
     match (in_code_block, line.starts_with(CODE_BLOCK_TOGGLE)) {
       (true,  false) => {
-        return initial + &break_long_line(line, max_len, sep).unwrap() + "\n";
+        let lines = line_breaks::break_long_line(line, max_len, sep).unwrap();
+        return initial + &lines + "\n";
       }
       (true,  true ) => { in_code_block = false; }
       (false, true ) => { in_code_block = true; }
@@ -31,7 +32,7 @@ Whew! The Rust compiler gives quite detailed errors at times, and this is one of
 ```
 
 We created an inner scope with an additional set of curly braces. `y` will go out of scope before we call `push()`, and so we’re all good.";
-  
+
   let code_block_broken_down = "If we truly want a reference, we need the other option: ensure that our reference goes out of scope before we try to do the mutation. That looks like this:
 
 ```text
