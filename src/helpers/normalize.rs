@@ -1,7 +1,7 @@
 use std::error::Error;
 use regex::Regex;
 
-pub use normalize_code_blocks::*;
+use helpers::normalize_code_blocks::*;
 
 pub fn normalize_links(input: &str) -> Result<String, Box<Error>> {
     let cross_section_link = Regex::new(r"]\(([\w-_]+)\.html\)").unwrap();

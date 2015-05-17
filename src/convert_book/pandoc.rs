@@ -1,5 +1,5 @@
 use std::error::Error;
-use shell_pipe;
+use helpers::shell_pipe;
 
 pub fn run(args: &str, input: &str) -> Result<String, Box<Error>> {
     shell_pipe::run("pandoc", args, input)

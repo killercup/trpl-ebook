@@ -1,7 +1,7 @@
 use std::error::Error;
 use regex::Regex;
 
-pub use line_breaks;
+use helpers::line_breaks;
 
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
