@@ -7,7 +7,6 @@
 //! [trpl]: http://doc.rust-lang.org/book/
 
 extern crate regex;
-extern crate itertools;
 
 pub mod helpers;
 pub mod convert_book;
