@@ -12,6 +12,28 @@ extern crate itertools;
 pub mod helpers;
 pub mod convert_book;
 
+use std::error::Error;
+use convert_book::options;
+use convert_book::pandoc::run as pandoc;
+
+fn save_as(book: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
+    use std::ascii::AsciiExt;
+
+    let opts = format!(
+        "--from={markdown_opts} {opts} --output=dist/trpl-{release_date}.{format}",
+        markdown_opts = options::MARKDOWN,
+        opts = opts,
+        release_date = options::RELEASE_DATE,
+        format = format
+    );
+
+    try!(pandoc(&opts, &book));
+
+    println!("[✓] {}", format.to_ascii_uppercase());
+
+    Ok(())
+}
+
 fn main() {
     let book = convert_book::markdown::to_single_file(
         "../src/SUMMARY.md",
@@ -19,5 +41,15 @@ fn main() {
     ).unwrap();
 
     helpers::file::write_string_to_file(&book, "dist/_all.md").unwrap();
-    println!("[✓] Markdown ({} bytes)", &book.len());
+    println!("[✓] {}", "MD");
+
+    save_as(&book, "html", options::HTML).unwrap();
+    save_as(&book, "epub", options::EPUB).unwrap();
+    save_as(&book, "tex", options::LATEX).unwrap();
+    save_as(&book, "a4.pdf",
+        &format!("{} --variable papersize='a4paper'", options::LATEX)
+    ).unwrap();
+    save_as(&book, "letter.pdf",
+        &format!("{} --variable papersize='letterpaper'", options::LATEX)
+    ).unwrap();
 }
