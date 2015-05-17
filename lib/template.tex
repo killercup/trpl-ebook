@@ -1,0 +1,247 @@
+% \documentclass[12pt]{article}
+\documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$$if(papersize)$$papersize$,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
+
+$if(fontfamily)$
+  \usepackage{$fontfamily$}
+$else$
+  \usepackage{lmodern}
+$endif$
+
+$if(lang)$
+\ifxetex
+  \usepackage{polyglossia}
+  \setmainlanguage{$mainlang$}
+\else
+  \usepackage[shorthands=off,$lang$]{babel}
+\fi
+$endif$
+
+\usepackage[$if(papersize)$$papersize$$else$a4paper$endif$]{geometry}
+
+\usepackage{graphicx}
+
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage[htt]{hyphenat}
+
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+
+% Break URLs in a few more places. (For breaking lines, not functionality!)
+% cf. http://tex.stackexchange.com/questions/3033/forcing-linebreaks-in-url
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks%  save the current one
+  \do\*\do\-\do\~\do\'\do\"\do\-}
+
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={$author-meta$},
+            pdftitle={$title-meta$},
+            colorlinks=false,
+            citecolor=$if(citecolor)$$citecolor$$else$blue$endif$,
+            urlcolor=$if(urlcolor)$$urlcolor$$else$blue$endif$,
+            linkcolor=$if(linkcolor)$$linkcolor$$else$magenta$endif$,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+
+\renewcommand*{\hyperref}[2][\ar]{%
+  \def\ar{#2}%
+  #2 (\autoref{#1}, page~\pageref{#1})}
+
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  $if(euro)$
+    \usepackage{eurosym}
+  $endif$
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+    \usepackage{xeCJK}
+    \setCJKmainfont{IPAexMincho}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+
+  $if(mainfont)$
+    \setmainfont{$mainfont$}
+  $endif$
+
+  $if(sansfont)$
+    \setsansfont{$sansfont$}
+  $endif$
+
+  $if(monofont)$
+    \setmonofont[Mapping=tex-ansi]{$monofont$}
+  $endif$
+
+  $if(mathfont)$
+    \setmathfont(Digits,Latin,Greek){$mathfont$}
+  $endif$
+\fi
+
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+
+$if(graphics)$
+  \usepackage{graphicx}
+  \makeatletter
+  \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+  \def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+  \makeatother
+  % Scale images if necessary, so that they will not overflow the page
+  % margins by default, and it is still possible to overwrite the defaults
+  % using explicit options in \includegraphics[width, height, ...]{}
+  \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+$endif$
+
+\usepackage{xcolor}
+$if(listings)$
+  \usepackage{listings}
+  % Setup of Code Highlighting
+  % cf. http://tex.stackexchange.com/a/179956/21830
+  \lstset{
+      basicstyle=\ttfamily,
+      numbers=left,
+      keywordstyle=\color[rgb]{0.13,0.29,0.53}\bfseries,
+      stringstyle=\color[rgb]{0.31,0.60,0.02},
+      commentstyle=\color[rgb]{0.56,0.35,0.01}\itshape,
+      numberstyle=\footnotesize,
+      stepnumber=5,
+      numbersep=5pt,
+      backgroundcolor=\color[RGB]{248,248,248},
+      showspaces=false,
+      showstringspaces=false,
+      showtabs=false,
+      tabsize=2,
+      captionpos=b,
+      breaklines=true,
+      breakatwhitespace=true,
+      breakautoindent=true,
+      escapeinside={\%*}{*)},
+      linewidth=\textwidth,
+      basewidth=0.5em,
+  }
+$endif$
+
+$if(highlighting-macros)$
+  $highlighting-macros$
+$endif$
+
+$if(verbatim-in-note)$
+  \usepackage{fancyvrb}
+$endif$
+
+$if(links-as-notes)$
+  % Make links footnotes instead of hotlinks:
+  \renewcommand{\href}[2]{#2\footnote{\url{#1}}}
+$endif$
+
+$if(verbatim-in-note)$
+  \VerbatimFootnotes % allows verbatim text in footnotes
+$endif$
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+
+\usepackage[font={footnotesize,sf}]{caption}
+
+% - - -
+% Make it fancy
+
+% Headers and page numbering
+\usepackage{fancyhdr}
+
+% Set figure legends and captions to be smaller sized sans serif font
+\usepackage[font={footnotesize,sf}]{caption}
+
+% Chapter styling
+\usepackage[grey]{quotchap}
+\makeatletter
+\renewcommand*{\chapnumfont}{%
+  \thispagestyle{empty}
+  \usefont{T1}{\@defaultcnfont}{b}{n}\fontsize{80}{100}\selectfont% Default: 100/130
+  \color{chaptergrey}%
+}
+\makeatother
+
+% - - -
+
+$if(title)$
+  \title{$title$}
+$endif$
+$if(subtitle)$
+  \subtitle{$subtitle$}
+$endif$
+$if(author)$
+  \author{$for(author)$$author$$sep$ \and $endfor$}
+$endif$
+$if(date)$
+  \date{$date$}
+$endif$
+
+\begin{document}
+
+$if(title)$
+  \maketitle
+$endif$
+
+$if(abstract)$
+  \begin{abstract}
+    $abstract$
+  \end{abstract}
+$endif$
+
+$for(include-before)$
+  $include-before$
+$endfor$
+
+$if(toc)$
+{
+  \hypersetup{linkcolor=black}
+  \setcounter{tocdepth}{$toc-depth$}
+  \tableofcontents
+  \newpage
+}
+$endif$
+
+$body$
+
+$if(natbib)$
+  $if(biblio-files)$
+    $if(biblio-title)$
+      $if(book-class)$
+        \renewcommand\bibname{$biblio-title$}
+      $else$
+        \renewcommand\refname{$biblio-title$}
+      $endif$
+    $endif$
+    \bibliography{$biblio-files$}
+  $endif$
+$endif$
+
+$if(biblatex)$
+  \printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
+$endif$
+
+$for(include-after)$
+  $include-after$
+$endfor$
+\end{document}
