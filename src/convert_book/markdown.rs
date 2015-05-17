@@ -50,12 +50,33 @@ fn get_chapters(toc: &str) -> Vec<Chapter> {
 }
 
 pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> {
+    debug!("Reading book: ");
+
     let toc = try!(file::get_file_content(toc_path));
+    debug!(".");
 
     let mut book = String::new();
 
     book.push_str(meta);
     book.push_str("\n");
+
+    {
+        // Readme ~ "Getting Started"
+        let file = try!(file::get_file_content("../src/README.md"));
+        let pandoc_options = format!(
+            "--from={markdown_options} --to={markdown_options} --base-header-level={header_level} --indented-code-classes=rust --atx-headers",
+            markdown_options = MARKDOWN_OPTIONS, header_level = 1
+        );
+        let mut content = try!(pandoc::run(&pandoc_options, &file));
+        content = try!(normalize::normalize(&content));
+
+        debug!(".");
+
+        book.push_str("\n\n");
+        book.push_str("# Introduction");
+        book.push_str("\n\n");
+        book.push_str(&content);
+    }
 
     let pandoc_options = format!(
         "--from={markdown_options} --to={markdown_options} --base-header-level={header_level} --indented-code-classes=rust --atx-headers",
@@ -67,7 +88,6 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         let file = try!(file::get_file_content(&path));
 
         let mut content = try!(pandoc::run(&pandoc_options, &file));
-
         content = try!(normalize::normalize(&content));
 
         debug!(".");
@@ -78,7 +98,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         book.push_str(&content);
     }
 
-    debug!("\n");
+    debug!(" done.\n");
 
     Ok(book)
 }
