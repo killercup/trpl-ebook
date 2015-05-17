@@ -33,24 +33,36 @@ fn save_as(book: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
     Ok(())
 }
 
-fn main() {
-    let book = convert_book::markdown::to_single_file(
+fn render_book() -> Result<(), Box<Error>> {
+    let book = try!(convert_book::markdown::to_single_file(
         "../src/SUMMARY.md",
         &format!(include_str!("book_meta.yml"), release_date = options::RELEASE_DATE)
-    ).unwrap();
+    ));
 
-    helpers::file::write_string_to_file(&book, "dist/_all.md").unwrap();
+    helpers::file::write_string_to_file(&book,
+        &format!("dist/trpl-{}.md", options::RELEASE_DATE)
+    ).unwrap();
     println!("[✓] {}", "MD");
 
-    save_as(&book, "html", options::HTML).unwrap();
-    save_as(&book, "epub", options::EPUB).unwrap();
-    save_as(&book, "tex", options::LATEX).unwrap();
+    try!(save_as(&book, "html", options::HTML));
+    try!(save_as(&book, "epub", options::EPUB));
+    try!(save_as(&book, "tex", options::LATEX));
 
     let plain_book = helpers::remove_emojis::remove_emojis(&book);
-    save_as(&plain_book, "a4.pdf",
+    try!(save_as(&plain_book, "a4.pdf",
         &format!(r"{} --variable papersize=a4paper", options::LATEX)
-    ).unwrap();
-    save_as(&plain_book, "letter.pdf",
+    ));
+    try!(save_as(&plain_book, "letter.pdf",
         &format!(r"{} --variable papersize=letterpaper", options::LATEX)
-    ).unwrap();
+    ));
+
+    Ok(())
+}
+
+fn main() {
+    render_book().unwrap();
+
+    let index = convert_book::index::render_index("dist/").unwrap();
+    helpers::file::write_string_to_file(&index, "dist/index.html").unwrap();
+    println!("[✓] {}", "Index");
 }
