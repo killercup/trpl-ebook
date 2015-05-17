@@ -7,12 +7,10 @@ pub fn run(args: &str, input: &str) -> Result<String, Box<Error>> {
 
 #[test]
 fn dry_run() {
-    let output = run("--from=markdown --base-header-level=2 --to=markdown", "# Hi there!").unwrap();
+    let output = run(
+        "--from=markdown --base-header-level=2 --to=markdown --atx-headers",
+        "# Hi there!\n"
+    ).unwrap();
 
-    assert_eq!(
-        output,
-"Hi there!
----------
-"
-    );
+    assert_eq!(output, "## Hi there!\n");
 }
