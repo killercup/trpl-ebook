@@ -3,5 +3,13 @@ name = "compile-trpl"
 version = "0.1.0"
 authors = ["Pascal Hertleif <killercup@gmail.com>"]
 
+[features]
+default = []
+dev = ["clippy"]
+
 [dependencies]
 regex = "0.1"
+
+[dependencies.clippy]
+git = "https://github.com/Manishearth/rust-clippy.git"
+optional = true

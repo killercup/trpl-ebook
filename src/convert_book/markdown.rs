@@ -42,7 +42,7 @@ fn get_chapters(toc: &str) -> Vec<Chapter> {
         );
 
         Chapter {
-            file: link.name("filename").unwrap().to_string(),
+            file: link.name("filename").unwrap().into(),
             headline: headline,
         }
     })

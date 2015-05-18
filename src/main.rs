@@ -6,6 +6,9 @@
 //!
 //! [trpl]: http://doc.rust-lang.org/book/
 
+#![cfg_attr(feature = "dev", feature(plugin))]
+#![cfg_attr(feature = "dev", plugin(clippy))]
+
 extern crate regex;
 
 pub mod helpers;

@@ -2,8 +2,14 @@
 name = "compile-trpl"
 version = "0.1.0"
 dependencies = [
+ "clippy 0.0.4 (git+https://github.com/Manishearth/rust-clippy.git)",
  "regex 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "clippy"
+version = "0.0.4"
+source = "git+https://github.com/Manishearth/rust-clippy.git#7260be49fc8cf2b8f3e09c25cc4db55df4ac5d74"
 
 [[package]]
 name = "regex"
