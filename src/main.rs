@@ -13,25 +13,7 @@ pub mod convert_book;
 
 use std::error::Error;
 use convert_book::options;
-use convert_book::pandoc::run as pandoc;
-
-fn save_as(book: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
-    use std::ascii::AsciiExt;
-
-    let opts = format!(
-        "--from={markdown_opts} {opts} --output=dist/trpl-{release_date}.{format}",
-        markdown_opts = options::MARKDOWN,
-        opts = opts,
-        release_date = options::RELEASE_DATE,
-        format = format
-    );
-
-    try!(pandoc(&opts, &book));
-
-    println!("[✓] {}", format.to_ascii_uppercase());
-
-    Ok(())
-}
+use convert_book::pandoc::save_as;
 
 fn render_book() -> Result<(), Box<Error>> {
     let book = try!(convert_book::markdown::to_single_file(
@@ -39,9 +21,9 @@ fn render_book() -> Result<(), Box<Error>> {
         &format!(include_str!("book_meta.yml"), release_date = options::RELEASE_DATE)
     ));
 
-    helpers::file::write_string_to_file(&book,
+    try!(helpers::file::write_string_to_file(&book,
         &format!("dist/trpl-{}.md", options::RELEASE_DATE)
-    ).unwrap();
+    ));
     println!("[✓] {}", "MD");
 
     try!(save_as(&book, "html", options::HTML));
