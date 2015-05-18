@@ -4,7 +4,8 @@ use regex::Regex;
 use helpers::*;
 use convert_book::*;
 
-macro_rules! debug {
+/// Poor man's progress indicator
+macro_rules! put {
     ($e:expr) => ({
         {
             use std::io;
@@ -20,8 +21,6 @@ struct Chapter {
     pub file: String,
     pub headline: String,
 }
-
-const MARKDOWN_OPTIONS: &'static str = "markdown+grid_tables+pipe_tables+raw_html+implicit_figures+footnotes+intraword_underscores+auto_identifiers-inline_code_attributes";
 
 fn get_chapters(toc: &str) -> Vec<Chapter> {
     let toc_pattern = Regex::new(r"(?P<indent>\s*?)\* \[(?P<title>.+?)\]\((?P<filename>.+?)\)")
@@ -50,10 +49,10 @@ fn get_chapters(toc: &str) -> Vec<Chapter> {
 }
 
 pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> {
-    debug!("Reading book: ");
+    put!("Reading book: ");
 
     let toc = try!(file::get_file_content(toc_path));
-    debug!(".");
+    put!(".");
 
     let mut book = String::new();
 
@@ -65,12 +64,12 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         let file = try!(file::get_file_content("../src/README.md"));
         let pandoc_options = format!(
             "--from={markdown_options} --to={markdown_options} --base-header-level={header_level} --indented-code-classes=rust --atx-headers",
-            markdown_options = MARKDOWN_OPTIONS, header_level = 1
+            markdown_options = options::MARKDOWN, header_level = 1
         );
         let mut content = try!(pandoc::run(&pandoc_options, &file));
         content = try!(normalize::normalize(&content));
 
-        debug!(".");
+        put!(".");
 
         book.push_str("\n\n");
         book.push_str("# Introduction");
@@ -80,7 +79,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
 
     let pandoc_options = format!(
         "--from={markdown_options} --to={markdown_options} --base-header-level={header_level} --indented-code-classes=rust --atx-headers",
-        markdown_options = MARKDOWN_OPTIONS, header_level = 3
+        markdown_options = options::MARKDOWN, header_level = 3
     );
 
     for chapter in &get_chapters(&toc) {
@@ -90,7 +89,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         let mut content = try!(pandoc::run(&pandoc_options, &file));
         content = try!(normalize::normalize(&content));
 
-        debug!(".");
+        put!(".");
 
         book.push_str("\n\n");
         book.push_str(&chapter.headline);
@@ -98,7 +97,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         book.push_str(&content);
     }
 
-    debug!(" done.\n");
+    put!(" done.\n");
 
     Ok(book)
 }
