@@ -9,6 +9,7 @@ dev = ["clippy"]
 
 [dependencies]
 regex = "0.1"
+regex_macros = "0.1"
 
 [dependencies.clippy]
 git = "https://github.com/Manishearth/rust-clippy.git"

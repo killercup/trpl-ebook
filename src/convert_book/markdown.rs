@@ -1,5 +1,4 @@
 use std::error::Error;
-use regex::Regex;
 
 use helpers::*;
 use convert_book::*;
@@ -23,13 +22,13 @@ struct Chapter {
 }
 
 fn get_chapters(toc: &str) -> Vec<Chapter> {
-    let toc_pattern = Regex::new(
+    let toc_pattern = regex!(
         r"(?P<indent>\s*?)\* \[(?P<title>.+?)\]\((?P<filename>.+?)\)"
-    ).unwrap();
+    );
 
-    let filename_pattern = Regex::new(
+    let filename_pattern = regex!(
         r"^(?P<path>(.*)/)?(?P<name>(.*?))(?P<ext>\.(\w*))?$"
-    ).unwrap();
+    );
 
     toc.lines()
     .filter_map(|l| toc_pattern.captures(l))

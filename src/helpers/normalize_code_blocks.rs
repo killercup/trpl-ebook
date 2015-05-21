@@ -1,5 +1,4 @@
 use std::error::Error;
-use regex::Regex;
 
 use helpers::line_breaks;
 
@@ -27,8 +26,8 @@ pub fn break_code_blocks(input: &str, max_len: usize, sep: &str) -> Result<Strin
 
 
 pub fn normalize_code_start(input: &str) -> Result<String, Box<Error>> {
-    let rust_code_block_start = Regex::new(r"^```(.*)rust(.*)").unwrap();
-    let hidden_code = Regex::new(r"^# ").unwrap();
+    let rust_code_block_start = regex!(r"^```(.*)rust(.*)");
+    let hidden_code = regex!(r"^# ");
 
     let mut in_code_block = false;
 

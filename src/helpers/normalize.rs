@@ -1,10 +1,9 @@
 use std::error::Error;
-use regex::Regex;
 
 use helpers::normalize_code_blocks::*;
 
-pub fn normalize_links(input: &str) -> Result<String, Box<Error>> {
-    let cross_section_link = Regex::new(r"]\(([\w-_]+)\.html\)").unwrap();
+fn normalize_links(input: &str) -> Result<String, Box<Error>> {
+    let cross_section_link = regex!(r"]\(([\w-_]+)\.html\)");
 
     let output = input
     .replace(r"../std", r"http://doc.rust-lang.org/std")

@@ -4,15 +4,24 @@ version = "0.1.0"
 dependencies = [
  "clippy 0.0.4 (git+https://github.com/Manishearth/rust-clippy.git)",
  "regex 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex_macros 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "clippy"
 version = "0.0.4"
-source = "git+https://github.com/Manishearth/rust-clippy.git#7260be49fc8cf2b8f3e09c25cc4db55df4ac5d74"
+source = "git+https://github.com/Manishearth/rust-clippy.git#57a6b93ed016065a09a4e2ef53f0dd5f90a5ba88"
 
 [[package]]
 name = "regex"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "regex_macros"
+version = "0.1.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "regex 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
