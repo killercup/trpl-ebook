@@ -18,8 +18,8 @@ fn list_file_groups(path: &str) -> Result<FileListing, Box<Error>> {
     .filter(|x| x.starts_with("trpl"))
     .map(|name| {
         // Files are name like 'trpl-2015-05-13.a4.pdf'. The first 15 chars
-        // define the release version.
-        let version = name.chars().take(15).collect::<String>();
+        // define the release version, the first 5 are always `trpl-`, though.
+        let version = name.chars().skip(5).take(10).collect::<String>();
         (version, name)
     })
     .collect();
