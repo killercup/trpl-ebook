@@ -66,7 +66,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         // Readme ~ "Getting Started"
         let file = try!(file::get_file_content("../src/README.md"));
         let pandoc_options = format!(
-            "--from={markdown_options} --to={markdown_options} --base-header-level={header_level} --indented-code-classes=rust --atx-headers",
+            "--from={markdown_options} --to={markdown_options} --normalize --base-header-level={header_level} --columns=80 --indented-code-classes=rust --atx-headers",
             markdown_options = options::MARKDOWN, header_level = 1
         );
         let mut content = try!(pandoc::run(&pandoc_options, &file));
@@ -81,7 +81,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
     }
 
     let pandoc_options = format!(
-        "--from={markdown_options} --to={markdown_options} --base-header-level={header_level} --indented-code-classes=rust --atx-headers",
+        "--from={markdown_options} --to={markdown_options} --normalize --base-header-level={header_level} --columns=80 --indented-code-classes=rust --atx-headers",
         markdown_options = options::MARKDOWN, header_level = 3
     );
 

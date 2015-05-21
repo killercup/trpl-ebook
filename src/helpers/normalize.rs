@@ -15,6 +15,11 @@ fn normalize_links(input: &str) -> Result<String, Box<Error>> {
     Ok(cross_section_link.replace_all(&output, r"](#sec--$1)"))
 }
 
+fn normalize_math(input: &str) -> Result<String, Box<Error>> {
+    let superscript = regex!(r"(\d+)<sup>(\d+)</sup>");
+    Ok(superscript.replace_all(&input, r"$1^$2^"))
+}
+
 
 pub fn normalize(input: &str) -> Result<String, Box<Error>> {
     let mut output;
@@ -22,6 +27,7 @@ pub fn normalize(input: &str) -> Result<String, Box<Error>> {
     output = try!(break_code_blocks(&input, 87, "↳ "));
     output = try!(normalize_code_start(&output));
     output = try!(normalize_links(&output));
+    output = try!(normalize_math(&output));
 
     Ok(output)
 }
