@@ -65,6 +65,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         // Readme ~ "Getting Started"
         let file = try!(file::get_file_content("book/README.md"));
         let mut content = try!(adjust_header_level::adjust_header_level(&file, 1));
+        content = try!(remove_file_title::remove_file_title(&content));
         content = try!(adjust_reference_names::adjust_reference_name(&content, "readme"));
         content = try!(normalize::normalize(&content));
 
@@ -81,6 +82,7 @@ pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> 
         let file = try!(file::get_file_content(&path));
 
         let mut content = try!(adjust_header_level::adjust_header_level(&file, 3));
+        content = try!(remove_file_title::remove_file_title(&content));
         content = try!(adjust_reference_names::adjust_reference_name(&content, &chapter.file));
         content = try!(normalize::normalize(&content));
 
