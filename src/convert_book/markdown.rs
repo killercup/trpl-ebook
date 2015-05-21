@@ -52,7 +52,7 @@ fn get_chapters(toc: &str) -> Vec<Chapter> {
 }
 
 pub fn to_single_file(toc_path: &str, meta: &str) -> Result<String, Box<Error>> {
-    put!("Reading book: ");
+    put!("Reading book");
 
     let toc = try!(file::get_file_content(toc_path));
     put!(".");
