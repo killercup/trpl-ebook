@@ -6,42 +6,69 @@
     <meta name="viewport" content="width=device-width"/>
     <style>
         body { max-width: 40em; margin: 6em auto 2em; font-size: 16px; font-family: sans-serif; line-height: 1.3; padding: 0.6em; }
-        article, header, footer, aside { display: block; }
-        li { margin-bottom: 0.5em; }
-        footer { text-align: center; margin-top: 4em; font-size: 0.8em; }
-        aside { position: absolute; top: 0; right: 0; border: 0; }
-        aside img { border: 0; }
+@media screen and (max-width:800px){
+    body { margin-top: 1em;}
+}
+article, header, footer, aside { display: block; }
+li { margin-bottom: 0.5em; }
+footer { text-align: center; margin-top: 4em; font-size: 0.8em; }
+aside { position: absolute; top: 0; right: 0; border: 0; }
+aside img { border: 0; }
+
+/* from https://codepo8.github.io/css-fork-on-github-ribbon/ */
+#forkongithub a{background:#666;color:#fff;text-decoration:none;font-family:arial,sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.2s;}
+#forkongithub a:hover{background:#000;color:#fff;}
+#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}
+#forkongithub a::after{bottom:1px;top:auto;}
+@media screen and (min-width:800px){
+    #forkongithub{position:absolute;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;z-index:9999;}
+    #forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);box-shadow:2px 2px 5px rgba(0,0,0,0.3);}
+}
+
     </style>
 </head>
 <body>
     <article role="main">
         <header>
             <h1>'The Rust Programming Language' E-Books</h1>
+            <span id="forkongithub"><a href="https://github.com/killercup/trpl-ebook">Fork me on GitHub</a></span>
         </header>
         <ul>
             <li>
                 <strong><a href="http://doc.rust-lang.org/book/">The original on rust-lang.org</a></strong>
             </li>
-            <li><h2>2015-05-15</h2><ul><li><a href='trpl-2015-05-15.mobi'> MOBI</a></li>
-<li><a href='trpl-2015-05-15.md'> MD</a></li>
-<li><a href='trpl-2015-05-15.html'> HTML</a></li>
-<li><a href='trpl-2015-05-15.epub'> EPUB</a></li>
+            <li>
+<h2>2015-05-24</h2>
+<ul><li><a href='trpl-2015-05-24.a4.pdf'>A4 PDF</a></li>
+<li><a href='trpl-2015-05-24.epub'>EPUB</a></li>
+<li><a href='trpl-2015-05-24.html'>HTML</a></li>
+<li><a href='trpl-2015-05-24.letter.pdf'>LETTER PDF</a></li>
+<li><a href='trpl-2015-05-24.md'>MD</a></li>
+<li><a href='trpl-2015-05-24.mobi'>MOBI</a></li>
+<li><a href='trpl-2015-05-24.tex'>TEX</a></li>
+</ul>
+</li><li>
+<h2>2015-05-15</h2>
+<ul><li><a href='trpl-2015-05-15-a4.pdf'>A4 PDF</a></li>
 <li><a href='trpl-2015-05-15-letter.pdf'>LETTER PDF</a></li>
-<li><a href='trpl-2015-05-15-a4.pdf'>A4 PDF</a></li></ul></li>
-<li><h2>2015-05-13</h2><ul><li><a href='trpl-2015-05-13.md'> MD</a></li>
-<li><a href='trpl-2015-05-13.html'> HTML</a></li>
-<li><a href='trpl-2015-05-13.epub'> EPUB</a></li>
+<li><a href='trpl-2015-05-15.epub'>EPUB</a></li>
+<li><a href='trpl-2015-05-15.html'>HTML</a></li>
+<li><a href='trpl-2015-05-15.md'>MD</a></li>
+<li><a href='trpl-2015-05-15.mobi'>MOBI</a></li>
+</ul>
+</li><li>
+<h2>2015-05-13</h2>
+<ul><li><a href='trpl-2015-05-13-a4.pdf'>A4 PDF</a></li>
 <li><a href='trpl-2015-05-13-letter.pdf'>LETTER PDF</a></li>
-<li><a href='trpl-2015-05-13-a4.pdf'>A4 PDF</a></li></ul></li>
+<li><a href='trpl-2015-05-13.epub'>EPUB</a></li>
+<li><a href='trpl-2015-05-13.html'>HTML</a></li>
+<li><a href='trpl-2015-05-13.md'>MD</a></li>
+</ul>
+</li>
         </ul>
         <footer>
             Made with ♥︎, too much RegEx and <a href="http://pandoc.org/">Pandoc</a> by <a href="http://pascalhertleif.de/">Pascal Hertleif</a>
         </footer>
     </article>
-    <aside>
-        <a href="https://github.com/killercup/trpl-ebook">
-            <img src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/>
-        </a>
-    </aside>
 </body>
 </html>
