@@ -12,7 +12,7 @@ use convert_book::pandoc::save_as;
 /// Render book in different formats
 pub fn render_book() -> Result<(), Box<Error>> {
     let book = try!(markdown::to_single_file(
-        "../src/SUMMARY.md",
+        "book/SUMMARY.md",
         &format!(include_str!("../book_meta.yml"), release_date = options::RELEASE_DATE)
     ));
 
