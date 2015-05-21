@@ -29,15 +29,15 @@ impl Error for CommandError {
 }
 
 pub fn run(command: &str, args: &str, input: &str) -> Result<String, Box<Error>> {
-    let args: Vec<&str> = if args.len() > 0 {
+    let args: Vec<&str> = if args.is_empty() {
+        vec![]
+    } else {
         // Command arguments are space separated but may contain sub strings in quotation marks
         let mut in_substr = false;
         args.split(|c: char| {
             if c == '\'' { in_substr = !in_substr; }
             !in_substr && (c == ' ')
         }).collect()
-    } else {
-        vec![]
     };
 
     let process = try!(
