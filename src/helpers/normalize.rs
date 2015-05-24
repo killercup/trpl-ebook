@@ -13,8 +13,14 @@ fn normalize_links(input: &str) -> Result<String, Box<Error>> {
     let cross_section_link = regex!(r"]\((?P<file>[\w-_]+)\.html\)");
     output = cross_section_link.replace_all(&output, r"](#sec--$file)");
 
+    let cross_section_ref = regex!(r"(?m)^\[(?P<id>.+)\]:\s(?P<file>.+)\.html$");
+    output = cross_section_ref.replace_all(&output, r"[$id]: #sec--$file");
+
     let cross_subsection_link = regex!(r"]\((?P<file>[\w-_]+)\.html#(?P<subsection>[\w-_]+)\)");
     output = cross_subsection_link.replace_all(&output, r"](#$subsection)");
+
+    let cross_subsection_ref = regex!(r"(?m)^\[(?P<id>.+)\]:\s(?P<file>.+)\.html#(?P<subsection>[\w-_]+)$");
+    output = cross_subsection_ref.replace_all(&output, r"[$id]: #$subsection");
 
     Ok(output)
 }
