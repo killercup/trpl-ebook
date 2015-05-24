@@ -148,7 +148,7 @@ a few tricks up their sleeves.
 For example, they’re [immutable][immutable] by default. That’s why our example
 uses `mut`: it makes a binding mutable, rather than immutable. `let` doesn’t
 take a name on the left hand side, it actually accepts a
-‘[pattern][patterns]’. We’ll use patterns more later. It’s easy enough
+‘[pattern][patterns]’. We’ll use patterns later. It’s easy enough
 to use for now:
 
 ```rust
@@ -637,7 +637,7 @@ When we wrote `let guess = String::new()`, Rust was able to infer that `guess`
 should be a `String`, and so it doesn’t make us write out the type. And with
 our `secret_number`, there are a number of types which can have a value
 between one and a hundred: `i32`, a thirty-two-bit number, or `u32`, an
-unsigned thirty-two-bit number, or `i64`, a sixty-four-bit number. Or others.
+unsigned thirty-two-bit number, or `i64`, a sixty-four-bit number or others.
 So far, that hasn’t mattered, and so Rust defaults to an `i32`. However, here,
 Rust doesn’t know how to compare the `guess` and the `secret_number`. They
 need to be the same type. Ultimately, we want to convert the `String` we
