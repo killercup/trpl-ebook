@@ -71,7 +71,7 @@ code > span.er { font-weight: bold; }
   <li><a href="#complete">Complete!</a></li>
   </ul></li>
   <li><a href="#sec--dining-philosophers">Dining Philosophers</a></li>
-  <li><a href="#sec--rust-inside-other-languages">Rust inside other languages</a><ul>
+  <li><a href="#sec--rust-inside-other-languages">Rust Inside Other Languages</a><ul>
   <li><a href="#the-problem">The problem</a></li>
   <li><a href="#a-rust-library">A Rust library</a></li>
   <li><a href="#ruby">Ruby</a></li>
@@ -1457,20 +1457,20 @@ code > span.er { font-weight: bold; }
   <p>Congrats! You’ve implemented a classic concurrency problem in Rust.</p>
   </section>
   <section id="sec--rust-inside-other-languages" class="level2">
-  <h2>Rust inside other languages</h2>
+  <h2>Rust Inside Other Languages</h2>
   <p>For our third project, we’re going to choose something that shows off one of Rust’s greatest strengths: a lack of a substantial runtime.</p>
-  <p>As organizations grow, they increasingly rely on a multitude of programming languages. Different programming languages have different strengths and weaknesses, and a polyglot stack lets you use a particular language where its strengths make sense, and use a different language where it’s weak.</p>
-  <p>A very common area where many programming languages are weak is in runtime performance of programs. Often, using a language that is slower, but offers greater programmer productivity is a worthwhile trade-off. To help mitigate this, they provide a way to write some of your system in C, and then call the C code as though it were written in the higher-level language. This is called a ‘foreign function interface’, often shortened to ‘FFI’.</p>
-  <p>Rust has support for FFI in both directions: it can call into C code easily, but crucially, it can also be called <em>into</em> as easily as C. Combined with Rust’s lack of a garbage collector and low runtime requirements, this makes Rust a great candidate to embed inside of other languages when you need some extra oomph.</p>
-  <p>There is a whole <a href="#sec--ffi">chapter devoted to FFI</a> and its specifics elsewhere in the book, but in this chapter, we’ll examine this particular use-case of FFI, with three examples, in Ruby, Python, and JavaScript.</p>
+  <p>As organizations grow, they increasingly rely on a multitude of programming languages. Different programming languages have different strengths and weaknesses, and a polyglot stack lets you use a particular language where its strengths make sense and a different one where it’s weak.</p>
+  <p>A very common area where many programming languages are weak is in runtime performance of programs. Often, using a language that is slower, but offers greater programmer productivity, is a worthwhile trade-off. To help mitigate this, they provide a way to write some of your system in C and then call that C code as though it were written in the higher-level language. This is called a ‘foreign function interface’, often shortened to ‘FFI’.</p>
+  <p>Rust has support for FFI in both directions: it can call into C code easily, but crucially, it can also be called <em>into</em> as easily as C. Combined with Rust’s lack of a garbage collector and low runtime requirements, this makes Rust a great candidate to embed inside of other languages when you need that extra oomph.</p>
+  <p>There is a whole <a href="#sec--ffi">chapter devoted to FFI</a> and its specifics elsewhere in the book, but in this chapter, we’ll examine this particular use-case of FFI, with examples in Ruby, Python, and JavaScript.</p>
   <section id="the-problem" class="level3">
   <h3>The problem</h3>
   <p>There are many different projects we could choose here, but we’re going to pick an example where Rust has a clear advantage over many other languages: numeric computing and threading.</p>
   <p>Many languages, for the sake of consistency, place numbers on the heap, rather than on the stack. Especially in languages that focus on object-oriented programming and use garbage collection, heap allocation is the default. Sometimes optimizations can stack allocate particular numbers, but rather than relying on an optimizer to do its job, we may want to ensure that we’re always using primitive number types rather than some sort of object type.</p>
-  <p>Second, many languages have a ‘global interpreter lock’, which limits concurrency in many situations. This is done in the name of safety, which is a positive effect, but it limits the amount of work that can be done at the same time, which is a big negative.</p>
-  <p>To emphasize these two aspects, we’re going to create a little project that uses these two aspects heavily. Since the focus of the example is the embedding of Rust into the languages, rather than the problem itself, we’ll just use a toy example:</p>
+  <p>Second, many languages have a ‘global interpreter lock’ (GIL), which limits concurrency in many situations. This is done in the name of safety, which is a positive effect, but it limits the amount of work that can be done at the same time, which is a big negative.</p>
+  <p>To emphasize these two aspects, we’re going to create a little project that uses these two aspects heavily. Since the focus of the example is to embed Rust into other languages, rather than the problem itself, we’ll just use a toy example:</p>
   <blockquote>
-  <p>Start ten threads. Inside each thread, count from one to five million. After All ten threads are finished, print out ‘done!’.</p>
+  <p>Start ten threads. Inside each thread, count from one to five million. After all ten threads are finished, print out ‘done!’.</p>
   </blockquote>
   <p>I chose five million based on my particular computer. Here’s an example of this code in Ruby:</p>
   <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby">threads = []
@@ -1485,15 +1485,15 @@ code > span.er { font-weight: bold; }
     <span class="kw">end</span>
   <span class="kw">end</span>
   
-  threads.each {|t| t.join }
+  threads.each { |t| t.join }
   puts <span class="st">&quot;done!&quot;</span></code></pre></div>
   <p>Try running this example, and choose a number that runs for a few seconds. Depending on your computer’s hardware, you may have to increase or decrease the number.</p>
   <p>On my system, running this program takes <code>2.156</code> seconds. And, if I use some sort of process monitoring tool, like <code>top</code>, I can see that it only uses one core on my machine. That’s the GIL kicking in.</p>
-  <p>While it’s true that this is a synthetic program, one can imagine many problems that are similar to this in the real world. For our purposes, spinning up some busy threads represents some sort of parallel, expensive computation.</p>
+  <p>While it’s true that this is a synthetic program, one can imagine many problems that are similar to this in the real world. For our purposes, spinning up a few busy threads represents some sort of parallel, expensive computation.</p>
   </section>
   <section id="a-rust-library" class="level3">
   <h3>A Rust library</h3>
-  <p>Let’s re-write this problem in Rust. First, let’s make a new project with Cargo:</p>
+  <p>Let’s rewrite this problem in Rust. First, let’s make a new project with Cargo:</p>
   <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">cargo</span> new embed
   $ <span class="kw">cd</span> embed</code></pre></div>
   <p>This program is fairly easy to write in Rust:</p>
@@ -1522,7 +1522,7 @@ code > span.er { font-weight: bold; }
   <span class="kw">src</span>/lib.rs:<span class="kw">4</span>     let handles: Vec<span class="kw">&lt;</span>_<span class="kw">&gt;</span> = (0..10)<span class="kw">.map</span>(<span class="kw">|_|</span> <span class="kw">{</span>
   <span class="kw">src</span>/lib.rs:<span class="kw">5</span>         thread::spawn(<span class="kw">||</span> <span class="kw">{</span>
   <span class="kw">src</span>/lib.rs:<span class="kw">6</span>             let mut x = 0<span class="kw">;</span>
-  <span class="kw">src</span>/lib.rs:<span class="kw">7</span>             for _ in (0..5_000_001) <span class="kw">{</span>
+  <span class="kw">src</span>/lib.rs:<span class="kw">7</span>             for _ in (0..5_000_000) <span class="kw">{</span>
   <span class="kw">src</span>/lib.rs:<span class="kw">8</span>                 x += 1
                <span class="kw">...</span>
   <span class="kw">src</span>/lib.rs:<span class="kw">6</span>:17: 6:22 warning: variable <span class="kw">`x`</span> is assigned to, but never used, <span class="co">#[warn(unu</span>
@@ -1532,16 +1532,16 @@ code > span.er { font-weight: bold; }
   <p>That first warning is because we are building a library. If we had a test for this function, the warning would go away. But for now, it’s never called.</p>
   <p>The second is related to <code>x</code> versus <code>_x</code>. Because we never actually <em>do</em> anything with <code>x</code>, we get a warning about it. In our case, that’s perfectly okay, as we’re just trying to waste CPU cycles. Prefixing <code>x</code> with the underscore removes the warning.</p>
   <p>Finally, we join on each thread.</p>
-  <p>Right now, however, this is a Rust library, and it doesn’t expose anything that’s callable from C. If we tried to hook this up to another language right now, it wouldn’t work. We only need to make two small changes to fix this, though. The first is modify the beginning of our code:</p>
+  <p>Right now, however, this is a Rust library, and it doesn’t expose anything that’s callable from C. If we tried to hook this up to another language right now, it wouldn’t work. We only need to make two small changes to fix this, though. The first is to modify the beginning of our code:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">#[</span>no_mangle<span class="ot">]</span>
   <span class="kw">pub</span> <span class="kw">extern</span> <span class="kw">fn</span> process() {</code></pre></div>
-  <p>We have to add a new attribute, <code>no_mangle</code>. When you create a Rust library, it changes the name of the function in the compiled output. The reasons for this are outside the scope of this tutorial, but in order for other languages to know how to call the function, we need to not do that. This attribute turns that behavior off.</p>
+  <p>We have to add a new attribute, <code>no_mangle</code>. When you create a Rust library, it changes the name of the function in the compiled output. The reasons for this are outside the scope of this tutorial, but in order for other languages to know how to call the function, we can’t do that. This attribute turns that behavior off.</p>
   <p>The other change is the <code>pub extern</code>. The <code>pub</code> means that this function should be callable from outside of this module, and the <code>extern</code> says that it should be able to be called from C. That’s it! Not a whole lot of change.</p>
   <p>The second thing we need to do is to change a setting in our <code>Cargo.toml</code>. Add this at the bottom:</p>
   <pre class="toml"><code>[lib]
   name = &quot;embed&quot;
   crate-type = [&quot;dylib&quot;]</code></pre>
-  <p>This tells Rust that we want to compile our library into a standard dynamic library. By default, Rust compiles into an ‘rlib’, a Rust-specific format.</p>
+  <p>This tells Rust that we want to compile our library into a standard dynamic library. By default, Rust compiles an ‘rlib’, a Rust-specific format.</p>
   <p>Let’s build the project now:</p>
   <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">cargo</span> build --release
      <span class="kw">Compiling</span> embed v0.1.0 (file:///home/steve/src/embed)</code></pre></div>
@@ -1553,7 +1553,7 @@ code > span.er { font-weight: bold; }
   </section>
   <section id="ruby" class="level3">
   <h3>Ruby</h3>
-  <p>Open up a <code>embed.rb</code> file inside of our project, and do this:</p>
+  <p>Open up an <code>embed.rb</code> file inside of our project, and do this:</p>
   <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby">require <span class="st">'ffi'</span>
   
   <span class="kw">module</span> <span class="dt">Hello</span>
@@ -1564,7 +1564,7 @@ code > span.er { font-weight: bold; }
   
   <span class="dt">Hello</span>.process
   
-  puts <span class="st">&quot;done!&quot;</span></code></pre></div>
+  puts <span class="st">'done!'</span></code></pre></div>
   <p>Before we can run this, we need to install the <code>ffi</code> gem:</p>
   <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">gem</span> install ffi <span class="co"># this may need sudo</span>
   <span class="kw">Fetching</span>: ffi-1.9.8.gem (100%)
@@ -1578,18 +1578,18 @@ code > span.er { font-weight: bold; }
   <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">ruby</span> embed.rb
   <span class="kw">done</span>!
   $</code></pre></div>
-  <p>Whoah, that was fast! On my system, this took <code>0.086</code> seconds, rather than the two seconds the pure Ruby version took. Let’s break down this Ruby code:</p>
+  <p>Whoa, that was fast! On my system, this took <code>0.086</code> seconds, rather than the two seconds the pure Ruby version took. Let’s break down this Ruby code:</p>
   <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby">require <span class="st">'ffi'</span></code></pre></div>
   <p>We first need to require the <code>ffi</code> gem. This lets us interface with our Rust library like a C library.</p>
   <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span class="kw">module</span> <span class="dt">Hello</span>
     extend <span class="dt">FFI</span>::<span class="dt">Library</span>
     ffi_lib <span class="st">'target/release/libembed.so'</span></code></pre></div>
-  <p>The <code>ffi</code> gem’s authors recommend using a module to scope the functions we’ll import from the shared library. Inside, we <code>extend</code> the necessary <code>FFI::Library</code> module, and then call <code>ffi_lib</code> to load up our shared object library. We just pass it the path that our library is stored, which as we saw before, is <code>target/release/libembed.so</code>.</p>
+  <p>The <code>Hello</code> module is used to attach the native functions from the shared library. Inside, we <code>extend</code> the necessary <code>FFI::Library</code> module and then call <code>ffi_lib</code> to load up our shared object library. We just pass it the path that our library is stored, which, as we saw before, is <code>target/release/libembed.so</code>.</p>
   <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby">attach_function <span class="st">:process</span>, [], <span class="st">:void</span></code></pre></div>
   <p>The <code>attach_function</code> method is provided by the FFI gem. It’s what connects our <code>process()</code> function in Rust to a Ruby function of the same name. Since <code>process()</code> takes no arguments, the second parameter is an empty array, and since it returns nothing, we pass <code>:void</code> as the final argument.</p>
   <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span class="dt">Hello</span>.process</code></pre></div>
-  <p>This is the actual call into Rust. The combination of our <code>module</code> and the call to <code>attach_function</code> sets this all up. It looks like a Ruby function, but is actually Rust!</p>
-  <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby">puts <span class="st">&quot;done!&quot;</span></code></pre></div>
+  <p>This is the actual call into Rust. The combination of our <code>module</code> and the call to <code>attach_function</code> sets this all up. It looks like a Ruby function but is actually Rust!</p>
+  <div class="sourceCode"><pre class="sourceCode ruby"><code class="sourceCode ruby">puts <span class="st">'done!'</span></code></pre></div>
   <p>Finally, as per our project’s requirements, we print out <code>done!</code>.</p>
   <p>That’s it! As we’ve seen, bridging between the two languages is really easy, and buys us a lot of performance.</p>
   <p>Next, let’s try Python!</p>
@@ -1616,13 +1616,13 @@ code > span.er { font-weight: bold; }
   <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> ffi = <span class="fu">require</span>(<span class="st">'ffi'</span>);
   
   <span class="kw">var</span> lib = <span class="ot">ffi</span>.<span class="fu">Library</span>(<span class="st">'target/release/libembed'</span>, {
-    <span class="st">'process'</span>: [ <span class="st">'void'</span>, []  ]
+    <span class="st">'process'</span>: [<span class="st">'void'</span>, []]
   });
   
   <span class="ot">lib</span>.<span class="fu">process</span>();
   
   <span class="ot">console</span>.<span class="fu">log</span>(<span class="st">&quot;done!&quot;</span>);</code></pre></div>
-  <p>It looks more like the Ruby example than the Python example. We use the <code>ffi</code> module to get access to <code>ffi.Library()</code>, which loads up our shared object. We need to annotate the return type and argument types of the function, which are ‘void’ for return, and an empty array to signify no arguments. From there, we just call it and print the result.</p>
+  <p>It looks more like the Ruby example than the Python example. We use the <code>ffi</code> module to get access to <code>ffi.Library()</code>, which loads up our shared object. We need to annotate the return type and argument types of the function, which are <code>void</code> for return and an empty array to signify no arguments. From there, we just call it and print the result.</p>
   <p>On my system, this takes a quick <code>0.092</code> seconds.</p>
   </section>
   <section id="conclusion" class="level3">

@@ -2785,8 +2785,8 @@ Michel Foucault is done eating.
 
 Congrats! You've implemented a classic concurrency problem in Rust.
 
-\section{Rust inside other
-languages}\label{sec--rust-inside-other-languages}
+\section{Rust Inside Other
+Languages}\label{sec--rust-inside-other-languages}
 
 For our third project, we're going to choose something that shows off
 one of Rust's greatest strengths: a lack of a substantial runtime.
@@ -2794,14 +2794,14 @@ one of Rust's greatest strengths: a lack of a substantial runtime.
 As organizations grow, they increasingly rely on a multitude of
 programming languages. Different programming languages have different
 strengths and weaknesses, and a polyglot stack lets you use a particular
-language where its strengths make sense, and use a different language
-where it's weak.
+language where its strengths make sense and a different one where it's
+weak.
 
 A very common area where many programming languages are weak is in
 runtime performance of programs. Often, using a language that is slower,
-but offers greater programmer productivity is a worthwhile trade-off. To
-help mitigate this, they provide a way to write some of your system in
-C, and then call the C code as though it were written in the
+but offers greater programmer productivity, is a worthwhile trade-off.
+To help mitigate this, they provide a way to write some of your system
+in C and then call that C code as though it were written in the
 higher-level language. This is called a `foreign function interface',
 often shortened to `FFI'.
 
@@ -2809,11 +2809,11 @@ Rust has support for FFI in both directions: it can call into C code
 easily, but crucially, it can also be called \emph{into} as easily as C.
 Combined with Rust's lack of a garbage collector and low runtime
 requirements, this makes Rust a great candidate to embed inside of other
-languages when you need some extra oomph.
+languages when you need that extra oomph.
 
 There is a whole \hyperref[sec--ffi]{chapter devoted to FFI} and its
 specifics elsewhere in the book, but in this chapter, we'll examine this
-particular use-case of FFI, with three examples, in Ruby, Python, and
+particular use-case of FFI, with examples in Ruby, Python, and
 JavaScript.
 
 \subsection{The problem}\label{the-problem}
@@ -2830,19 +2830,19 @@ numbers, but rather than relying on an optimizer to do its job, we may
 want to ensure that we're always using primitive number types rather
 than some sort of object type.
 
-Second, many languages have a `global interpreter lock', which limits
-concurrency in many situations. This is done in the name of safety,
-which is a positive effect, but it limits the amount of work that can be
-done at the same time, which is a big negative.
+Second, many languages have a `global interpreter lock' (GIL), which
+limits concurrency in many situations. This is done in the name of
+safety, which is a positive effect, but it limits the amount of work
+that can be done at the same time, which is a big negative.
 
 To emphasize these two aspects, we're going to create a little project
 that uses these two aspects heavily. Since the focus of the example is
-the embedding of Rust into the languages, rather than the problem
-itself, we'll just use a toy example:
+to embed Rust into other languages, rather than the problem itself,
+we'll just use a toy example:
 
 \begin{quote}
 Start ten threads. Inside each thread, count from one to five million.
-After All ten threads are finished, print out `done!'.
+After all ten threads are finished, print out `done!'.
 \end{quote}
 
 I chose five million based on my particular computer. Here's an example
@@ -2862,7 +2862,7 @@ of this code in Ruby:
   \KeywordTok{end}
 \KeywordTok{end}
 
-\NormalTok{threads.each \{|t| t.join \}}
+\NormalTok{threads.each \{ |t| t.join \}}
 \NormalTok{puts }\StringTok{"done!"}
 \end{Highlighting}
 \end{Shaded}
@@ -2877,13 +2877,13 @@ that it only uses one core on my machine. That's the GIL kicking in.
 
 While it's true that this is a synthetic program, one can imagine many
 problems that are similar to this in the real world. For our purposes,
-spinning up some busy threads represents some sort of parallel,
+spinning up a few busy threads represents some sort of parallel,
 expensive computation.
 
 \subsection{A Rust library}\label{a-rust-library}
 
-Let's re-write this problem in Rust. First, let's make a new project
-with Cargo:
+Let's rewrite this problem in Rust. First, let's make a new project with
+Cargo:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2930,7 +2930,7 @@ time. Why the underscore? Well, if we remove it and compile:
 \KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{4}     \NormalTok{let handles: Vec}\KeywordTok{<}\NormalTok{_}\KeywordTok{>} \NormalTok{= (0..10)}\KeywordTok{.map}\NormalTok{(}\KeywordTok{|_|} \KeywordTok{\{}
 \KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{5}         \NormalTok{thread::spawn(}\KeywordTok{||} \KeywordTok{\{}
 \KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{6}             \NormalTok{let mut x = 0}\KeywordTok{;}
-\KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{7}             \NormalTok{for _ in (0..5_000_001) }\KeywordTok{\{}
+\KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{7}             \NormalTok{for _ in (0..5_000_000) }\KeywordTok{\{}
 \KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{8}                 \NormalTok{x += 1}
              \KeywordTok{...}
 \KeywordTok{src}\NormalTok{/lib.rs:}\KeywordTok{6}\NormalTok{:17: 6:22 warning: variable }\KeywordTok{`x`} \NormalTok{is assigned to, but never used, }\CommentTok{#[warn(unu}
@@ -2955,7 +2955,7 @@ Finally, we join on each thread.
 Right now, however, this is a Rust library, and it doesn't expose
 anything that's callable from C. If we tried to hook this up to another
 language right now, it wouldn't work. We only need to make two small
-changes to fix this, though. The first is modify the beginning of our
+changes to fix this, though. The first is to modify the beginning of our
 code:
 
 \begin{Shaded}
@@ -2968,8 +2968,8 @@ code:
 We have to add a new attribute, \texttt{no\_mangle}. When you create a
 Rust library, it changes the name of the function in the compiled
 output. The reasons for this are outside the scope of this tutorial, but
-in order for other languages to know how to call the function, we need
-to not do that. This attribute turns that behavior off.
+in order for other languages to know how to call the function, we can't
+do that. This attribute turns that behavior off.
 
 The other change is the \texttt{pub\ extern}. The \texttt{pub} means
 that this function should be callable from outside of this module, and
@@ -2986,8 +2986,8 @@ crate-type = ["dylib"]
 \end{verbatim}
 
 This tells Rust that we want to compile our library into a standard
-dynamic library. By default, Rust compiles into an `rlib', a
-Rust-specific format.
+dynamic library. By default, Rust compiles an `rlib', a Rust-specific
+format.
 
 Let's build the project now:
 
@@ -3018,7 +3018,7 @@ Now that we've got our Rust library built, let's use it from our Ruby.
 
 \subsection{Ruby}\label{ruby}
 
-Open up a \texttt{embed.rb} file inside of our project, and do this:
+Open up an \texttt{embed.rb} file inside of our project, and do this:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3032,7 +3032,7 @@ Open up a \texttt{embed.rb} file inside of our project, and do this:
 
 \DataTypeTok{Hello}\NormalTok{.process}
 
-\NormalTok{puts }\StringTok{"done!"}
+\NormalTok{puts }\StringTok{'done!'}
 \end{Highlighting}
 \end{Shaded}
 
@@ -3061,7 +3061,7 @@ And finally, we can try running it:
 \end{Highlighting}
 \end{Shaded}
 
-Whoah, that was fast! On my system, this took \texttt{0.086} seconds,
+Whoa, that was fast! On my system, this took \texttt{0.086} seconds,
 rather than the two seconds the pure Ruby version took. Let's break down
 this Ruby code:
 
@@ -3082,12 +3082,11 @@ with our Rust library like a C library.
 \end{Highlighting}
 \end{Shaded}
 
-The \texttt{ffi} gem's authors recommend using a module to scope the
-functions we'll import from the shared library. Inside, we
-\texttt{extend} the necessary \texttt{FFI::Library} module, and then
-call \texttt{ffi\_lib} to load up our shared object library. We just
-pass it the path that our library is stored, which as we saw before, is
-\texttt{target/release/libembed.so}.
+The \texttt{Hello} module is used to attach the native functions from
+the shared library. Inside, we \texttt{extend} the necessary
+\texttt{FFI::Library} module and then call \texttt{ffi\_lib} to load up
+our shared object library. We just pass it the path that our library is
+stored, which, as we saw before, is \texttt{target/release/libembed.so}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3109,11 +3108,11 @@ pass \texttt{:void} as the final argument.
 
 This is the actual call into Rust. The combination of our
 \texttt{module} and the call to \texttt{attach\_function} sets this all
-up. It looks like a Ruby function, but is actually Rust!
+up. It looks like a Ruby function but is actually Rust!
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{puts }\StringTok{"done!"}
+\NormalTok{puts }\StringTok{'done!'}
 \end{Highlighting}
 \end{Shaded}
 
@@ -3166,7 +3165,7 @@ After that installs, we can use it:
 \KeywordTok{var} \NormalTok{ffi = }\FunctionTok{require}\NormalTok{(}\StringTok{'ffi'}\NormalTok{);}
 
 \KeywordTok{var} \NormalTok{lib = }\OtherTok{ffi}\NormalTok{.}\FunctionTok{Library}\NormalTok{(}\StringTok{'target/release/libembed'}\NormalTok{, \{}
-  \StringTok{'process'}\NormalTok{: [ }\StringTok{'void'}\NormalTok{, []  ]}
+  \StringTok{'process'}\NormalTok{: [}\StringTok{'void'}\NormalTok{, []]}
 \NormalTok{\});}
 
 \OtherTok{lib}\NormalTok{.}\FunctionTok{process}\NormalTok{();}
@@ -3178,8 +3177,8 @@ After that installs, we can use it:
 It looks more like the Ruby example than the Python example. We use the
 \texttt{ffi} module to get access to \texttt{ffi.Library()}, which loads
 up our shared object. We need to annotate the return type and argument
-types of the function, which are `void' for return, and an empty array
-to signify no arguments. From there, we just call it and print the
+types of the function, which are \texttt{void} for return and an empty
+array to signify no arguments. From there, we just call it and print the
 result.
 
 On my system, this takes a quick \texttt{0.092} seconds.
