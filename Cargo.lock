@@ -10,7 +10,7 @@ dependencies = [
 [[package]]
 name = "clippy"
 version = "0.0.4"
-source = "git+https://github.com/Manishearth/rust-clippy.git#57a6b93ed016065a09a4e2ef53f0dd5f90a5ba88"
+source = "git+https://github.com/Manishearth/rust-clippy.git#62f0fe0cc0504217ffc23b2fb8b69d3bed648be9"
 
 [[package]]
 name = "regex"
