@@ -4,7 +4,7 @@ use regex::Captures;
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
 pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Error>> {
-    let reference_link = regex!(r"\]\[(?P<id>.+)\]");
+    let reference_link = regex!(r"\]\[(?P<id>.+?)\]");
     let reference_def = regex!(r"^\[(?P<id>.+)\]:\s(?P<link>.+)$");
 
     let mut in_code_block = false;
@@ -50,10 +50,10 @@ pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Er
 fn reference_renamer() {
     assert_eq!(
         adjust_reference_name(
-            "Lorem ipsum dolor [sit][amet], consectetur adipisicing elit. Odio provident repellendus temporibus possimus magnam odit neque obcaecati illo, ab tenetur deserunt quae quia? Asperiores a hic, maiores quaerat, autem ea!",
-            "DANGER"
+            "Lorem ipsum [dolor sit][amet], [consectetur adipisicing][elit]. Odio provident repellendus temporibus possimus magnam odit [neque obcaecati][illo], ab tenetur deserunt quae quia? Asperiores a hic, maiores quaerat, autem ea!",
+            "PREFIX"
         ).unwrap(),
-        "Lorem ipsum dolor [sit][DANGER--amet], consectetur adipisicing elit. Odio provident repellendus temporibus possimus magnam odit neque obcaecati illo, ab tenetur deserunt quae quia? Asperiores a hic, maiores quaerat, autem ea!\n"
+        "Lorem ipsum [dolor sit][PREFIX--amet], [consectetur adipisicing][PREFIX--elit]. Odio provident repellendus temporibus possimus magnam odit [neque obcaecati][PREFIX--illo], ab tenetur deserunt quae quia? Asperiores a hic, maiores quaerat, autem ea!\n"
 
     );
 }
