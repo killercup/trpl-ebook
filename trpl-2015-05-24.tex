@@ -441,8 +441,8 @@ trusting that the good people who maintain Rust aren't going to hack
 your computer and do bad things. That's a good instinct! If you're one
 of those people, please check out the documentation on
 \href{https://github.com/rust-lang/rust\#building-from-source}{building
-Rust from Source}, or {[}the official binary downloads{]}{[}install
-page{]}.
+Rust from Source}, or \href{http://www.rust-lang.org/install.html}{the
+official binary downloads}.
 
 Oh, we should also mention the officially supported platforms:
 
@@ -601,8 +601,9 @@ Next up is this line:
 This line does all of the work in our little program. There are a number
 of details that are important here. The first is that it's indented with
 four spaces, not tabs. Please configure your editor of choice to insert
-four spaces with the tab key. We provide some {[}sample configurations
-for various editors{]}{[}configs{]}.
+four spaces with the tab key. We provide some
+\href{https://github.com/rust-lang/rust/tree/master/src/etc/CONFIGS.md}{sample
+configurations for various editors}.
 
 The second point is the \texttt{println!()} part. This is calling a Rust
 \hyperref[sec--macros]{macro}, which is how metaprogramming is done in
@@ -705,9 +706,9 @@ first part of its functionality. Eventually, we'll add more. Since we
 started off by using Cargo, it'll be easy to add later.
 
 If you installed Rust via the official installers you will also have
-Cargo. If you installed Rust some other way, you may want to {[}check
-the Cargo README{]}{[}cargoreadme{]} for specific instructions about
-installing it.
+Cargo. If you installed Rust some other way, you may want to
+\href{https://github.com/rust-lang/cargo\#installing-cargo-from-nightlies}{check
+the Cargo README} for specific instructions about installing it.
 
 \subsubsection{Converting to Cargo}\label{converting-to-cargo}
 
@@ -727,8 +728,8 @@ right place. Let's do that part first:
 Note that since we're creating an executable, we used \texttt{main.rs}.
 If we want to make a library instead, we should use \texttt{lib.rs}.
 Custom file locations for the entry point can be specified with a
-\hyperref[configuring-a-target]{\texttt{{[}{[}lib{]}{]}} or
-\texttt{{[}{[}bin{]}{]}}} key in the TOML file described below.
+\href{http://doc.crates.io/manifest.html\#configuring-a-target}{\texttt{{[}{[}lib{]}{]}}
+or \texttt{{[}{[}bin{]}{]}}} key in the TOML file described below.
 
 Cargo expects your source files to live inside a \texttt{src} directory.
 That leaves the top level for other things, like READMEs, license
@@ -903,9 +904,8 @@ Here's what's in \texttt{src/main.rs}:
 \end{Shaded}
 
 Cargo has generated a ``Hello World!'' for us, and you're ready to start
-coding! Cargo has its own
-\hyperref[sec--http:ux2fux2fdoc.crates.ioux2fguide]{guide} which covers
-Cargo's features in much more depth.
+coding! Cargo has its own \href{http://doc.crates.io/guide.html}{guide}
+which covers Cargo's features in much more depth.
 
 Now that you've got the tools down, let's actually learn more about the
 Rust language itself. These are the basics that will serve you well
@@ -913,10 +913,10 @@ through the rest of your time with Rust.
 
 You have two options: Dive into a project with
 `\hyperref[sec--learn-rust]{Learn Rust}', or start from the bottom and
-work your way up with `{[}Syntax and Semantics{]}{[}syntax{]}'. More
-experienced systems programmers will probably prefer `Learn Rust', while
-those from dynamic backgrounds may enjoy either. Different people learn
-differently! Choose whatever's right for you.
+work your way up with `\hyperref[sec--syntax-and-semantics]{Syntax and
+Semantics}'. More experienced systems programmers will probably prefer
+`Learn Rust', while those from dynamic backgrounds may enjoy either.
+Different people learn differently! Choose whatever's right for you.
 
 \hyperdef{}{sec--learn-rust}{\chapter{Learn
 Rust}\label{sec--learn-rust}}
@@ -1044,9 +1044,8 @@ There's a lot here! Let's go over it, bit by bit.
 We'll need to take user input, and then print the result as output. As
 such, we need the \texttt{io} library from the standard library. Rust
 only imports a few things into every program,
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fpreludeux2findex]{the
-`prelude'}. If it's not in the prelude, you'll have to \texttt{use} it
-directly.
+\href{http://doc.rust-lang.org/std/prelude/index.html}{the `prelude'}.
+If it's not in the prelude, you'll have to \texttt{use} it directly.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1114,7 +1113,7 @@ binding named \texttt{guess}, but we have to look at the other side of
 the \texttt{=} for what it's bound to: \texttt{String::new()}.
 
 \texttt{String} is a string type, provided by the standard library. A
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fstringux2fstruct.String]{\texttt{String}}
+\href{http://doc.rust-lang.org/std/string/struct.String.html}{\texttt{String}}
 is a growable, UTF-8 encoded bit of text.
 
 The \texttt{::new()} syntax uses \texttt{::} because this is an
@@ -1153,7 +1152,7 @@ program? We're now calling an associated function on it. If we didn't
 
 This particular function returns a handle to the standard input for your
 terminal. More specifically, a
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fioux2fstruct.Stdin]{std::io::Stdin}.
+\href{http://doc.rust-lang.org/std/io/struct.Stdin.html}{std::io::Stdin}.
 
 The next part will use this handle to get input from the user:
 
@@ -1214,10 +1213,10 @@ about \texttt{ok()} and \texttt{expect()}? Well, we already mentioned
 that \texttt{read\_line()} puts what the user types into the
 \texttt{\&mut\ String} we pass it. But it also returns a value: in this
 case, an
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fioux2ftype.Result]{\texttt{io::Result}}.
+\href{http://doc.rust-lang.org/std/io/type.Result.html}{\texttt{io::Result}}.
 Rust has a number of types named \texttt{Result} in its standard
 library: a generic
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fresultux2fenum.Result]{\texttt{Result}},
+\href{http://doc.rust-lang.org/std/result/enum.Result.html}{\texttt{Result}},
 and then specific versions for sub-libraries, like \texttt{io::Result}.
 
 The purpose of these \texttt{Result} types is to encode error handling
@@ -1329,8 +1328,7 @@ versions you require. In this case, we've used version \texttt{0.3.0}.
 Cargo understands \href{http://semver.org}{Semantic Versioning}, which
 is a standard for writing version numbers. If we wanted to use the
 latest version we could use \texttt{*} or we could use a range of
-versions.
-\hyperref[sec--http:ux2fux2fdoc.crates.ioux2fcrates-io]{Cargo's
+versions. \href{http://doc.crates.io/crates-io.html}{Cargo's
 documentation} contains more details.
 
 Now, without changing any of our code, let's build our project:
@@ -1412,10 +1410,10 @@ update the \texttt{Cargo.toml} directly. When we do, the next time we
 \texttt{rand} requirements.
 
 There's a lot more to say about \href{http://doc.crates.io}{Cargo} and
-{[}its ecosystem{]}{[}doccratesio{]}, but for now, that's all we need to
-know. Cargo makes it really easy to re-use libraries, and so Rustaceans
-tend to write smaller projects which are assembled out of a number of
-sub-packages.
+\href{http://doc.crates.io/crates-io.html}{its ecosystem}, but for now,
+that's all we need to know. Cargo makes it really easy to re-use
+libraries, and so Rustaceans tend to write smaller projects which are
+assembled out of a number of sub-packages.
 
 Let's get on to actually \emph{using} \texttt{rand}. Here's our next
 step:
@@ -1584,7 +1582,7 @@ With this definition, anything of type \texttt{Foo} can be either a
 indicate the namespace for a particular \texttt{enum} variant.
 
 The
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fcmpux2fenum.Ordering]{\texttt{Ordering}}
+\href{http://doc.rust-lang.org/std/cmp/enum.Ordering.html}{\texttt{Ordering}}
 enum has three possible variants: \texttt{Less}, \texttt{Equal}, and
 \texttt{Greater}. The \texttt{match} statement takes a value of a type,
 and lets you create an `arm' for each possible value. Since we have
@@ -1712,15 +1710,16 @@ This is important, as we had to press the `return' key to satisfy
 return, \texttt{guess} looks like this: \texttt{5\textbackslash{}n}. The
 \texttt{\textbackslash{}n} represents `newline', the enter key.
 \texttt{trim()} gets rid of this, leaving our string with just the
-\texttt{5}. The {[}\texttt{parse()} method on strings{]}{[}parse{]}
-parses a string into some kind of number. Since it can parse a variety
-of numbers, we need to give Rust a hint as to the exact type of number
-we want. Hence, \texttt{let\ guess:\ u32}. The colon (\texttt{:}) after
-\texttt{guess} tells Rust we're going to annotate its type. \texttt{u32}
-is an unsigned, thirty-two bit integer. Rust has
-\hyperref[numeric-types]{a number of built-in number types}, but we've
-chosen \texttt{u32}. It's a good default choice for a small positive
-number.
+\texttt{5}. The
+\href{http://doc.rust-lang.org/std/primitive.str.html\#method.parse}{\texttt{parse()}
+method on strings} parses a string into some kind of number. Since it
+can parse a variety of numbers, we need to give Rust a hint as to the
+exact type of number we want. Hence, \texttt{let\ guess:\ u32}. The
+colon (\texttt{:}) after \texttt{guess} tells Rust we're going to
+annotate its type. \texttt{u32} is an unsigned, thirty-two bit integer.
+Rust has \hyperref[numeric-types]{a number of built-in number types},
+but we've chosen \texttt{u32}. It's a good default choice for a small
+positive number.
 
 Just like \texttt{read\_line()}, our call to \texttt{parse()} could
 cause an error. What if our string contained \texttt{A👍\%}? There'd be
@@ -2694,9 +2693,9 @@ being accessed by someone else, we'll block until it becomes available.
 
 The call to \texttt{lock()} might fail, and if it does, we want to
 crash. In this case, the error that could happen is that the mutex is
-\hyperref[poisoning]{`poisoned'}, which is what happens when the thread
-panics while the lock is held. Since this shouldn't happen, we just use
-\texttt{unwrap()}.
+\href{http://doc.rust-lang.org/std/sync/struct.Mutex.html\#poisoning}{`poisoned'},
+which is what happens when the thread panics while the lock is held.
+Since this shouldn't happen, we just use \texttt{unwrap()}.
 
 One other odd thing about these lines: we've named the results
 \texttt{\_left} and \texttt{\_right}. What's up with that underscore?
@@ -3450,7 +3449,7 @@ keep it alive for longer than a single function's execution. For this,
 we can use the heap.
 
 In Rust, you can allocate memory on the heap with the
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fboxedux2findex]{\texttt{Box\textless{}T\textgreater{}}
+\href{http://doc.rust-lang.org/std/boxed/index.html}{\texttt{Box\textless{}T\textgreater{}}
 type}. Here's an example:
 
 \begin{Shaded}
@@ -3783,7 +3782,7 @@ Address & Name & Value\tabularnewline
 (2\textsuperscript{30}) - 1 & & 5\tabularnewline
 \ldots{} & \ldots{} & \ldots{}\tabularnewline
 12 & g & 100\tabularnewline
-11 & f & 4\tabularnewline
+11 & f & 9\tabularnewline
 10 & e & 9\tabularnewline
 9 & d & (2\textsuperscript{30}) - 1\tabularnewline
 8 & c & 5\tabularnewline
@@ -6877,8 +6876,10 @@ that it is easier to link to.
 
 \section{Borrow and AsRef}\label{sec--borrow-and-asref}
 
-The {[}\texttt{Borrow}{]}{[}borrow{]} and
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fconvertux2ftrait.AsRef]{\texttt{AsRef}}
+The
+\href{http://doc.rust-lang.org/std/borrow/trait.Borrow.html}{\texttt{Borrow}}
+and
+\href{http://doc.rust-lang.org/std/convert/trait.AsRef.html}{\texttt{AsRef}}
 traits are very similar, but different. Here's a quick refresher on what
 these two traits mean.
 
@@ -6888,7 +6889,9 @@ The \texttt{Borrow} trait is used when you're writing a datastructure,
 and you want to use either an owned or borrowed type as synonymous for
 some purpose.
 
-For example, {[}\texttt{HashMap}{]}{[}hashmap{]} has a
+For example,
+\href{http://doc.rust-lang.org/std/collections/struct.HashMap.html}{\texttt{HashMap}}
+has a
 \href{http://doc.rust-lang.org/std/collections/struct.HashMap.html\#method.get}{\texttt{get}
 method} which uses \texttt{Borrow}:
 
@@ -7243,9 +7246,9 @@ more than one.
 When you just use the curly braces, Rust will attempt to display the
 value in a meaningful way by checking out its type. If you want to
 specify the format in a more detailed manner, there are a
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2ffmtux2findex]{wide
-number of options available}. For now, we'll just stick to the default:
-integers aren't very complicated to print.
+\href{http://doc.rust-lang.org/std/fmt/index.html}{wide number of
+options available}. For now, we'll just stick to the default: integers
+aren't very complicated to print.
 
 \section{Functions}\label{sec--functions}
 
@@ -7538,8 +7541,9 @@ values, \texttt{true} and \texttt{false}:
 A common use of booleans is in \hyperref[sec--if]{\texttt{if}
 conditionals}.
 
-You can find more documentation for \texttt{bool}s {[}in the standard
-library documentation{]}{[}bool{]}.
+You can find more documentation for \texttt{bool}s
+\href{http://doc.rust-lang.org/std/primitive.bool.html}{in the standard
+library documentation}.
 
 \subsection{\texorpdfstring{\texttt{char}}{char}}\label{char}
 
@@ -7556,8 +7560,9 @@ create \texttt{char}s with a single tick: (\texttt{\textquotesingle{}})
 Unlike some other languages, this means that Rust's \texttt{char} is not
 a single byte, but four.
 
-You can find more documentation for \texttt{char}s {[}in the standard
-library documentation{]}{[}char{]}.
+You can find more documentation for \texttt{char}s
+\href{http://doc.rust-lang.org/std/primitive.char.html}{in the standard
+library documentation}.
 
 \hyperdef{}{numeric-types}{\subsection{Numeric
 types}\label{numeric-types}}
@@ -7660,8 +7665,8 @@ list of elements of the same type. By default, arrays are immutable.
 \end{Shaded}
 
 Arrays have type \texttt{{[}T;\ N{]}}. We'll talk about this \texttt{T}
-notation {[}in the generics section{]}{[}generics{]}. The \texttt{N} is
-a compile-time constant, for the length of the array.
+notation \hyperref[sec--generics]{in the generics section}. The
+\texttt{N} is a compile-time constant, for the length of the array.
 
 There's a shorthand for initializing each element of an array to the
 same value. In this example, each element of \texttt{a} will be
@@ -7703,8 +7708,9 @@ that is not in the array, you will get an error: array access is
 bounds-checked at run-time. Such errant access is the source of many
 bugs in other systems programming languages.
 
-You can find more documentation for \texttt{array}s {[}in the standard
-library documentation{]}{[}array{]}.
+You can find more documentation for \texttt{array}s
+\href{http://doc.rust-lang.org/std/primitive.array.html}{in the standard
+library documentation}.
 
 \subsection{Slices}\label{slices}
 
@@ -7726,8 +7732,9 @@ mutable or not, and in many ways behave like arrays:
 Slices have type \texttt{\&{[}T{]}}. We'll talk about that \texttt{T}
 when we cover \hyperref[sec--generics]{generics}.
 
-You can find more documentation for slices {[}in the standard library
-documentation{]}{[}slice{]}.
+You can find more documentation for slices
+\href{http://doc.rust-lang.org/std/primitive.slice.html}{in the standard
+library documentation}.
 
 \subsection{\texorpdfstring{\texttt{str}}{str}}\label{str}
 
@@ -7737,8 +7744,9 @@ itself, but becomes useful when placed behind a reference, like
 \hyperref[sec--strings]{\texttt{\&str}}. As such, we'll just leave it at
 that.
 
-You can find more documentation for \texttt{str} {[}in the standard
-library documentation{]}{[}str{]}.
+You can find more documentation for \texttt{str}
+\href{http://doc.rust-lang.org/std/primitive.str.html}{in the standard
+library documentation}.
 
 \hyperdef{}{tuples}{\subsection{Tuples}\label{tuples}}
 
@@ -7829,8 +7837,9 @@ You can also access fields of a tuple with indexing syntax:
 Like array indexing, it starts at zero, but unlike array indexing, it
 uses a \texttt{.}, rather than \texttt{{[}{]}}s.
 
-You can find more documentation for tuples {[}in the standard library
-documentation{]}{[}tuple{]}.
+You can find more documentation for tuples
+\href{http://doc.rust-lang.org/std/primitive.tuple.html}{in the standard
+library documentation}.
 
 \subsection{Functions}\label{functions}
 
@@ -8209,7 +8218,7 @@ freed. For example:
 \end{Shaded}
 
 When \texttt{v} comes into scope, a new
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fvecux2fstruct.Vec]{\texttt{Vec\textless{}T\textgreater{}}}
+\href{http://doc.rust-lang.org/std/vec/struct.Vec.html}{\texttt{Vec\textless{}T\textgreater{}}}
 is created. In this case, the vector also allocates space on
 \hyperref[sec--the-stack-and-the-heap]{the heap}, for the three
 elements. When \texttt{v} goes out of scope at the end of
@@ -9225,7 +9234,7 @@ Mutability}\label{interior-vs.exterior-mutability}
 However, when we say something is `immutable' in Rust, that doesn't mean
 that it's not able to be changed: We mean something has `exterior
 mutability'. Consider, for example,
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fsyncux2fstruct.Arc]{\texttt{Arc\textless{}T\textgreater{}}}:
+\href{http://doc.rust-lang.org/std/sync/struct.Arc.html}{\texttt{Arc\textless{}T\textgreater{}}}:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -9244,8 +9253,8 @@ what gives?
 
 To understand this, we have to go back to the core of Rust's guiding
 philosophy, memory safety, and the mechanism by which Rust guarantees
-it, the {[}ownership{]}{[}ownership{]} system, and more specifically,
-\hyperref[The-Rules]{borrowing}:
+it, the \hyperref[sec--ownership]{ownership} system, and more
+specifically, \hyperref[The-Rules]{borrowing}:
 
 \begin{quote}
 You may have one or the other of these two kinds of borrows, but not
@@ -9268,7 +9277,7 @@ user facing. For this reason, it hands out \texttt{\&T} with
 would be a problem.
 
 Other types, like the ones in the
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fcellux2findex]{\texttt{std::cell}}
+\href{http://doc.rust-lang.org/std/cell/index.html}{\texttt{std::cell}}
 module, have the opposite: interior mutability. For example:
 
 \begin{Shaded}
@@ -9671,9 +9680,8 @@ Each `arm' of the branch is of the form
 \texttt{val\ =\textgreater{}\ expression}. When the value matches, that
 arm's expression will be evaluated. It's called \texttt{match} because
 of the term `pattern matching', which \texttt{match} is an
-implementation of. There's an {[}entire section on
-patterns{]}{[}patterns{]} that covers all the patterns that are possible
-here.
+implementation of. There's an \hyperref[sec--patterns]{entire section on
+patterns} that covers all the patterns that are possible here.
 
 So what's the big advantage? Well, there are a few. First of all,
 \texttt{match} enforces `exhaustiveness checking'. Do you see that last
@@ -9755,10 +9763,10 @@ an abbreviated form of \texttt{match}.
 
 \hyperdef{}{sec--patterns}{\section{Patterns}\label{sec--patterns}}
 
-Patterns are quite common in Rust. We use them in {[}variable
-bindings{]}{[}bindings{]}, \hyperref[sec--match]{match statements}, and
-other places, too. Let's go on a whirlwind tour of all of the things
-patterns can do!
+Patterns are quite common in Rust. We use them in
+\hyperref[sec--variable-bindings]{variable bindings},
+\hyperref[sec--match]{match statements}, and other places, too. Let's go
+on a whirlwind tour of all of the things patterns can do!
 
 A quick refresher: you can match against literals directly, and
 \texttt{\_} acts as an `any' case:
@@ -10020,7 +10028,7 @@ You can do this kind of match on any member, not just the first:
 This prints \texttt{y\ is\ 0}.
 
 This `destructuring' behavior works on any compound data type, like
-{[}tuples{]}{[}tuples{]} or \hyperref[sec--enums]{enums}.
+\hyperref[tuples]{tuples} or \hyperref[sec--enums]{enums}.
 
 \subsection{Mix and Match}\label{mix-and-match}
 
@@ -10291,11 +10299,11 @@ to enforce our concerns: we can use the methods on
 \texttt{CircleBuilder} to constrain making \texttt{Circle}s in any way
 we choose.
 
-\section{Vectors}\label{sec--vectors}
+\hyperdef{}{sec--vectors}{\section{Vectors}\label{sec--vectors}}
 
 A `vector' is a dynamic or `growable' array, implemented as the standard
 library type
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fvecux2findex]{\texttt{Vec\textless{}T\textgreater{}}}.
+\href{http://doc.rust-lang.org/std/vec/index.html}{\texttt{Vec\textless{}T\textgreater{}}}.
 The \texttt{T} means that we can have vectors of any type (see the
 chapter on \hyperref[sec--generics]{generics} for more). Vectors always
 allocate their data on the heap. You can create them with the
@@ -10360,7 +10368,8 @@ Once you have a vector, you can iterate through its elements with
 \end{Shaded}
 
 Vectors have many more useful methods, which you can read about in
-{[}their API documentation{]}{[}vec{]}.
+\href{http://doc.rust-lang.org/std/vec/index.html}{their API
+documentation}.
 
 \hyperdef{}{sec--strings}{\section{Strings}\label{sec--strings}}
 
@@ -10674,7 +10683,7 @@ type declaration, too.
 \hyperdef{}{sec--traits}{\section{Traits}\label{sec--traits}}
 
 Do you remember the \texttt{impl} keyword, used to call a function with
-{[}method syntax{]}{[}methodsyntax{]}?
+\hyperref[sec--method-syntax]{method syntax}?
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -10861,7 +10870,7 @@ This may seem like the Wild West, but there are two other restrictions
 around implementing traits that prevent this from getting out of hand.
 The first is that if the trait isn't defined in your scope, it doesn't
 apply. Here's an example: the standard library provides a
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fioux2ftrait.Write]{\texttt{Write}}
+\href{http://doc.rust-lang.org/std/io/trait.Write.html}{\texttt{Write}}
 trait which adds extra functionality to \texttt{File}s, for doing file
 I/O. By default, a \texttt{File} won't have its methods:
 
@@ -11123,7 +11132,7 @@ error: the trait `main::Foo` is not implemented for the type `main::Baz` [E0277]
 
 Now that we've discussed traits, let's talk about a particular trait
 provided by the Rust standard library,
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fopsux2ftrait.Drop]{\texttt{Drop}}.
+\href{http://doc.rust-lang.org/std/ops/trait.Drop.html}{\texttt{Drop}}.
 The \texttt{Drop} trait provides a way to run some code when a value
 goes out of scope. For example:
 
@@ -11187,7 +11196,7 @@ afterwards. Last in, first out.
 So what is \texttt{Drop} good for? Generally, \texttt{Drop} is used to
 clean up any resources associated with a \texttt{struct}. For example,
 the
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fsyncux2fstruct.Arc]{\texttt{Arc\textless{}T\textgreater{}}
+\href{http://doc.rust-lang.org/std/sync/struct.Arc.html}{\texttt{Arc\textless{}T\textgreater{}}
 type} is a reference-counted type. When \texttt{Drop} is called, it will
 decrement the reference count, and if the total number of references is
 zero, will clean up the underlying value.
@@ -11476,7 +11485,7 @@ messages and surprising behaviors to discover.
 Let's start simple, with the runtime representation of a trait object.
 The \texttt{std::raw} module contains structs with layouts that are the
 same as the complicated built-in types,
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2frawux2fstruct.TraitObject]{including
+\href{http://doc.rust-lang.org/std/raw/struct.TraitObject.html}{including
 trait objects}:
 
 \begin{Shaded}
@@ -11842,8 +11851,8 @@ closures are no different.
 Rust's implementation of closures is a bit different than other
 languages. They are effectively syntax sugar for traits. You'll want to
 make sure to have read the \hyperref[sec--traits]{traits chapter} before
-this one, as well as the chapter on {[}trait
-objects{]}{[}trait-objects{]}.
+this one, as well as the chapter on \hyperref[sec--trait-objects]{trait
+objects}.
 
 Got all that? Good.
 
@@ -13064,9 +13073,10 @@ Or even keys and values:
 \end{Shaded}
 
 Rust attributes are used for a number of different things. There is a
-full list of attributes \hyperref[attributes]{in the reference}.
-Currently, you are not allowed to create your own attributes, the Rust
-compiler defines them.
+full list of attributes
+\href{http://doc.rust-lang.org/reference.html\#attributes}{in the
+reference}. Currently, you are not allowed to create your own
+attributes, the Rust compiler defines them.
 
 \section{\texorpdfstring{\texttt{type}
 aliases}{type aliases}}\label{sec--type-aliases}
@@ -13154,7 +13164,7 @@ always has a \texttt{ConcreteError} for the \texttt{E} part of
 \texttt{Result\textless{}T,\ E\textgreater{}}. This is commonly used in
 the standard library to create custom errors for each subsection. For
 example,
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fioux2ftype.Result]{io::Result}.
+\href{http://doc.rust-lang.org/std/io/type.Result.html}{io::Result}.
 
 \section{Casting between types}\label{sec--casting-between-types}
 
@@ -13566,12 +13576,12 @@ since we've implemented
 
 There are a number of operators that can be overloaded this way, and all
 of their associated traits live in the
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fopsux2findex]{\texttt{std::ops}}
+\href{http://doc.rust-lang.org/std/ops/index.html}{\texttt{std::ops}}
 module. Check out its documentation for the full list.
 
 Implementing these traits follows a pattern. Let's look at
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fopsux2ftrait.Add]{\texttt{Add}}
-in more detail:
+\href{http://doc.rust-lang.org/std/ops/trait.Add.html}{\texttt{Add}} in
+more detail:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -13614,7 +13624,7 @@ will let you do this:
 coercions}\label{sec--deref-coercions}}
 
 The standard library provides a special trait,
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fopsux2ftrait.Deref]{\texttt{Deref}}.
+\href{http://doc.rust-lang.org/std/ops/trait.Deref.html}{\texttt{Deref}}.
 It's normally used to overload \texttt{*}, the dereference operator:
 
 \begin{Shaded}
@@ -13788,7 +13798,7 @@ keep this tradeoff in mind.
 \subsection{Defining a macro}\label{defining-a-macro}
 
 You may have seen the \texttt{vec!} macro, used to initialize a
-{[}vector{]}{[}{]} with any number of elements.
+\hyperref[sec--vectors]{vector} with any number of elements.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -14131,7 +14141,8 @@ tagged with the right syntax context.
 \end{Shaded}
 
 This holds for \texttt{let} bindings and loop labels, but not for
-{[}items{]}{[}{]}. So the following code does compile:
+\href{http://doc.rust-lang.org/reference.html\#items}{items}. So the
+following code does compile:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -14289,7 +14300,8 @@ identifying which syntactic form it matches.
   \texttt{block}: a brace-delimited sequence of statements. Example:
   \texttt{\{\ log(error,\ "hi");\ return\ 12;\ \}}.
 \item
-  \texttt{item}: an {[}item{]}{[}{]}. Examples:
+  \texttt{item}: an
+  \href{http://doc.rust-lang.org/reference.html\#items}{item}. Examples:
   \texttt{fn\ foo()\ \{\ \}}; \texttt{struct\ Bar;}.
 \item
   \texttt{meta}: a ``meta item'', as found in attributes. Example:
@@ -14733,8 +14745,8 @@ it's not pointing somewhere that would be incorrect. As such, you need
 \end{Shaded}
 
 For more operations on raw pointers, see
-\hyperref[sec--http:ux2fux2fdoc.rust-lang.orgux2fstdux2fprimitive.pointer]{their
-API documentation}.
+\href{http://doc.rust-lang.org/std/primitive.pointer.html}{their API
+documentation}.
 
 \subsection{FFI}\label{ffi}
 
@@ -14838,14 +14850,18 @@ Okay, let's try again: what is not safe to do? Here's a list:
 \item
   Dereferencing a null/dangling raw pointer
 \item
-  Reads of \hyperref[undefined-values]{undef} (uninitialized) memory
+  Reads of
+  \href{http://llvm.org/docs/LangRef.html\#undefined-values}{undef}
+  (uninitialized) memory
 \item
-  Breaking the \hyperref[pointer-aliasing-rules]{pointer aliasing rules}
-  with raw pointers.
+  Breaking the
+  \href{http://llvm.org/docs/LangRef.html\#pointer-aliasing-rules}{pointer
+  aliasing rules} with raw pointers.
 \item
   \texttt{\&mut\ T} and \texttt{\&T} follow LLVM's scoped
-  \hyperref[noalias]{noalias} model, except if the \texttt{\&T} contains
-  an \texttt{UnsafeCell\textless{}U\textgreater{}}. Unsafe code must not
+  \href{http://llvm.org/docs/LangRef.html\#noalias}{noalias} model,
+  except if the \texttt{\&T} contains an
+  \texttt{UnsafeCell\textless{}U\textgreater{}}. Unsafe code must not
   violate these aliasing guarantees.
 \item
   Mutating an immutable value/reference without
@@ -14951,9 +14967,9 @@ dangerous things you can do. For more on raw pointers, see
 This last ability works with both aspects of \texttt{unsafe}: you can
 only call functions marked \texttt{unsafe} from inside an unsafe block.
 
-This ability is powerful and varied. Rust exposes some {[}compiler
-intrinsics{]}{[}intrinsics{]} as unsafe functions, and some unsafe
-functions bypass safety checks, trading safety for speed.
+This ability is powerful and varied. Rust exposes some
+\hyperref[sec--intrinsics]{compiler intrinsics} as unsafe functions, and
+some unsafe functions bypass safety checks, trading safety for speed.
 
 I'll repeat again: even though you \emph{can} do arbitrary things in
 unsafe blocks and functions doesn't mean you should. The compiler will
@@ -14965,8 +14981,8 @@ Rust}\label{sec--nightly-rust}}
 Rust provides three distribution channels for Rust: nightly, beta, and
 stable. Unstable features are only available on nightly Rust. For more
 details on this process, see
-`\hyperref[sec--http:ux2fux2fblog.rust-lang.orgux2f2014ux2f10ux2f30ux2fStability]{Stability
-as a deliverable}'.
+`\href{http://blog.rust-lang.org/2014/10/30/Stability.html}{Stability as
+a deliverable}'.
 
 To install nightly Rust, you can use \texttt{rustup.sh}:
 
@@ -15016,8 +15032,8 @@ trusting that the good people who maintain Rust aren't going to hack
 your computer and do bad things. That's a good instinct! If you're one
 of those people, please check out the documentation on
 \href{https://github.com/rust-lang/rust\#building-from-source}{building
-Rust from Source}, or {[}the official binary downloads{]}{[}install
-page{]}.
+Rust from Source}, or \href{http://www.rust-lang.org/install.html}{the
+official binary downloads}.
 
 Oh, we should also mention the officially supported platforms:
 
@@ -15072,8 +15088,9 @@ irc.mozilla.org}, which you can access through
 \href{http://chat.mibbit.com/?server=irc.mozilla.org\&channel=\%23rust}{Mibbit}.
 Click that link, and you'll be chatting with other Rustaceans (a silly
 nickname we call ourselves), and we can help you out. Other great
-resources include {[}the user's forum{]}{[}users{]}, and
-\href{http://stackoverflow.com/questions/tagged/rust}{Stack Overflow}.
+resources include \href{http://users.rust-lang.org/}{the user's forum},
+and \href{http://stackoverflow.com/questions/tagged/rust}{Stack
+Overflow}.
 
 \hyperdef{}{sec--compiler-plugins}{\section{Compiler
 Plugins}\label{sec--compiler-plugins}}
