@@ -16,8 +16,8 @@ macro_rules! put {
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 struct Chapter {
-    pub file: String,
-    pub headline: String,
+    file: String,
+    headline: String,
 }
 
 fn get_chapters(toc: &str) -> Vec<Chapter> {
