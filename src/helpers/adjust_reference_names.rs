@@ -4,7 +4,7 @@ use regex::Captures;
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
 pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Error>> {
-    let reference_link = regex!(r"\[(?P<title>.+)\]\[(?P<id>.+)\]");
+    let reference_link = regex!(r"\]\[(?P<id>.+)\]");
     let reference_def = regex!(r"^\[(?P<id>.+)\]:\s(?P<link>.+)$");
 
     let mut in_code_block = false;
@@ -23,8 +23,7 @@ pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Er
 
         if reference_link.is_match(line) {
             let new_line = reference_link.replace_all(line, |matches: &Captures| {
-                format!("[{title}][{prefix}--{id}]",
-                    title = matches.name("title").expect("no title in ref link"),
+                format!("][{prefix}--{id}]",
                     prefix = prefix,
                     id = matches.name("id").expect("no id in ref link")
                 )
