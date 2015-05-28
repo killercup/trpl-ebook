@@ -3,25 +3,33 @@ name = "compile-trpl"
 version = "0.1.0"
 dependencies = [
  "clippy 0.0.4 (git+https://github.com/Manishearth/rust-clippy.git)",
- "regex 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex_macros 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.32 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex_macros 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "clippy"
 version = "0.0.4"
-source = "git+https://github.com/Manishearth/rust-clippy.git#62f0fe0cc0504217ffc23b2fb8b69d3bed648be9"
+source = "git+https://github.com/Manishearth/rust-clippy.git#eb421ca2021065a5c0bbaa2202ebb6c85c3dde79"
 
 [[package]]
 name = "regex"
-version = "0.1.30"
+version = "0.1.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "regex-syntax 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "regex_macros"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "regex 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.32 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

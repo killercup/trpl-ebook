@@ -21,13 +21,24 @@ struct Chapter {
 }
 
 fn get_chapters(toc: &str) -> Vec<Chapter> {
-    let toc_pattern = regex!(
-        r"(?P<indent>\s*?)\* \[(?P<title>.+?)\]\((?P<filename>.+?)\)"
-    );
+    let toc_pattern = regex!(r"(?x)
+        (?P<indent>\s*?)
+        \*\s
+        \[
+        (?P<title>.+?)
+        \]
+        \(
+        (?P<filename>.+?)
+        \)
+    ");
 
-    let filename_pattern = regex!(
-        r"^(?P<path>(.*)/)?(?P<name>(.*?))(?P<ext>\.(\w*))?$"
-    );
+    let filename_pattern = regex!(r"(?x)
+        ^
+        (?P<path>(.*)/)?
+        (?P<name>(.*?))
+        (?P<ext>\.(\w*))?
+        $
+    ");
 
     toc.lines()
     .filter_map(|l| toc_pattern.captures(l))

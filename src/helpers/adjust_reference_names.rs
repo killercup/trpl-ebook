@@ -4,8 +4,20 @@ use regex::Captures;
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
 pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Error>> {
-    let reference_link = regex!(r"\]\[(?P<id>.+?)\]");
-    let reference_def = regex!(r"^\[(?P<id>.+)\]:\s(?P<link>.+)$");
+    let reference_link = regex!(r"(?x)
+        \]\[                # This is a link to a reference
+        (?P<id>.+?)         # The reference name
+        \]
+    ");
+    let reference_def = regex!(r"(?x)
+        ^
+        \[
+        (?P<id>.+)          # The reference name
+        \]
+        :\s
+        (?P<link>.+)        # The link url (and maybe the title)
+        $
+    ");
 
     let mut in_code_block = false;
 

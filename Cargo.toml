@@ -8,8 +8,8 @@ default = []
 dev = ["clippy"]
 
 [dependencies]
-regex = "0.1"
-regex_macros = "0.1"
+regex = "0.1.32"
+regex_macros = "0.1.19"
 
 [dependencies.clippy]
 git = "https://github.com/Manishearth/rust-clippy.git"
