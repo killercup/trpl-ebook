@@ -2009,7 +2009,7 @@ code > span.er { font-weight: bold; }
   </tbody>
   </table>
   <p>In this case, we’ve allocated four things on the heap, but deallocated two of them. There’s a gap between 2<sup>30</sup> and (2<sup>30</sup>) - 3 which isn’t currently being used. The specific details of how and why this happens depends on what kind of strategy you use to manage the heap. Different programs can use different ‘memory allocators’, which are libraries that manage this for you. Rust programs use <a href="http://www.canonware.com/jemalloc/">jemalloc</a> for this purpose.</p>
-  <p>Anyway, back to our example. Since this memory is on the heap, it can stay alive longer than the function which allocates the box. In this case, however, it doesn’t.[^moving] When the function is over, we need to free the stack frame for <code>main()</code>. <code>Box&lt;T&gt;</code>, though, has a trick up its sleeve: <a href="#sec--drop">Drop</a>. The implementation of <code>Drop</code> for <code>Box</code> deallocates the memory that was allocated when it was created. Great! So when <code>x</code> goes away, it first frees the memory allocated on the heap:</p>
+  <p>Anyway, back to our example. Since this memory is on the heap, it can stay alive longer than the function which allocates the box. In this case, however, it doesn’t.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> When the function is over, we need to free the stack frame for <code>main()</code>. <code>Box&lt;T&gt;</code>, though, has a trick up its sleeve: <a href="#sec--drop">Drop</a>. The implementation of <code>Drop</code> for <code>Box</code> deallocates the memory that was allocated when it was created. Great! So when <code>x</code> goes away, it first frees the memory allocated on the heap:</p>
   <table>
   <thead>
   <tr class="header">
@@ -2031,8 +2031,6 @@ code > span.er { font-weight: bold; }
   </tr>
   </tbody>
   </table>
-  <pre><code>       sometimes called ‘moving out of the box’. More complex examples will
-         be covered later.</code></pre>
   <p>And then the stack frame goes away, freeing all of our memory.</p>
   </section>
   <section id="arguments-and-borrowing" class="level3">
@@ -3004,7 +3002,7 @@ code > span.er { font-weight: bold; }
   <span class="ot">#[</span>cfg<span class="ot">(</span>not<span class="ot">(</span>foo<span class="ot">))]</span></code></pre></div>
   <p>These can nest arbitrarily:</p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">#[</span>cfg<span class="ot">(</span>any<span class="ot">(</span>not<span class="ot">(</span>unix<span class="ot">),</span> all<span class="ot">(</span>target_os<span class="ot">=</span><span class="st">&quot;macos&quot;</span><span class="ot">,</span> target_arch <span class="ot">=</span> <span class="st">&quot;powerpc&quot;</span><span class="ot">)))]</span></code></pre></div>
-  <p>As for how to enable or disable these switches, if you’re using Cargo, they get set in the <a href="http://doc.crates.io/manifest.html#the-[features]-section"><code>[features]</code> section</a> of your <code>Cargo.toml</code>:</p>
+  <p>As for how to enable or disable these switches, if you’re using Cargo, they get set in the <a href="http://doc.crates.io/manifest.html#the-%5Bfeatures%5D-section"><code>[features]</code> section</a> of your <code>Cargo.toml</code>:</p>
   <pre class="toml"><code>[features]
   # no features by default
   default = []
@@ -7527,8 +7525,7 @@ code > span.er { font-weight: bold; }
       temp_vec.push(<span class="dv">3</span>);
       temp_vec
   };</code></pre></div>
-  <p>We can implement this shorthand, using a macro: [^actual]</p>
-  <pre><code>       one presented here, for reasons of efficiency and reusability.</code></pre>
+  <p>We can implement this shorthand, using a macro: <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
   <div class="sourceCode"><pre class="sourceCode rust"><code class="sourceCode rust"><span class="ot">macro_rules!</span> vec {
       ( $( $x:expr ),* ) =&gt; {
           {
@@ -8864,6 +8861,13 @@ code > span.er { font-weight: bold; }
   <li><a href="https://www.usenix.org/conference/hotpar12/parallel-closures-new-twist-old-idea">Parallel closures: a new twist on an old idea</a> - not exactly about rust, but by nmatsakis</li>
   </ul>
   </section>
+  </section>
+  <section class="footnotes">
+  <hr />
+  <ol>
+  <li id="fn1"><p>We can make the memory live longer by transferring ownership, sometimes called ‘moving out of the box’. More complex examples will be covered later.<a href="#fnref1">↩</a></p></li>
+  <li id="fn2"><p>The actual definition of <code>vec!</code> in libcollections differs from the one presented here, for reasons of efficiency and reusability.<a href="#fnref2">↩</a></p></li>
+  </ol>
   </section>
 </article>
 
