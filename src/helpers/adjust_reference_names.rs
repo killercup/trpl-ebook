@@ -9,9 +9,18 @@ pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Er
         (?P<id>.+?)         # The reference name
         \]
     ");
+
+    let footnote = regex!(r"(?x)
+        \[                  # This is a link to a reference
+        \^                  # Link to footnote begins with `^`
+        (?P<id>.+?)         # The reference name
+        \]
+    ");
+
     let reference_def = regex!(r"(?x)
         ^
         \[
+        (?P<footnote>\^)?   # Footnote definition begins with `^`
         (?P<id>.+)          # The reference name
         \]
         :\s
@@ -43,11 +52,22 @@ pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Er
             return initial + &new_line + "\n";
         }
 
-        if let Some(def) = reference_def.captures(line) {
-            let new_line = format!("[{prefix}--{id}]: {link}",
+        if footnote.is_match(line) {
+            let new_line = footnote.replace_all(line, |matches: &Captures| {
+                format!("[^{prefix}--{id}]",
+                    prefix = prefix,
+                    id = matches.name("id").expect("no id in ref link")
+                )
+            });
+            return initial + &new_line + "\n";
+        }
+
+        if let Some(matches) = reference_def.captures(line) {
+            let new_line = format!("[{footnote}{prefix}--{id}]: {link}",
+                footnote = matches.name("footnote").unwrap_or(""),
                 prefix = prefix,
-                id = def.name("id").expect("no id in ref def"),
-                link = def.name("link").expect("no ink in ref def")
+                id = matches.name("id").expect("no id in ref def"),
+                link = matches.name("link").expect("no ink in ref def")
             );
             return initial + &new_line + "\n";
         }
