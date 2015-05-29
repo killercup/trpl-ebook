@@ -154,6 +154,31 @@ match x {
 
 This prints `Got an int!`.
 
+If you’re using `if` with multiple patterns, the `if` applies to both sides:
+
+```rust
+let x = 4;
+let y = false;
+
+match x {
+    4 | 5 if y => println!("yes"),
+    _ => println!("no"),
+}
+```
+
+This prints `no`, because the `if` applies to the whole of `4 | 5`, and not to
+just the `5`, In other words, the the precedence of `if` behaves like this:
+
+```text
+(4 | 5) if y => ...
+```
+
+not this:
+
+```text
+4 | (5 if y) => ...
+```
+
 # ref and ref mut
 
 If you want to get a [reference][ref], use the `ref` keyword:
@@ -196,11 +221,26 @@ struct Point {
 let origin = Point { x: 0, y: 0 };
 
 match origin {
-    Point { x: x, y: y } => println!("({},{})", x, y),
+    Point { x, y } => println!("({},{})", x, y),
 }
 ```
 
 [struct]: structs.html
+
+We can use `:` to give a value a different name.
+
+```rust
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+let origin = Point { x: 0, y: 0 };
+
+match origin {
+    Point { x: x1, y: y1 } => println!("({},{})", x1, y1),
+}
+```
 
 If we only care about some of the values, we don’t have to give them all names:
 
@@ -213,7 +253,7 @@ struct Point {
 let origin = Point { x: 0, y: 0 };
 
 match origin {
-    Point { x: x, .. } => println!("x is {}", x),
+    Point { x, .. } => println!("x is {}", x),
 }
 ```
 
@@ -230,7 +270,7 @@ struct Point {
 let origin = Point { x: 0, y: 0 };
 
 match origin {
-    Point { y: y, .. } => println!("y is {}", y),
+    Point { y, .. } => println!("y is {}", y),
 }
 ```
 

@@ -49,6 +49,20 @@ fn main() {
 }
 ```
 
+This coercion does not happen for functions that accept one of `&str`’s traits
+instead of `&str`. For example, [`TcpStream::connect`][connect] has a parameter
+of type `ToSocketAddrs`. A `&str` is okay but a `String` must be explicitly
+converted using `&*`.
+
+```rust,no_run
+use std::net::TcpStream;
+
+TcpStream::connect("192.168.0.1:3000"); // &str parameter
+
+let addr_string = "192.168.0.1:3000".to_string();
+TcpStream::connect(&*addr_string); // convert addr_string to &str
+```
+
 Viewing a `String` as a `&str` is cheap, but converting the `&str` to a
 `String` involves allocating memory. No reason to do that unless you have to!
 
@@ -103,6 +117,30 @@ let dog = hachiko.chars().nth(1); // kinda like hachiko[1]
 
 This emphasizes that we have to go through the whole list of `chars`.
 
+## Slicing
+
+You can get a slice of a string with slicing syntax:
+
+```rust
+let dog = "hachiko";
+let hachi = &dog[0..5];
+```
+
+But note that these are _byte_ offsets, not _character_ offsets. So
+this will fail at runtime:
+
+```rust,should_panic
+let dog = "忠犬ハチ公";
+let hachi = &dog[0..2];
+```
+
+with this error:
+
+```text
+thread '<main>' panicked at 'index 0 and/or 2 in `忠犬ハチ公` do not lie on
+character boundary'
+```
+
 ## Concatenation
 
 If you have a `String`, you can concatenate a `&str` to the end of it:
@@ -127,3 +165,4 @@ This is because `&String` can automatically coerce to a `&str`. This is a
 feature called ‘[`Deref` coercions][dc]’.
 
 [dc]: deref-coercions.html
+[connect]: ../std/net/struct.TcpStream.html#method.connect

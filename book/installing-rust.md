@@ -2,8 +2,12 @@
 
 The first step to using Rust is to install it! There are a number of ways to
 install Rust, but the easiest is to use the `rustup` script. If you're on Linux
-or a Mac, all you need to do is this (note that you don't need to type in the
-`$`s, they just indicate the start of each command):
+or a Mac, all you need to do is this: 
+
+> Note: you don't need to type in the `$`s, they just indicate the start of
+> each command. You’ll see many tutorials and examples around the web that
+> follow this convention: `$` for commands run as your regular user, and
+> `#` for commands you should be running as an administrator.
 
 ```bash
 $ curl -sf -L https://static.rust-lang.org/rustup.sh | sh
@@ -20,11 +24,9 @@ $ sh rustup.sh
 
 [insecurity]: http://curlpipesh.tumblr.com
 
-If you're on Windows, please download either the [32-bit installer][win32] or
-the [64-bit installer][win64] and run it.
+If you're on Windows, please download the appropriate [installer][install-page].
 
-[win32]: https://static.rust-lang.org/dist/rust-1.0.0-i686-pc-windows-gnu.msi
-[win64]: https://static.rust-lang.org/dist/rust-1.0.0-x86_64-pc-windows-gnu.msi
+[install-page]: http://www.rust-lang.org/install.html
 
 ## Uninstalling
 
@@ -39,6 +41,8 @@ $ sudo /usr/local/lib/rustlib/uninstall.sh
 If you used the Windows installer, just re-run the `.msi` and it will give you
 an uninstall option.
 
+## That disclaimer we promised
+
 Some people, and somewhat rightfully so, get very upset when we tell you to
 `curl | sh`. Basically, when you do this, you are trusting that the good
 people who maintain Rust aren't going to hack your computer and do bad things.
@@ -47,7 +51,8 @@ documentation on [building Rust from Source][from-source], or [the official
 binary downloads][install-page].
 
 [from-source]: https://github.com/rust-lang/rust#building-from-source
-[install-page]: http://www.rust-lang.org/install.html
+
+## Platform support
 
 Oh, we should also mention the officially supported platforms:
 
@@ -65,16 +70,19 @@ integrated as the Linux/OS X experience is. We're working on it! If anything
 does not work, it is a bug. Please let us know if that happens. Each and every
 commit is tested against Windows just like any other platform.
 
+## After installation
+
 If you've got Rust installed, you can open up a shell, and type this:
 
 ```bash
 $ rustc --version
 ```
 
-You should see the version number, commit hash, commit date and build date:
+You should see the version number, commit hash, and commit date. If you just
+installed version 1.0.0, you should see:
 
 ```bash
-rustc 1.0.0 (a59de37e9 2015-05-13) (built 2015-05-14)
+rustc 1.0.0 (a59de37e9 2015-05-13)
 ```
 
 If you did, Rust has been installed successfully! Congrats!

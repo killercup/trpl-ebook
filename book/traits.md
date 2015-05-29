@@ -1,5 +1,8 @@
 % Traits
 
+A trait is a language feature that tells the Rust compiler about
+functionality a type must provide.
+
 Do you remember the `impl` keyword, used to call a function with [method
 syntax][methodsyntax]?
 
@@ -45,7 +48,7 @@ but we don’t define a body, just a type signature. When we `impl` a trait,
 we use `impl Trait for Item`, rather than just `impl Item`.
 
 We can use traits to constrain our generics. Consider this function, which
-does not compile, and gives us a similar error:
+does not compile:
 
 ```rust,ignore
 fn print_area<T>(shape: T) {
@@ -56,7 +59,7 @@ fn print_area<T>(shape: T) {
 Rust complains:
 
 ```text
-error: type `T` does not implement any method in scope named `area`
+error: no method named `area` found for type `T` in the current scope
 ```
 
 Because `T` can be any type, we can’t be sure that it implements the `area`
@@ -146,7 +149,7 @@ print_area(5);
 We get a compile-time error:
 
 ```text
-error: failed to find an implementation of trait main::HasArea for int
+error: the trait `HasArea` is not implemented for the type `_` [E0277]
 ```
 
 So far, we’ve only added trait implementations to structs, but you can
@@ -212,10 +215,10 @@ This will compile without error.
 This means that even if someone does something bad like add methods to `i32`,
 it won’t affect you, unless you `use` that trait.
 
-There’s one more restriction on implementing traits. Either the trait or the
-type you’re writing the `impl` for must be defined by you. So, we could
+There’s one more restriction on implementing traits: either the trait, or the
+type you’re writing the `impl` for, must be defined by you. So, we could
 implement the `HasArea` type for `i32`, because `HasArea` is in our code. But
-if we tried to implement `Float`, a trait provided by Rust, for `i32`, we could
+if we tried to implement `ToString`, a trait provided by Rust, for `i32`, we could
 not, because neither the trait nor the type are in our code.
 
 One last thing about traits: generic functions with a trait bound use
@@ -285,7 +288,7 @@ fn bar<T, K>(x: T, y: K) where T: Clone, K: Clone + Debug {
 
 fn main() {
     foo("Hello", "world");
-    bar("Hello", "workd");
+    bar("Hello", "world");
 }
 ```
 
@@ -329,7 +332,7 @@ fn normal<T: ConvertTo<i64>>(x: &T) -> i64 {
 fn inverse<T>() -> T
         // this is using ConvertTo as if it were "ConvertFrom<i32>"
         where i32: ConvertTo<T> {
-    1i32.convert()
+    42.convert()
 }
 ```
 

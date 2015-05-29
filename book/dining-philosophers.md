@@ -432,7 +432,9 @@ an extra annotation, `move`, to indicate that the closure is going to take
 ownership of the values it’s capturing. Primarily, the `p` variable of the
 `map` function.
 
-Inside the thread, all we do is call `eat()` on `p`.
+Inside the thread, all we do is call `eat()` on `p`. Also note that the call to `thread::spawn` lacks a trailing semicolon, making this an expression. This distinction is important, yielding the correct return value. For more details, read [Expressions vs. Statements][es].
+
+[es]: functions.html#expressions-vs.-statements
 
 ```rust,ignore
 }).collect();
@@ -672,9 +674,13 @@ let handles: Vec<_> = philosophers.into_iter().map(|p| {
 
 Finally, inside of our `map()`/`collect()` loop, we call `table.clone()`. The
 `clone()` method on `Arc<T>` is what bumps up the reference count, and when it
-goes out of scope, it decrements the count. You’ll notice we can introduce a
-new binding to `table` here, and it will shadow the old one. This is often used
-so that you don’t need to come up with two unique names.
+goes out of scope, it decrements the count. This is needed so that we know how
+many references to `table` exist across our threads. If we didn’t have a count,
+we wouldn’t know how to deallocate it.
+
+You’ll notice we can introduce a new binding to `table` here, and it will
+shadow the old one. This is often used so that you don’t need to come up with
+two unique names.
 
 With this, our program works! Only two philosophers can eat at any one time,
 and so you’ll get some output like this:

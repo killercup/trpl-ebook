@@ -151,11 +151,11 @@ As it turns out, there are rules.
 
 Here’s the rules about borrowing in Rust:
 
-First, any borrow must last for a smaller scope than the owner. Second, you may
-have one or the other of these two kinds of borrows, but not both at the same
-time:
+First, any borrow must last for a scope no greater than that of the owner.
+Second, you may have one or the other of these two kinds of borrows, but not
+both at the same time:
 
-* 0 to N references (`&T`) to a resource.
+* one or more references (`&T`) to a resource.
 * exactly one mutable reference (`&mut T`)
 
 
@@ -206,7 +206,7 @@ fn main() {
 ^
 ```
 
-In other words, the mutable borow is held through the rest of our example. What
+In other words, the mutable borrow is held through the rest of our example. What
 we want is for the mutable borrow to end _before_ we try to call `println!` and
 make an immutable borrow. In Rust, borrowing is tied to the scope that the
 borrow is valid for. And our scopes look like this:

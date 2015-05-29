@@ -52,9 +52,9 @@ println!("raw points at {}", *raw);
 It gives this error:
 
 ```text
-error: dereference of unsafe pointer requires unsafe function or block [E0133]
-     println!("raw points at{}", *raw);
-                                 ^~~~
+error: dereference of raw pointer requires unsafe function or block [E0133]
+     println!("raw points at {}", *raw);
+                                  ^~~~
 ```
 
 When you dereference a raw pointer, you’re taking responsibility that it’s not
@@ -77,7 +77,7 @@ For more operations on raw pointers, see [their API documentation][rawapi].
 # FFI
 
 Raw pointers are useful for FFI: Rust’s `*const T` and `*mut T` are similar to
-C’s `const T*` and `T*`, respectfully. For more about this use, consult the
+C’s `const T*` and `T*`, respectively. For more about this use, consult the
 [FFI chapter][ffi].
 
 [ffi]: ffi.html

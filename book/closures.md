@@ -33,8 +33,8 @@ let plus_two = |x| {
 assert_eq!(4, plus_two(2));
 ```
 
-You’ll notice a few things about closures that are a bit different than regular
-functions defined with `fn`. The first of which is that we did not need to
+You’ll notice a few things about closures that are a bit different from regular
+functions defined with `fn`. The first is that we did not need to
 annotate the types of arguments the closure takes or the values it returns. We
 can:
 
@@ -48,10 +48,10 @@ But we don’t have to. Why is this? Basically, it was chosen for ergonomic reas
 While specifying the full type for named functions is helpful with things like
 documentation and type inference, the types of closures are rarely documented
 since they’re anonymous, and they don’t cause the kinds of error-at-a-distance
-that inferring named function types can.
+problems that inferring named function types can.
 
 The second is that the syntax is similar, but a bit different. I’ve added spaces
-here to make them look a little closer:
+here for easier comparison:
 
 ```rust
 fn  plus_one_v1   (x: i32) -> i32 { x + 1 }
@@ -59,7 +59,7 @@ let plus_one_v2 = |x: i32| -> i32 { x + 1 };
 let plus_one_v3 = |x: i32|          x + 1  ;
 ```
 
-Small differences, but they’re similar in ways.
+Small differences, but they’re similar.
 
 # Closures and their environment
 
@@ -99,7 +99,7 @@ note: previous borrow ends here
 fn main() {
     let mut num = 5;
     let plus_num = |x| x + num;
-    
+
     let y = &mut num;
 }
 ^
@@ -120,7 +120,7 @@ let y = &mut num;
 ```
 
 If your closure requires it, however, Rust will take ownership and move
-the environment instead:
+the environment instead. This doesn’t work:
 
 ```rust,ignore
 let nums = vec![1, 2, 3];
@@ -130,7 +130,7 @@ let takes_nums = || nums;
 println!("{:?}", nums);
 ```
 
-This gives us:
+We get this error:
 
 ```text
 note: `nums` moved into closure environment here because it has type
@@ -161,7 +161,7 @@ of `num`. So what’s the difference?
 ```rust
 let mut num = 5;
 
-{ 
+{
     let mut add_num = |x: i32| num += x;
 
     add_num(5);
@@ -180,7 +180,7 @@ If we change to a `move` closure, it’s different:
 ```rust
 let mut num = 5;
 
-{ 
+{
     let mut add_num = move |x: i32| num += x;
 
     add_num(5);
@@ -324,37 +324,34 @@ first, it may seem strange, but we’ll figure it out. Here’s how you’d prob
 try to return a closure from a function:
 
 ```rust,ignore
-fn factory() -> (Fn(i32) -> Vec<i32>) {
-    let vec = vec![1, 2, 3];
+fn factory() -> (Fn(i32) -> i32) {
+    let num = 5;
 
-    |n| vec.push(n)
+    |x| x + num
 }
 
 let f = factory();
 
-let answer = f(4);
-assert_eq!(vec![1, 2, 3, 4], answer);
+let answer = f(1);
+assert_eq!(6, answer);
 ```
 
 This gives us these long, related errors:
 
 ```text
 error: the trait `core::marker::Sized` is not implemented for the type
-`core::ops::Fn(i32) -> collections::vec::Vec<i32>` [E0277]
-f = factory();
-^
-note: `core::ops::Fn(i32) -> collections::vec::Vec<i32>` does not have a
-constant size known at compile-time
-f = factory();
-^
-error: the trait `core::marker::Sized` is not implemented for the type
-`core::ops::Fn(i32) -> collections::vec::Vec<i32>` [E0277]
-factory() -> (Fn(i32) -> Vec<i32>) {
-             ^~~~~~~~~~~~~~~~~~~~~
-note: `core::ops::Fn(i32) -> collections::vec::Vec<i32>` does not have a constant size known at compile-time
-factory() -> (Fn(i32) -> Vec<i32>) {
-             ^~~~~~~~~~~~~~~~~~~~~
-
+`core::ops::Fn(i32) -> i32` [E0277]
+fn factory() -> (Fn(i32) -> i32) {
+                ^~~~~~~~~~~~~~~~
+note: `core::ops::Fn(i32) -> i32` does not have a constant size known at compile-time
+fn factory() -> (Fn(i32) -> i32) {
+                ^~~~~~~~~~~~~~~~
+error: the trait `core::marker::Sized` is not implemented for the type `core::ops::Fn(i32) -> i32` [E0277]
+let f = factory();
+    ^
+note: `core::ops::Fn(i32) -> i32` does not have a constant size known at compile-time
+let f = factory();
+    ^
 ```
 
 In order to return something from a function, Rust needs to know what
@@ -364,16 +361,16 @@ way to give something a size is to take a reference to it, as references
 have a known size. So we’d write this:
 
 ```rust,ignore
-fn factory() -> &(Fn(i32) -> Vec<i32>) {
-    let vec = vec![1, 2, 3];
+fn factory() -> &(Fn(i32) -> i32) {
+    let num = 5;
 
-    |n| vec.push(n)
+    |x| x + num
 }
 
 let f = factory();
 
-let answer = f(4);
-assert_eq!(vec![1, 2, 3, 4], answer);
+let answer = f(1);
+assert_eq!(6, answer);
 ```
 
 But we get another error:
@@ -448,7 +445,8 @@ assert_eq!(6, answer);
 We use a trait object, by `Box`ing up the `Fn`. There’s just one last problem:
 
 ```text
-error: `num` does not live long enough
+error: closure may outlive the current function, but it borrows `num`,
+which is owned by the current function [E0373]
 Box::new(|x| x + num)
          ^~~~~~~~~~~
 ```

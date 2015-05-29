@@ -225,9 +225,9 @@ There's another way of doing this that's a bit nicer than `unwrap()`:
 
 ```rust,ignore
 let mut buffer = String::new();
-let input = io::stdin().read_line(&mut buffer)
-                       .ok()
-                       .expect("Failed to read line");
+let num_bytes_read = io::stdin().read_line(&mut buffer)
+                                .ok()
+                                .expect("Failed to read line");
 ```
 
 `ok()` converts the `Result` into an `Option`, and `expect()` does the same
@@ -284,7 +284,7 @@ struct Info {
 }
 
 fn write_info(info: &Info) -> io::Result<()> {
-    let mut file = try!(File::create("my_best_friends.txt"));
+    let mut file = File::create("my_best_friends.txt").unwrap();
 
     try!(writeln!(&mut file, "name: {}", info.name));
     try!(writeln!(&mut file, "age: {}", info.age));

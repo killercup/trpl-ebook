@@ -89,7 +89,7 @@ philosophy, memory safety, and the mechanism by which Rust guarantees it, the
 > * exactly one mutable reference (`&mut T`)
 
 [ownership]: ownership.html
-[borrowing]: borrowing.html#The-Rules
+[borrowing]: references-and-borrowing.html#borrowing
 
 So, that’s the real definition of ‘immutability’: is this safe to have two
 pointers to? In `Arc<T>`’s case, yes: the mutation is entirely contained inside
@@ -159,7 +159,7 @@ b.x = 10; // error: cannot assign to immutable field `b.x`
 
 [struct]: structs.html
 
-However, by using `Cell<T>`, you can emulate field-level mutability:
+However, by using [`Cell<T>`][cell], you can emulate field-level mutability:
 
 ```rust
 use std::cell::Cell;
@@ -175,5 +175,7 @@ point.y.set(7);
 
 println!("y: {:?}", point.y);
 ```
+
+[cell]: ../std/cell/struct.Cell.html
 
 This will print `y: Cell { value: 7 }`. We’ve successfully updated `y`.
