@@ -1,7 +1,7 @@
 ---
 title: "The Rust Programming Language"
 author: "The Rust Team"
-date: 2015-05-13
+date: 2015-05-15
 description: "This book will teach you about the Rust Programming Language. Rust is a modern systems programming language focusing on safety and speed. It accomplishes these goals by being memory safe without using garbage collection."
 language: en
 documentclass: book
@@ -181,11 +181,11 @@ fn main() {
 }
 ```
 
-Rust has move semantics by default, so if we want to make a copy of some
-data, we call the `clone()` method. In this example, `y` is no longer a
-reference to the vector stored in `x`, but a copy of its first element,
-`"Hello"`. Now that we don’t have a reference, our `push()` works just
-fine.
+Rust has [move semantics](#move-semantics) by default, so if we want to
+make a copy of some data, we call the `clone()` method. In this example,
+`y` is no longer a reference to the vector stored in `x`, but a copy of
+its first element, `"Hello"`. Now that we don’t have a reference, our
+`push()` works just fine.
 
 If we truly want a reference, we need the other option: ensure that our
 reference goes out of scope before we try to do the mutation. That looks
@@ -1762,10 +1762,11 @@ fn main() {
 }
 ```
 
-Here, we make a [`struct`][struct] to represent a philosopher. For now,
-a name is all we need. We choose the [`String`][string] type for the
-name, rather than `&str`. Generally speaking, working with a type which
-owns its data is easier than working with one that uses references.
+Here, we make a [`struct`](#sec--structs) to represent a philosopher. For
+now, a name is all we need. We choose the [`String`](#sec--strings) type
+for the name, rather than `&str`. Generally speaking, working with a
+type which owns its data is easier than working with one that uses
+references.
 
 Let’s continue:
 
@@ -2056,7 +2057,7 @@ let handles: Vec<_> = philosophers.into_iter().map(|p| {
 }).collect();
 ```
 
-While this is only five lines, they’re a dense four. Let’s break it
+While this is only five lines, they’re a dense five. Let’s break it
 down.
 
 ```rust
@@ -2117,7 +2118,7 @@ This ensures that the threads complete their work before the program
 exits.
 
 If you run this program, you’ll see that the philosophers eat out of
-order! We have mult-threading!
+order! We have multi-threading!
 
 ```
 Gilles Deleuze is eating.
@@ -3001,7 +3002,7 @@ Anyway, back to our example. Since this memory is on the heap, it can
 stay alive longer than the function which allocates the box. In this
 case, however, it doesn’t.[\^moving] When the function is over, we need
 to free the stack frame for `main()`. `Box<T>`, though, has a trick up
-its sleve: [Drop](#sec--drop). The implementation of `Drop` for `Box`
+its sleeve: [Drop](#sec--drop). The implementation of `Drop` for `Box`
 deallocates the memory that was allocated when it was created. Great! So
 when `x` goes away, it first frees the memory allocated on the heap:
 
@@ -3164,7 +3165,7 @@ Next, `foo()` calls `bar()` with `x` and `z`:
   2<sup>30</sup>                20
   (2<sup>30</sup>) - 1          5
   ...                    ...    ...
-  10                     e      4
+  10                     e      9
   9                      d      (2<sup>30</sup>) - 1
   8                      c      5
   7                      b      4
@@ -3189,7 +3190,7 @@ At the end of `bar()`, it calls `baz()`:
   ...                    ...    ...
   12                     g      100
   11                     f      4
-  10                     e      4
+  10                     e      9
   9                      d      (2<sup>30</sup>) - 1
   8                      c      5
   7                      b      4
@@ -3211,7 +3212,7 @@ After `baz()` is over, we get rid of `f` and `g`:
   2<sup>30</sup>                20
   (2<sup>30</sup>) - 1          5
   ...                    ...    ...
-  10                     e      4
+  10                     e      9
   9                      d      (2<sup>30</sup>) - 1
   8                      c      5
   7                      b      4
@@ -4401,7 +4402,7 @@ construct.
 `for` loops aren't the only thing that uses iterators, however. Writing
 your own iterator involves implementing the `Iterator` trait. While
 doing that is outside of the scope of this guide, Rust provides a number
-of useful iterators to accomplish various threads. Before we talk about
+of useful iterators to accomplish various tasks. Before we talk about
 those, we should talk about a Rust anti-pattern. And that's using ranges
 like this.
 
@@ -4710,7 +4711,7 @@ fully utilize them.
 
 Rust's memory safety features also apply to its concurrency story too.
 Even concurrent Rust programs must be memory safe, having no data races.
-Rust's type system is up to the thread, and gives you powerful ways to
+Rust's type system is up to the task, and gives you powerful ways to
 reason about concurrent code at compile time.
 
 Before we talk about the concurrency features that come with Rust, it's
@@ -5200,6 +5201,9 @@ match version {
 
 This function makes use of an enum, `ParseError`, to enumerate the
 various errors that can occur.
+
+The [`Debug`](http://doc.rust-lang.org/std/fmt/trait.Debug.html) trait is what lets us print
+the enum value using the `{:?}` format operation.
 
 ### Non-recoverable errors with `panic!`
 
@@ -6870,7 +6874,7 @@ even for experienced C developers.
 Rust also has a `while` loop. It looks like this:
 
 ```rust
-let mut x = 5; // mut x: u32
+let mut x = 5; // mut x: i32
 let mut done = false; // mut done: bool
 
 while !done {
@@ -7873,7 +7877,7 @@ let y = &mut x;
 
 `y` is an immutable binding to a mutable reference, which means that you
 can’t bind `y` to something else (`y = &mut z`), but you can mutate the
-thing that’s bound to `y`. (`*y = 5`) A subtle distinction.
+thing that’s bound to `y` (`*y = 5`). A subtle distinction.
 
 Of course, if you need both:
 
@@ -8191,8 +8195,8 @@ new type.
 This is rarely useful on its own (although sometimes it can serve as a
 marker type), but in combination with other features, it can become
 useful. For instance, a library may ask you to create a structure that
-implements a certain [trait][trait] to handle events. If you don’t have
-any data you need to store in the structure, you can just create a
+implements a certain [trait](#sec--traits) to handle events. If you don’t
+have any data you need to store in the structure, you can just create a
 unit-like struct.
 
 
@@ -8250,15 +8254,12 @@ fn process_color_change(msg: Message) {
 }
 ```
 
-Both variants are named `Digit`, but since they’re scoped to the `enum`
-name there's no ambiguity.
-
 Not supporting these operations may seem rather limiting, but it’s a
 limitation which we can overcome. There are two ways: by implementing
 equality ourselves, or by pattern matching variants with
 [`match`](#sec--match) expressions, which you’ll learn in the next
 section. We don’t know enough about Rust to implement equality yet, but
-we’ll find out in the [`traits`][traits] section.
+we’ll find out in the [`traits`](#sec--traits) section.
 
 
 ## Match {#sec--match}
@@ -8358,10 +8359,8 @@ have a match arm for every variant of the enum. If you leave one off, it
 will give you a compile-time error unless you use `_`.
 
 Unlike the previous uses of `match`, you can’t use the normal `if`
-statement to do this. You can use the [`if let`][if-let] statement,
+statement to do this. You can use the [`if let`](#sec--if-let) statement,
 which can be seen as an abbreviated form of `match`.
-
-[if-let][if-let.html]
 
 
 ## Patterns {#sec--patterns}
@@ -8430,7 +8429,7 @@ match x {
 }
 ```
 
-This prints `something else`
+This prints `something else`.
 
 ### Bindings
 
@@ -8516,7 +8515,7 @@ match x {
 }
 ```
 
-This prints `Got an int!`
+This prints `Got an int!`.
 
 ### ref and ref mut
 
@@ -11152,7 +11151,7 @@ Unlike [`let`](#sec--variable-bindings) bindings, you must annotate the
 type of a `static`.
 
 Statics live for the entire lifetime of a program, and therefore any
-reference stored in a constant has a [`’static`
+reference stored in a constant has a [`'static`
 lifetime](#sec--lifetimes):
 
 ```rust
