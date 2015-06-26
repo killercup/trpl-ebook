@@ -1,6 +1,6 @@
 [root]
 name = "compile-trpl"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clippy 0.0.5 (git+https://github.com/Manishearth/rust-clippy.git)",
  "regex 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
