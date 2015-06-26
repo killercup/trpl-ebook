@@ -5,7 +5,7 @@ authors = ["Pascal Hertleif <killercup@gmail.com>"]
 
 [features]
 default = []
-dev-unstable = ["clippy"]
+dev = ["clippy"]
 
 [dependencies]
 regex = "0.1.32"
