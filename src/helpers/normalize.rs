@@ -1,4 +1,5 @@
 use std::error::Error;
+use regex::Regex;
 
 use helpers::normalize_code_blocks::*;
 
@@ -10,23 +11,23 @@ fn normalize_links(input: &str) -> Result<String, Box<Error>> {
     .replace(r"../syntax", r"http://doc.rust-lang.org/syntax")
     .replace(r"../core", r"http://doc.rust-lang.org/core");
 
-    let cross_section_link = regex!(r"]\((?P<file>[\w-_]+)\.html\)");
+    let cross_section_link = Regex::new(r"]\((?P<file>[\w-_]+)\.html\)").unwrap();
     output = cross_section_link.replace_all(&output, r"](#sec--$file)");
 
-    let cross_section_ref = regex!(r"(?m)^\[(?P<id>.+)\]:\s(?P<file>[^:^/]+)\.html$");
+    let cross_section_ref = Regex::new(r"(?m)^\[(?P<id>.+)\]:\s(?P<file>[^:^/]+)\.html$").unwrap();
     output = cross_section_ref.replace_all(&output, r"[$id]: #sec--$file");
 
-    let cross_subsection_link = regex!(r"]\((?P<file>[\w-_]+)\.html#(?P<subsection>[\w-_]+)\)");
+    let cross_subsection_link = Regex::new(r"]\((?P<file>[\w-_]+)\.html#(?P<subsection>[\w-_]+)\)").unwrap();
     output = cross_subsection_link.replace_all(&output, r"](#$subsection)");
 
-    let cross_subsection_ref = regex!(r"(?m)^\[(?P<id>.+)\]:\s(?P<file>[^:^/]+)\.html#(?P<subsection>[\w-_]+)$");
+    let cross_subsection_ref = Regex::new(r"(?m)^\[(?P<id>.+)\]:\s(?P<file>[^:^/]+)\.html#(?P<subsection>[\w-_]+)$").unwrap();
     output = cross_subsection_ref.replace_all(&output, r"[$id]: #$subsection");
 
     Ok(output)
 }
 
 fn normalize_math(input: &str) -> Result<String, Box<Error>> {
-    let superscript = regex!(r"(\d+)<sup>(\d+)</sup>");
+    let superscript = Regex::new(r"(\d+)<sup>(\d+)</sup>").unwrap();
     Ok(superscript.replace_all(&input, r"$1^$2^"))
 }
 

@@ -1,23 +1,23 @@
 use std::error::Error;
-use regex::Captures;
+use regex::{Regex, Captures};
 
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
 pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Error>> {
-    let reference_link = regex!(r"(?x)
+    let reference_link = Regex::new(r"(?x)
         \]\[                # This is a link to a reference
         (?P<id>.+?)         # The reference name
         \]
-    ");
+    ").unwrap();
 
-    let footnote = regex!(r"(?x)
+    let footnote = Regex::new(r"(?x)
         \[                  # This is a link to a reference
         \^                  # Link to footnote begins with `^`
         (?P<id>.+?)         # The reference name
         \]
-    ");
+    ").unwrap();
 
-    let reference_def = regex!(r"(?x)
+    let reference_def = Regex::new(r"(?x)
         ^
         \[
         (?P<footnote>\^)?   # Footnote definition begins with `^`
@@ -26,7 +26,7 @@ pub fn adjust_reference_name(input: &str, prefix: &str) -> Result<String, Box<Er
         :\s
         (?P<link>.+)        # The link url (and maybe the title)
         $
-    ");
+    ").unwrap();
 
     let mut in_code_block = false;
 

@@ -1,6 +1,6 @@
 [package]
 name = "compile-trpl"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Pascal Hertleif <killercup@gmail.com>"]
 
 [features]
@@ -9,7 +9,6 @@ dev = ["clippy"]
 
 [dependencies]
 regex = "0.1.32"
-regex_macros = "0.1.19"
 
 [dependencies.clippy]
 git = "https://github.com/Manishearth/rust-clippy.git"
