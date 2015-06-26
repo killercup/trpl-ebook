@@ -1,18 +1,19 @@
 use std::error::Error;
 use std::iter::repeat;
+use regex::Regex;
 
 const CODE_BLOCK_TOGGLE: &'static str = "```";
 
 pub type HeaderLevel = i32;
 
 pub fn adjust_header_level(input: &str, base_level: HeaderLevel) -> Result<String, Box<Error>> {
-    let headline_pattern = regex!(r"(?x)
+    let headline_pattern = Regex::new(r"(?x)
         ^
         (?P<level>[\x23]+)  # A bunch of hash symbols
         \s
         (?P<title>.+)       # Title, and maybe id
         $
-    ");
+    ").unwrap();
 
     let mut in_code_block = false;
 

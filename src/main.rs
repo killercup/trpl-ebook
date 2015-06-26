@@ -6,9 +6,8 @@
 //!
 //! [trpl]: http://doc.rust-lang.org/book/
 
-#![feature(plugin)]
-#![plugin(regex_macros)]
-#![cfg_attr(feature = "dev", plugin(clippy))]
+#![cfg_attr(feature = "dev-unstable", plugin)]
+#![cfg_attr(feature = "dev-unstable", plugin(clippy))]
 
 extern crate regex;
 
