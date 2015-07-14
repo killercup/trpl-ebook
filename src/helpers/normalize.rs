@@ -4,15 +4,9 @@ use regex::Regex;
 use helpers::normalize_code_blocks::*;
 
 fn normalize_links(input: &str) -> Result<String, Box<Error>> {
-    let mut output = input
-    .replace(r"../std", r"http://doc.rust-lang.org/std")
-    .replace(r"../reference", r"http://doc.rust-lang.org/reference")
-    .replace(r"../rustc", r"http://doc.rust-lang.org/rustc")
-    .replace(r"../syntax", r"http://doc.rust-lang.org/syntax")
-    .replace(r"../book", r"http://doc.rust-lang.org/book")
-    .replace(r"../adv-book", r"http://doc.rust-lang.org/adv-book")
-    .replace(r"../core", r"http://doc.rust-lang.org/core");
-
+    // All back-references seem to just go right back to the root
+    let mut output = input.replace(r"../", r"http://doc.rust-lang.org/");
+    
     let cross_section_link = Regex::new(r"]\((?P<file>[\w-_]+)\.html\)").unwrap();
     output = cross_section_link.replace_all(&output, r"](#sec--$file)");
 
