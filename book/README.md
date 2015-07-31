@@ -40,7 +40,7 @@ want to dive in with a project, or ‘Syntax and Semantics’ if you prefer to
 start small, and learn a single concept thoroughly before moving onto the next.
 Copious cross-linking connects these parts together.
 
-## Contributing
+### Contributing
 
 The source files from which this book is generated can be found on Github:
 [github.com/rust-lang/rust/tree/master/src/doc/trpl](https://github.com/rust-lang/rust/tree/master/src/doc/trpl)
