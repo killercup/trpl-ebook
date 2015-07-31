@@ -10,10 +10,12 @@ use helpers;
 use convert_book::pandoc::save_as;
 
 /// Render book in different formats
-pub fn render_book() -> Result<(), Box<Error>> {
+pub fn render_book(entry_point: &str, meta_file: &str) -> Result<(), Box<Error>> {
+    let meta_data = try!(helpers::file::get_file_content(meta_file));
+
     let book = try!(markdown::to_single_file(
-        "book/SUMMARY.md",
-        &format!(include_str!("../book_meta.yml"), release_date = options::RELEASE_DATE)
+        entry_point,
+        &meta_data.replace("{release_date}", options::RELEASE_DATE)
     ));
 
     try!(helpers::file::write_string_to_file(&book,

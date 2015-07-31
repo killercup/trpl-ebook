@@ -9,6 +9,8 @@ dev = ["clippy"]
 
 [dependencies]
 regex = "0.1.32"
+docopt = "0.6.69"
+rustc-serialize = "0.3"
 
 [dependencies.clippy]
 git = "https://github.com/Manishearth/rust-clippy.git"
