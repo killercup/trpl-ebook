@@ -1,0 +1,12 @@
+---
+title: "The Rustonomicon"
+author: "The Rust Team"
+date: {release_date}
+description: "This book digs into all the awful details that are necessary to understand in order to write correct Unsafe Rust programs. Due to the nature of this problem, it may lead to unleashing untold horrors that shatter your psyche into a billion infinitesimal fragments of despair."
+language: en
+documentclass: book
+links-as-notes: true
+verbatim-in-note: true
+toc-depth: 2
+monofont: "DejaVu Sans Mono"
+...
