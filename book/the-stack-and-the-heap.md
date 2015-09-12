@@ -38,7 +38,7 @@ local variables and some other information. This is called a ‘stack frame’, 
 for the purpose of this tutorial, we’re going to ignore the extra information
 and just consider the local variables we’re allocating. So in this case, when
 `main()` is run, we’ll allocate a single 32-bit integer for our stack frame.
-This is automatically handled for you, as you can see, we didn’t have to write
+This is automatically handled for you, as you can see; we didn’t have to write
 any special Rust code or anything.
 
 When the function is over, its stack frame gets deallocated. This happens
@@ -51,7 +51,7 @@ we’ll throw them all away at the same time as well, we can get rid of it very
 fast too.
 
 The downside is that we can’t keep values around if we need them for longer
-than a single function. We also haven’t talked about what that name, ‘stack’
+than a single function. We also haven’t talked about what the word, ‘stack’,
 means. To do that, we need a slightly more complicated example:
 
 ```rust
@@ -73,7 +73,7 @@ frame. But before we can show what happens when `foo()` is called, we need to
 visualize what’s going on with memory. Your operating system presents a view of
 memory to your program that’s pretty simple: a huge list of addresses, from 0
 to a large number, representing how much RAM your computer has. For example, if
-you have a gigabyte of RAM, your addresses go from `0` to `1,073,741,824`. That
+you have a gigabyte of RAM, your addresses go from `0` to `1,073,741,823`. That
 number comes from 2<sup>30</sup>, the number of bytes in a gigabyte.
 
 This memory is kind of like a giant array: addresses start at zero and go
@@ -217,12 +217,12 @@ on the heap. The actual value of the box is a structure which has a pointer to
 it allocates some memory for the heap, and puts `5` there. The memory now looks
 like this:
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-| 2<sup>30</sup>  |      | 5              |
-| ...             | ...  | ...            |
-| 1               | y    | 42             |
-| 0               | x    | 2<sup>30</sup> |
+| Address         | Name | Value            |
+|-----------------|------|------------------|
+| 2<sup>30</sup>  |      | 5                |
+| ...             | ...  | ...              |
+| 1               | y    | 42               |
+| 0               | x    | → 2<sup>30</sup> |
 
 We have 2<sup>30</sup> in our hypothetical computer with 1GB of RAM. And since
 our stack grows from zero, the easiest place to allocate memory is from the
@@ -242,17 +242,17 @@ freed in any order, it can end up with ‘holes’. Here’s a diagram of the me
 layout of a program which has been running for a while now:
 
 
-| Address              | Name | Value                |
-|----------------------|------|----------------------|
-| 2<sup>30</sup>       |      | 5                    |
-| (2<sup>30</sup>) - 1 |      |                      |
-| (2<sup>30</sup>) - 2 |      |                      |
-| (2<sup>30</sup>) - 3 |      | 42                   |
-| ...                  | ...  | ...                  |
-| 3                    | y    | (2<sup>30</sup>) - 3 |
-| 2                    | y    | 42                   |
-| 1                    | y    | 42                   |
-| 0                    | x    | 2<sup>30</sup>       |
+| Address              | Name | Value                  |
+|----------------------|------|------------------------|
+| 2<sup>30</sup>       |      | 5                      |
+| (2<sup>30</sup>) - 1 |      |                        |
+| (2<sup>30</sup>) - 2 |      |                        |
+| (2<sup>30</sup>) - 3 |      | 42                     |
+| ...                  | ...  | ...                    |
+| 3                    | y    | → (2<sup>30</sup>) - 3 |
+| 2                    | y    | 42                     |
+| 1                    | y    | 42                     |
+| 0                    | x    | → 2<sup>30</sup>       |
 
 In this case, we’ve allocated four things on the heap, but deallocated two of
 them. There’s a gap between 2<sup>30</sup> and (2<sup>30</sup>) - 3 which isn’t
@@ -304,22 +304,22 @@ fn main() {
 
 When we enter `main()`, memory looks like this:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 1       | y    | 0     |
-| 0       | x    | 5     |
+| Address | Name | Value  |
+|---------|------|--------|
+| 1       | y    | → 0    |
+| 0       | x    | 5      |
 
 `x` is a plain old `5`, and `y` is a reference to `x`. So its value is the
 memory location that `x` lives at, which in this case is `0`.
 
 What about when we call `foo()`, passing `y` as an argument?
 
-| Address | Name | Value |
-|---------|------|-------|
-| 3       | z    | 42    |
-| 2       | i    | 0     |
-| 1       | y    | 0     |
-| 0       | x    | 5     |
+| Address | Name | Value  |
+|---------|------|--------|
+| 3       | z    | 42     |
+| 2       | i    | → 0    |
+| 1       | y    | → 0    |
+| 0       | x    | 5      |
 
 Stack frames aren’t just for local bindings, they’re for arguments too. So in
 this case, we need to have both `i`, our argument, and `z`, our local variable
@@ -366,29 +366,29 @@ fn main() {
 
 First, we call `main()`:
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-| 2<sup>30</sup>  |      | 20             |
-| ...             | ...  | ...            |
-| 2               | j    | 0              |
-| 1               | i    | 2<sup>30</sup> |
-| 0               | h    | 3              |
+| Address         | Name | Value            |
+|-----------------|------|------------------|
+| 2<sup>30</sup>  |      | 20               |
+| ...             | ...  | ...              |
+| 2               | j    | → 0              |
+| 1               | i    | → 2<sup>30</sup> |
+| 0               | h    | 3                |
 
 We allocate memory for `j`, `i`, and `h`. `i` is on the heap, and so has a
 value pointing there.
 
 Next, at the end of `main()`, `foo()` gets called:
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-| 2<sup>30</sup>  |      | 20             |
-| ...             | ...  | ...            |
-| 5               | z    | 4              |
-| 4               | y    | 10             |
-| 3               | x    | 0              |
-| 2               | j    | 0              |
-| 1               | i    | 2<sup>30</sup> |
-| 0               | h    | 3              |
+| Address         | Name | Value           |
+|-----------------|------|-----------------|
+| 2<sup>30</sup>  |      | 20              |
+| ...             | ...  | ...             |
+| 5               | z    | → 4             |
+| 4               | y    | 10              |
+| 3               | x    | → 0             |
+| 2               | j    | → 0             |
+| 1               | i    | → 2<sup>30</sup>|
+| 0               | h    | 3               |
 
 Space gets allocated for `x`, `y`, and `z`. The argument `x` has the same value
 as `j`, since that’s what we passed it in. It’s a pointer to the `0` address,
@@ -396,51 +396,51 @@ since `j` points at `h`.
 
 Next, `foo()` calls `baz()`, passing `z`:
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-| 2<sup>30</sup>  |      | 20             |
-| ...             | ...  | ...            |
-| 7               | g    | 100            |
-| 6               | f    | 4              |
-| 5               | z    | 4              |
-| 4               | y    | 10             |
-| 3               | x    | 0              |
-| 2               | j    | 0              |
-| 1               | i    | 2<sup>30</sup> |
-| 0               | h    | 3              |
+| Address         | Name | Value            |
+|-----------------|------|------------------|
+| 2<sup>30</sup>  |      | 20               |
+| ...             | ...  | ...              |
+| 7               | g    | 100              |
+| 6               | f    | → 4              |
+| 5               | z    | → 4              |
+| 4               | y    | 10               |
+| 3               | x    | → 0              |
+| 2               | j    | → 0              |
+| 1               | i    | → 2<sup>30</sup> |
+| 0               | h    | 3                |
 
 We’ve allocated memory for `f` and `g`. `baz()` is very short, so when it’s
 over, we get rid of its stack frame:
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-| 2<sup>30</sup>  |      | 20             |
-| ...             | ...  | ...            |
-| 5               | z    | 4              |
-| 4               | y    | 10             |
-| 3               | x    | 0              |
-| 2               | j    | 0              |
-| 1               | i    | 2<sup>30</sup> |
-| 0               | h    | 3              |
+| Address         | Name | Value            |
+|-----------------|------|------------------|
+| 2<sup>30</sup>  |      | 20               |
+| ...             | ...  | ...              |
+| 5               | z    | → 4              |
+| 4               | y    | 10               |
+| 3               | x    | → 0              |
+| 2               | j    | → 0              |
+| 1               | i    | → 2<sup>30</sup> |
+| 0               | h    | 3                |
 
 Next, `foo()` calls `bar()` with `x` and `z`:
 
-| Address              | Name | Value                |
-|----------------------|------|----------------------|
-|  2<sup>30</sup>      |      | 20                   |
-| (2<sup>30</sup>) - 1 |      | 5                    |
-| ...                  | ...  | ...                  |
-| 10                   | e    | 9                    |
-| 9                    | d    | (2<sup>30</sup>) - 1 |
-| 8                    | c    | 5                    |
-| 7                    | b    | 4                    |
-| 6                    | a    | 0                    |
-| 5                    | z    | 4                    |
-| 4                    | y    | 10                   |
-| 3                    | x    | 0                    |
-| 2                    | j    | 0                    |
-| 1                    | i    | 2<sup>30</sup>       |
-| 0                    | h    | 3                    |
+| Address              | Name | Value                  |
+|----------------------|------|------------------------|
+|  2<sup>30</sup>      |      | 20                     |
+| (2<sup>30</sup>) - 1 |      | 5                      |
+| ...                  | ...  | ...                    |
+| 10                   | e    | → 9                    |
+| 9                    | d    | → (2<sup>30</sup>) - 1 |
+| 8                    | c    | 5                      |
+| 7                    | b    | → 4                    |
+| 6                    | a    | → 0                    |
+| 5                    | z    | → 4                    |
+| 4                    | y    | 10                     |
+| 3                    | x    | → 0                    |
+| 2                    | j    | → 0                    |
+| 1                    | i    | → 2<sup>30</sup>       |
+| 0                    | h    | 3                      |
 
 We end up allocating another value on the heap, and so we have to subtract one
 from 2<sup>30</sup>. It’s easier to just write that than `1,073,741,823`. In any
@@ -448,70 +448,70 @@ case, we set up the variables as usual.
 
 At the end of `bar()`, it calls `baz()`:
 
-| Address              | Name | Value                |
-|----------------------|------|----------------------|
-|  2<sup>30</sup>      |      | 20                   |
-| (2<sup>30</sup>) - 1 |      | 5                    |
-| ...                  | ...  | ...                  |
-| 12                   | g    | 100                  |
-| 11                   | f    | 9                    |
-| 10                   | e    | 9                    |
-| 9                    | d    | (2<sup>30</sup>) - 1 |
-| 8                    | c    | 5                    |
-| 7                    | b    | 4                    |
-| 6                    | a    | 0                    |
-| 5                    | z    | 4                    |
-| 4                    | y    | 10                   |
-| 3                    | x    | 0                    |
-| 2                    | j    | 0                    |
-| 1                    | i    | 2<sup>30</sup>       |
-| 0                    | h    | 3                    |
+| Address              | Name | Value                  |
+|----------------------|------|------------------------|
+|  2<sup>30</sup>      |      | 20                     |
+| (2<sup>30</sup>) - 1 |      | 5                      |
+| ...                  | ...  | ...                    |
+| 12                   | g    | 100                    |
+| 11                   | f    | → 9                    |
+| 10                   | e    | → 9                    |
+| 9                    | d    | → (2<sup>30</sup>) - 1 |
+| 8                    | c    | 5                      |
+| 7                    | b    | → 4                    |
+| 6                    | a    | → 0                    |
+| 5                    | z    | → 4                    |
+| 4                    | y    | 10                     |
+| 3                    | x    | → 0                    |
+| 2                    | j    | → 0                    |
+| 1                    | i    | → 2<sup>30</sup>       |
+| 0                    | h    | 3                      |
 
 With this, we’re at our deepest point! Whew! Congrats for following along this
 far.
 
 After `baz()` is over, we get rid of `f` and `g`:
 
-| Address              | Name | Value                |
-|----------------------|------|----------------------|
-|  2<sup>30</sup>      |      | 20                   |
-| (2<sup>30</sup>) - 1 |      | 5                    |
-| ...                  | ...  | ...                  |
-| 10                   | e    | 9                    |
-| 9                    | d    | (2<sup>30</sup>) - 1 |
-| 8                    | c    | 5                    |
-| 7                    | b    | 4                    |
-| 6                    | a    | 0                    |
-| 5                    | z    | 4                    |
-| 4                    | y    | 10                   |
-| 3                    | x    | 0                    |
-| 2                    | j    | 0                    |
-| 1                    | i    | 2<sup>30</sup>       |
-| 0                    | h    | 3                    |
+| Address              | Name | Value                  |
+|----------------------|------|------------------------|
+|  2<sup>30</sup>      |      | 20                     |
+| (2<sup>30</sup>) - 1 |      | 5                      |
+| ...                  | ...  | ...                    |
+| 10                   | e    | → 9                    |
+| 9                    | d    | → (2<sup>30</sup>) - 1 |
+| 8                    | c    | 5                      |
+| 7                    | b    | → 4                    |
+| 6                    | a    | → 0                    |
+| 5                    | z    | → 4                    |
+| 4                    | y    | 10                     |
+| 3                    | x    | → 0                    |
+| 2                    | j    | → 0                    |
+| 1                    | i    | → 2<sup>30</sup>       |
+| 0                    | h    | 3                      |
 
 Next, we return from `bar()`. `d` in this case is a `Box<T>`, so it also frees
 what it points to: (2<sup>30</sup>) - 1.
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-|  2<sup>30</sup> |      | 20             |
-| ...             | ...  | ...            |
-| 5               | z    | 4              |
-| 4               | y    | 10             |
-| 3               | x    | 0              |
-| 2               | j    | 0              |
-| 1               | i    | 2<sup>30</sup> |
-| 0               | h    | 3              |
+| Address         | Name | Value            |
+|-----------------|------|------------------|
+|  2<sup>30</sup> |      | 20               |
+| ...             | ...  | ...              |
+| 5               | z    | → 4              |
+| 4               | y    | 10               |
+| 3               | x    | → 0              |
+| 2               | j    | → 0              |
+| 1               | i    | → 2<sup>30</sup> |
+| 0               | h    | 3                |
 
 And after that, `foo()` returns:
 
-| Address         | Name | Value          |
-|-----------------|------|----------------|
-|  2<sup>30</sup> |      | 20             |
-| ...             | ...  | ...            |
-| 2               | j    | 0              |
-| 1               | i    | 2<sup>30</sup> |
-| 0               | h    | 3              |
+| Address         | Name | Value            |
+|-----------------|------|------------------|
+|  2<sup>30</sup> |      | 20               |
+| ...             | ...  | ...              |
+| 2               | j    | → 0              |
+| 1               | i    | → 2<sup>30</sup> |
+| 0               | h    | 3                |
 
 And then, finally, `main()`, which cleans the rest up. When `i` is `Drop`ped,
 it will clean up the last of the heap too.
@@ -549,9 +549,9 @@ reuse.
 If you’d like to dive into this topic in greater detail, [this paper][wilson]
 is a great introduction.
 
-[wilson]: http://www.cs.northwestern.edu/~pdinda/icsclass/doc/dsa.pdf
+[wilson]: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.143.4688
 
-## Semantic impact 
+## Semantic impact
 
 Stack-allocation impacts the Rust language itself, and thus the developer’s
 mental model. The LIFO semantics is what drives how the Rust language handles

@@ -73,10 +73,10 @@ hello.rs:4 }
 ```
 
 This [unfortunate error](https://github.com/rust-lang/rust/issues/22547) is
-correct: documentation comments apply to the thing after them, and there's no
-thing after that last comment.
+correct: documentation comments apply to the thing after them, and there's 
+nothing after that last comment.
 
-[rc-new]: http://doc.rust-lang.org/nightly/std/rc/struct.Rc.html#method.new
+[rc-new]: https://doc.rust-lang.org/nightly/std/rc/struct.Rc.html#method.new
 
 ### Writing documentation comments
 
@@ -196,10 +196,10 @@ This will highlight according to whatever language you're showing off.
 If you're just showing plain text, choose `text`.
 
 It's important to choose the correct annotation here, because `rustdoc` uses it
-in an interesting way: It can be used to actually test your examples, so that
-they don't get out of date. If you have some C code but `rustdoc` thinks it's
-Rust because you left off the annotation, `rustdoc` will complain when trying to
-generate the documentation.
+in an interesting way: It can be used to actually test your examples in a
+library crate, so that they don't get out of date. If you have some C code but
+`rustdoc` thinks it's Rust because you left off the annotation, `rustdoc` will
+complain when trying to generate the documentation.
 
 ## Documentation as tests
 
@@ -377,8 +377,8 @@ $ rustdoc --test path/to/my/crate/root.rs
 $ cargo test
 ```
 
-That's right, `cargo test` tests embedded documentation too. However,
-`cargo test` will not test binary crates, only library ones. This is
+That's right, `cargo test` tests embedded documentation too. **However,
+`cargo test` will not test binary crates, only library ones.** This is
 due to the way `rustdoc` works: it links against the library to be tested,
 but with a binary, there’s nothing to link to.
 
@@ -544,9 +544,9 @@ You can control a few aspects of the HTML that `rustdoc` generates through the
 `#![doc]` version of the attribute:
 
 ```rust
-#![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-       html_favicon_url = "http://www.rust-lang.org/favicon.ico",
-       html_root_url = "http://doc.rust-lang.org/")]
+#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+       html_root_url = "https://doc.rust-lang.org/")]
 ```
 
 This sets a few different options, with a logo, favicon, and a root URL.

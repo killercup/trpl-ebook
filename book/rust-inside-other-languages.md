@@ -111,7 +111,7 @@ fn process() {
             for _ in (0..5_000_000) {
                 x += 1
             }
-	    x
+            x
         })
     }).collect();
 
@@ -217,6 +217,17 @@ And finally, we can try running it:
 
 ```bash
 $ ruby embed.rb
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+Thread finished with count=5000000
+done!
 done!
 $
 ```

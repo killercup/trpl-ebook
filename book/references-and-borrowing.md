@@ -125,6 +125,10 @@ This will print `6`. We make `y` a mutable reference to `x`, then add one to
 the thing `y` points at. You’ll notice that `x` had to be marked `mut` as well,
 if it wasn’t, we couldn’t take a mutable borrow to an immutable value.
 
+You'll also notice we added an asterisk (`*`) in front of `y`, making it `*y`,
+this is because `y` is an `&mut` reference. You'll also need to use them for
+accessing the contents of a reference as well.
+
 Otherwise, `&mut` references are just like references. There _is_ a large
 difference between the two, and how they interact, though. You can tell
 something is fishy in the above example, because we need that extra scope, with
@@ -155,8 +159,8 @@ First, any borrow must last for a scope no greater than that of the owner.
 Second, you may have one or the other of these two kinds of borrows, but not
 both at the same time:
 
-* one or more references (`&T`) to a resource.
-* exactly one mutable reference (`&mut T`)
+* one or more references (`&T`) to a resource,
+* exactly one mutable reference (`&mut T`).
 
 
 You may notice that this is very similar, though not exactly the same as,
@@ -294,8 +298,8 @@ We can’t modify `v` because it’s borrowed by the loop.
 
 ### use after free
 
-References must live as long as the resource they refer to. Rust will check the
-scopes of your references to ensure that this is true.
+References must not live longer than the resource they refer to. Rust will
+check the scopes of your references to ensure that this is true.
 
 If Rust didn’t check this property, we could accidentally use a reference
 which was invalid. For example:
