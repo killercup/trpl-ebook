@@ -3,8 +3,8 @@ use std::error::Error;
 use std::path::Path;
 use std::fs::File;
 
-pub fn get_file_content(name: &str) -> Result<String, Box<Error>> {
-    let mut file = try!(File::open(&Path::new(name)));
+pub fn get_file_content<P: AsRef<Path>>(path: P) -> Result<String, Box<Error>> {
+    let mut file = try!(File::open(path));
     let mut buffer = String::new();
     try!(file.read_to_string(&mut buffer));
     Ok(buffer)

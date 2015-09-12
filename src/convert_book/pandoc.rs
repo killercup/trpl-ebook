@@ -8,11 +8,12 @@ pub fn run(args: &str, input: &str) -> Result<String, Box<Error>> {
     shell_pipe::run("pandoc", args, input)
 }
 
-pub fn save_as(book: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
+pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
     let opts = format!(
-        "--from={markdown_opts} {opts} --output=dist/trpl-{release_date}.{format}",
+        "--from={markdown_opts} {opts} --output=dist/{prefix}-{release_date}.{format}",
         markdown_opts = options::MARKDOWN,
         opts = opts,
+        prefix = prefix,
         release_date = options::RELEASE_DATE,
         format = format
     );

@@ -1,4 +1,4 @@
-pub const RELEASE_DATE: &'static str = "2015-07-31";
+pub const RELEASE_DATE: &'static str = "2015-09-12";
 
 pub const MARKDOWN: &'static str = "markdown+grid_tables+pipe_tables-simple_tables+raw_html+implicit_figures+footnotes+intraword_underscores+auto_identifiers-inline_code_attributes";
 

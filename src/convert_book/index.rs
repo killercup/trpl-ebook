@@ -4,9 +4,16 @@ use std::fs;
 use std::collections::BTreeMap;
 use std::ascii::AsciiExt;
 
+use regex::Regex;
+
+const FILENAME_PATTRN: &'static str =
+    r"^(?P<prefix>\w+)-(?P<date>\d{4}-\d{2}-\d{2})\.(?P<ext>.+)$";
+
 type FileListing = Vec<(String, String)>;
 
 fn list_file_groups(path: &str) -> Result<FileListing, Box<Error>> {
+    let filename_pattern = Regex::new(FILENAME_PATTRN).unwrap();
+
     let files = try!(fs::read_dir(&Path::new(path)))
     .filter(Result::is_ok)
     .map(|x| x.unwrap().path())
@@ -15,12 +22,15 @@ fn list_file_groups(path: &str) -> Result<FileListing, Box<Error>> {
          .and_then(|a| { a.to_str() })
          .and_then(|b| -> Option<String> { Some(b.into()) })
     })
-    .filter(|x| x.starts_with("trpl"))
-    .map(|name| {
-        // Files are name like 'trpl-2015-05-13.a4.pdf'. The first 15 chars
-        // define the release version, the first 5 are always `trpl-`, though.
-        let version = name.chars().skip(5).take(10).collect::<String>();
-        (version, name)
+    .flat_map(|name| -> Option<(String, String)> {
+        // Extract the date from names like 'trpl-2015-05-13.a4.pdf'.
+        // This also excludes the `index.html` file as it contains no date.
+        if let Some(caps) = filename_pattern.captures(&name) {
+            if let Some(version) = caps.name("date") {
+                return Some((version.to_owned(), name.to_owned()));
+            }
+        }
+        return None;
     })
     .collect();
 
@@ -28,6 +38,8 @@ fn list_file_groups(path: &str) -> Result<FileListing, Box<Error>> {
 }
 
 pub fn render_index(path: &str) -> Result<String, Box<Error>> {
+    let filename_pattern = Regex::new(FILENAME_PATTRN).unwrap();
+
     let files = try!(list_file_groups(path));
     let mut versions: BTreeMap<String, Vec<String>> = BTreeMap::new();
 
@@ -47,10 +59,9 @@ pub fn render_index(path: &str) -> Result<String, Box<Error>> {
             file_listing.push_str(&format!(
                 "<li><a href='{file_name}'>{file_title}</a></li>\n",
                 file_name = file,
-                file_title = file.chars().skip(15).collect::<String>()
-                                 .to_ascii_uppercase()
-                                 .replace("-", "").replace(".", " ")
-                                 .trim()
+                file_title = filename_pattern
+                    .replace_all(file, "$prefix $ext")
+                    .to_ascii_uppercase()
             ));
         }
 
