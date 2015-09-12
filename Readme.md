@@ -25,6 +25,16 @@ $ cargo run
 
 Voilá!
 
+## Build different books
+
+There are some CLI arguments that you can use to compile books other than the default (`trpl`). E.g., this repository also include the Rustonomicon.
+
+You can build it like this:
+
+```sh
+$ cargo run --release -- --prefix=nomicon --source=nomicon --meta=nomicon_meta.yml
+```
+
 ## License
 
 The book content itself as well as any code I added as part of this repository is Copyright (c) 2015 The Rust Project Developers and licensed like Rust itself ([MIT](https://github.com/rust-lang/rust/blob/master/LICENSE-MIT) and [Apache](https://github.com/rust-lang/rust/blob/master/LICENSE-APACHE)).
