@@ -9,14 +9,13 @@ pub fn run(args: &str, input: &str) -> Result<String, Box<Error>> {
 }
 
 pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
-    let opts = format!(
-        "--from={markdown_opts} {opts} --output=dist/{prefix}-{release_date}.{format}",
-        markdown_opts = options::MARKDOWN,
-        opts = opts,
-        prefix = prefix,
-        release_date = options::RELEASE_DATE,
-        format = format
-    );
+    let opts = format!("--from={markdown_opts} {opts} \
+                        --output=dist/{prefix}-{release_date}.{format}",
+                       markdown_opts = options::MARKDOWN,
+                       opts = opts,
+                       prefix = prefix,
+                       release_date = options::RELEASE_DATE,
+                       format = format);
 
     try!(run(&opts, &book));
 
@@ -27,10 +26,9 @@ pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str) -> Result<(),
 
 #[test]
 fn dry_run() {
-    let output = run(
-        "--from=markdown --base-header-level=2 --to=markdown --atx-headers",
-        "# Hi there!\n"
-    ).unwrap();
+    let output = run("--from=markdown --base-header-level=2 --to=markdown --atx-headers",
+                     "# Hi there!\n")
+                     .unwrap();
 
     assert_eq!(output, "## Hi there!\n");
 }

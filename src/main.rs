@@ -35,7 +35,7 @@ Options:
 struct Args {
     flag_prefix: Option<String>,
     flag_source: Option<String>,
-    flag_meta:  Option<String>,
+    flag_meta: Option<String>,
 }
 
 fn main() {

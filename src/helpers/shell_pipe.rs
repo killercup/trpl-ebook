@@ -7,13 +7,13 @@ use std::process::{self, Command, Stdio};
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum CommandError {
     StdIn,
-    StdOut
+    StdOut,
 }
 
 impl fmt::Display for CommandError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            CommandError::StdIn  => write!(f, "Error getting stdin"),
+            CommandError::StdIn => write!(f, "Error getting stdin"),
             CommandError::StdOut => write!(f, "Error getting stdout"),
         }
     }
@@ -22,8 +22,8 @@ impl fmt::Display for CommandError {
 impl Error for CommandError {
     fn description(&self) -> &str {
         match *self {
-            CommandError::StdIn  => "Error getting stdin",
-            CommandError::StdOut => "Error getting stdout"
+            CommandError::StdIn => "Error getting stdin",
+            CommandError::StdOut => "Error getting stdout",
         }
     }
 }

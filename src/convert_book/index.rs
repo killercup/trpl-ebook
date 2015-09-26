@@ -68,11 +68,9 @@ pub fn render_index(path: &str) -> Result<String, Box<Error>> {
         file_listing.push_str("</ul>\n</li>");
     }
 
-    let output = format!(
-        include_str!("../../lib/index_template.html"),
-        css = include_str!("../../lib/index.css"),
-        file_listing = file_listing
-    );
+    let output = format!(include_str!("../../lib/index_template.html"),
+                         css = include_str!("../../lib/index.css"),
+                         file_listing = file_listing);
 
     Ok(output)
 }

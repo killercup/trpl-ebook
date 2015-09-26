@@ -33,6 +33,6 @@ fn break_long_lines() {
     let broken = break_long_line(long_line, max_len, "↳ ").unwrap();
 
     assert_eq!(broken, correct_split);
-    assert!(broken.lines().all(|x| { x.chars().count() <= max_len }));
+    assert!(broken.lines().all(|x| x.chars().count() <= max_len));
     assert_eq!(broken.lines().count(), 4);
 }
