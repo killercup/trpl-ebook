@@ -11,7 +11,7 @@ snappy includes a C interface (documented in
 The following is a minimal example of calling a foreign function which will
 compile if snappy is installed:
 
-```no_run
+```rust,no_run
 # #![feature(libc)]
 extern crate libc;
 use libc::size_t;
@@ -45,7 +45,7 @@ keeping the binding correct at runtime.
 
 The `extern` block can be extended to cover the entire snappy API:
 
-```no_run
+```rust,no_run
 # #![feature(libc)]
 extern crate libc;
 use libc::{c_int, size_t};
@@ -81,7 +81,7 @@ vectors as pointers to memory. Rust's vectors are guaranteed to be a contiguous 
 length is number of elements currently contained, and the capacity is the total size in elements of
 the allocated memory. The length is less than or equal to the capacity.
 
-```rust
+```rust,rust
 # #![feature(libc)]
 # extern crate libc;
 # use libc::{c_int, size_t};
@@ -192,7 +192,7 @@ A basic example is:
 
 Rust code:
 
-```no_run
+```rust,no_run
 extern fn callback(a: i32) {
     println!("I'm called from C with value {0}", a);
 }
@@ -245,7 +245,7 @@ referenced Rust object.
 
 Rust code:
 
-```no_run
+```rust,no_run
 #[repr(C)]
 struct RustObject {
     a: i32,
@@ -389,7 +389,7 @@ Foreign APIs often export a global variable which could do something like track
 global state. In order to access these variables, you declare them in `extern`
 blocks with the `static` keyword:
 
-```no_run
+```rust,no_run
 # #![feature(libc)]
 extern crate libc;
 
@@ -408,7 +408,7 @@ Alternatively, you may need to alter global state provided by a foreign
 interface. To do this, statics can be declared with `mut` so we can mutate
 them.
 
-```no_run
+```rust,no_run
 # #![feature(libc)]
 extern crate libc;
 
