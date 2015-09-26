@@ -28,7 +28,7 @@ systems may want to jump around.
     * [The `Result` type](#the-result-type)
         * [Parsing integers](#parsing-integers)
         * [The `Result` type alias idiom](#the-result-type-alias-idiom)
-    * [A brief interlude: unwrapping isn't evil](#a-brief-interlude-unwrapping-isn't-evil)
+    * [A brief interlude: unwrapping isn't evil](#a-brief-interlude-unwrapping-isnt-evil)
 * [Working with multiple error types](#working-with-multiple-error-types)
     * [Composing `Option` and `Result`](#composing-option-and-result)
     * [The limits of combinators](#the-limits-of-combinators)
