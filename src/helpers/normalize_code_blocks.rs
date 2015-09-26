@@ -28,7 +28,7 @@ pub fn break_code_blocks(input: &str, max_len: usize, sep: &str) -> Result<Strin
 
 pub fn normalize_code_start(input: &str) -> Result<String, Box<Error>> {
     let rust_code_block_start = Regex::new(r"^```(.*)rust(.*)").unwrap();
-    let hidden_code = Regex::new(r"^# ").unwrap();
+    let hidden_code = Regex::new(r"^(#\s.*|#$)").unwrap();
 
     let mut in_code_block = false;
 
@@ -102,6 +102,11 @@ let x = true;
 
 ```rust
 # use magic::from_the_future::*;
+#
+# #[inline]
+# fn extension(file_name: &str) -> Option<&str> {
+#     find(file_name, '.').map(|i| &file_name[i+1..])
+# }
 let x = true;
 ```
 ";
