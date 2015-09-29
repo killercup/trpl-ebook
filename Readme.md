@@ -4,6 +4,8 @@ This repository contains stuff to convert [this book](http://doc.rust-lang.org/b
 
 **[Download Links](http://killercup.github.io/trpl-ebook/)**
 
+[![Build Status](https://travis-ci.org/killercup/trpl-ebook.svg?branch=master)](https://travis-ci.org/killercup/trpl-ebook)
+
 ## DIY
 
 Install:

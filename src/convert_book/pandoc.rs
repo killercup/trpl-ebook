@@ -25,6 +25,7 @@ pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str) -> Result<(),
 }
 
 #[test]
+#[ignore]
 fn dry_run() {
     let output = run("--from=markdown --base-header-level=2 --to=markdown --atx-headers",
                      "# Hi there!\n")
