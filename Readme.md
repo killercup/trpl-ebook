@@ -25,7 +25,7 @@ Then run:
 $ cargo run
 ```
 
-Voilá!
+Voilà !
 
 ## Build different books
 
