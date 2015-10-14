@@ -1,0 +1,12 @@
+---
+title: "The Little Book of Rust Macros"
+author: "Daniel Keep"
+date: {release_date}
+description: "This book is an attempt to distil the Rust community's collective knowledge of Rust macros. As such, both additions (in the form of pull requests) and requests (in the form of issues) are welcome."
+language: en
+documentclass: book
+links-as-notes: true
+verbatim-in-note: true
+toc-depth: 2
+monofont: "DejaVu Sans Mono"
+...
