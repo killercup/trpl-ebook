@@ -10,12 +10,7 @@ $else$
 $endif$
 
 $if(language)$
-\ifxetex
-  \usepackage{polyglossia}
-  \setmainlanguage{$language$}
-\else
-  \usepackage[shorthands=off,$language$]{babel}
-\fi
+\usepackage[shorthands=off,$language$]{babel}
 $endif$
 
 \usepackage[$if(papersize)$$papersize$$else$a4paper$endif$]{geometry}
