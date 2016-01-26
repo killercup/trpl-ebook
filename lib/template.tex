@@ -1,6 +1,8 @@
 % \documentclass[12pt]{article}
 \documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$$if(papersize)$$papersize$,$else$a4paper,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
 
+\usepackage{ifxetex}
+
 $if(fontfamily)$
   \usepackage{$fontfamily$}
 $else$
