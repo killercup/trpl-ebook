@@ -1,8 +1,8 @@
 ---
-title: "The Rust Programming Language"
-author: "The Rust Team"
+title: "Язык программирования Rust"
+author: "Команда Rust. Перевод сообщества rustycrate.ru"
 date: {release_date}
-description: "This book will teach you about the Rust Programming Language. Rust is a modern systems programming language focusing on safety and speed. It accomplishes these goals by being memory safe without using garbage collection."
+description: "Эта книга научит вас программировать на языке Rust. Rust - современный язык системного программирования, нацеленный на написание безопасного и быстрого кода. Он достигает этих целей благодаря тому, что является безопасным в обращении с памятью без использования сборщика мусора."
 language: russian
 documentclass: book
 links-as-notes: true
