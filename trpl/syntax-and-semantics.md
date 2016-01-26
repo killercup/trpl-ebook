@@ -1,10 +1,10 @@
-% Syntax and Semantics
+% Синтаксис и семантика
 
-This section breaks Rust down into small chunks, one for each concept.
+Эта часть разбита на небольшие главы, каждая из которых описывает определённое
+понятие Rust.
 
-If you’d like to learn Rust from the bottom up, reading this in order is a
-great way to do that.
+Если вы хотите изучить Rust «от и до», продолжайте чтение данной части по
+порядку - вы на верном пути!
 
-These sections also form a reference for each concept, so if you’re reading
-another tutorial and find something confusing, you can find it explained
-somewhere in here.
+Эти главы также являются справочником понятий, так что если при чтении другого
+материала вам будет что-то непонятно, вы всегда сможете найти объяснение здесь.

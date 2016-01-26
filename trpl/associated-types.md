@@ -1,11 +1,11 @@
-% Associated Types
+% Ассоциированные типы
 
-Associated types are a powerful part of Rust’s type system. They’re related to
-the idea of a ‘type family’, in other words, grouping multiple types together. That
-description is a bit abstract, so let’s dive right into an example. If you want
-to write a `Graph` trait, you have two types to be generic over: the node type
-and the edge type. So you might write a trait, `Graph<N, E>`, that looks like
-this:
+Ассоциированные (связанные) типы — это мощная часть системы типов в Rust. Они
+связаны с идеей 'семейства типа', другими словами, группировки различных типов
+вместе. Это описание немного абстрактно, так что давайте разберем на примере.
+Если вы хотите написать типаж `Graph`, то нужны два обобщенных параметра типа:
+тип узел и тип ребро. Исходя из этого, вы можете написать типаж `Graph<N, E>`,
+который выглядит следующим образом:
 
 ```rust
 trait Graph<N, E> {
@@ -15,19 +15,20 @@ trait Graph<N, E> {
 }
 ```
 
-While this sort of works, it ends up being awkward. For example, any function
-that wants to take a `Graph` as a parameter now _also_ needs to be generic over
-the `N`ode and `E`dge types too:
+Такое решение вроде бы достигает своей цели, но, в конечном счете, является
+неудобным. Например, любая функция, которая принимает `Graph` в качестве
+параметра, _также_ должна быть обобщённой с параметрами `N` и `E`:
 
 ```rust,ignore
 fn distance<N, E, G: Graph<N, E>>(graph: &G, start: &N, end: &N) -> u32 { ... }
 ```
 
-Our distance calculation works regardless of our `Edge` type, so the `E` stuff in
-this signature is just a distraction.
+Наша функция расчета расстояния работает независимо от типа `Edge`, поэтому
+параметр `E` в этой сигнатуре является лишним и только отвлекает.
 
-What we really want to say is that a certain `E`dge and `N`ode type come together
-to form each kind of `Graph`. We can do that with associated types:
+Что действительно нужно заявить, это чтобы сформировать какого-либо вида
+`Graph`, нужны соответствующие типы `E` и `N`, собранные вместе. Мы можем
+сделать это с помощью ассоциированных типов:
 
 ```rust
 trait Graph {
@@ -40,19 +41,19 @@ trait Graph {
 }
 ```
 
-Now, our clients can be abstract over a given `Graph`:
+Теперь наши клиенты могут абстрагироваться от определенного `Graph`:
 
 ```rust,ignore
 fn distance<G: Graph>(graph: &G, start: &G::N, end: &G::N) -> u32 { ... }
 ```
 
-No need to deal with the `E`dge type here!
+Больше нет необходимости иметь дело с типом `E`!
 
-Let’s go over all this in more detail.
+Давайте поговорим обо всем этом более подробно.
 
-## Defining associated types
+## Определение ассоциированных типов
 
-Let’s build that `Graph` trait. Here’s the definition:
+Давайте построим наш типаж `Graph`. Вот его определение:
 
 ```rust
 trait Graph {
@@ -64,12 +65,12 @@ trait Graph {
 }
 ```
 
-Simple enough. Associated types use the `type` keyword, and go inside the body
-of the trait, with the functions.
+Достаточно просто. Ассоциированные типы используют ключевое слово `type`, и
+расположены внутри тела типажа, наряду с функциями.
 
-These `type` declarations can have all the same thing as functions do. For example,
-if we wanted our `N` type to implement `Display`, so we can print the nodes out,
-we could do this:
+Эти объявления `type` могут иметь все то же самое, как и при работе с функциями.
+Например, если бы мы хотели, чтобы тип `N` реализовывал `Display`, чтобы была
+возможность печатать узлы, мы могли бы сделать следующее:
 
 ```rust
 use std::fmt;
@@ -83,10 +84,10 @@ trait Graph {
 }
 ```
 
-## Implementing associated types
+## Реализация ассоциированных типов
 
-Just like any trait, traits that use associated types use the `impl` keyword to
-provide implementations. Here’s a simple implementation of Graph:
+Типаж, который включает ассоциированные типы, как и любой другой типаж, для
+реализации использует ключевое слово `impl`. Вот простая реализация `Graph`:
 
 ```rust
 # trait Graph {
@@ -115,23 +116,25 @@ impl Graph for MyGraph {
 }
 ```
 
-This silly implementation always returns `true` and an empty `Vec<Edge>`, but it
-gives you an idea of how to implement this kind of thing. We first need three
-`struct`s, one for the graph, one for the node, and one for the edge. If it made
-more sense to use a different type, that would work as well, we’re just going to
-use `struct`s for all three here.
+Это глупая реализация, которая всегда возвращает `true` и пустой `Vec<Edge>`, но
+она дает вам общее представление о том, как реализуются такие ​​вещи. Для начала
+нужны три `struct`, одна для графа, одна для узла и одна для ребра. В этой
+реализации используются `struct` для всех трех сущностей, но вполне могли бы
+использоваться и другие типы, которые работали бы так же хорошо, если бы
+реализация была более продвинутой.
 
-Next is the `impl` line, which is just like implementing any other trait.
+Затем идет строка с `impl`, которая является такой же, как и при реализации
+любого другого типажа.
 
-From here, we use `=` to define our associated types. The name the trait uses
-goes on the left of the `=`, and the concrete type we’re `impl`ementing this
-for goes on the right. Finally, we use the concrete types in our function
-declarations.
+Далее мы используем знак `=`, чтобы определить наши ассоциированные типы. Имя
+типажа идет слева от знака `=`, а конкретный тип, для которого мы `impl` этот
+типаж, идет справа. Наконец, мы используем конкретные типы при объявлении
+функций.
 
-## Trait objects with associated types
+## Типажи-объекты и ассоциированные типы
 
-There’s one more bit of syntax we should talk about: trait objects. If you
-try to create a trait object from an associated type, like this:
+Вот еще немного синтаксиса, о котором следует упомянуть: типажи-объекты. Если вы
+попытаетесь создать типаж-объект из ассоциированного типа, как в этом примере:
 
 ```rust,ignore
 # trait Graph {
@@ -157,7 +160,7 @@ let graph = MyGraph;
 let obj = Box::new(graph) as Box<Graph>;
 ```
 
-You’ll get two errors:
+Вы получите две ошибки:
 
 ```text
 error: the value of the associated type `E` (from the trait `main::Graph`) must
@@ -170,8 +173,8 @@ let obj = Box::new(graph) as Box<Graph>;
           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-We can’t create a trait object like this, because we don’t know the associated
-types. Instead, we can write this:
+Мы не сможем создать типаж-объект, подобный этому, потому что у него нет
+информации об ассоциированных типах. Вместо этого, мы можем написать так:
 
 ```rust
 # trait Graph {
@@ -197,6 +200,7 @@ let graph = MyGraph;
 let obj = Box::new(graph) as Box<Graph<N=Node, E=Edge>>;
 ```
 
-The `N=Node` syntax allows us to provide a concrete type, `Node`, for the `N`
-type parameter. Same with `E=Edge`. If we didn’t provide this constraint, we
-couldn’t be sure which `impl` to match this trait object to.
+Синтаксис `N=Node` позволяет нам предоставлять конкретный тип, `Node`, для
+параметра типа `N`. То же самое и для `E=Edge`. Если бы мы не предоставляли это
+ограничение, то не могли бы знать наверняка, какая `impl` соответствует этому
+типажу-объекту.

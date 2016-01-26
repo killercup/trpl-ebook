@@ -1,30 +1,36 @@
-% The Rust Programming Language
+% Введение
 
-Welcome! This book will teach you about the [Rust Programming Language][rust].
-Rust is a systems programming language focused on three goals: safety, speed,
-and concurrency. It maintains these goals without having a garbage collector,
-making it a useful language for a number of use cases other languages aren’t
-good at: embedding in other languages, programs with specific space and time
-requirements, and writing low-level code, like device drivers and operating
-systems. It improves on current languages targeting this space by having a
-number of compile-time safety checks that produce no runtime overhead, while
-eliminating all data races. Rust also aims to achieve ‘zero-cost abstractions’
-even though some of these abstractions feel like those of a high-level
-language. Even then, Rust still allows precise control like a low-level
-language would.
+Добро пожаловать! Эта книга обучает основным принципам работы с языком
+программирования [Rust][rust]. Rust — это системный язык программирования,
+внимание которого сосредоточено на трёх задачах: безопасность, скорость и
+параллелизм. Он решает эти задачи без сборщика мусора, что делает его полезным в
+ряде случаев, когда использование других языков было бы нецелесообразно: при
+встраивании в другие языки, при написании программ с особыми пространственными и
+временными требованиями, при написании низкоуровневого кода, такого как драйверы
+устройств и операционные системы. Во время компиляции Rust делает ряд проверок
+безопасности. За счёт этого не возникает накладных расходов во время выполнения
+приложения и устраняются все гонки данных.  Это даёт Rust преимущество над
+другими языками программирования, имеющими аналогичную направленность. Rust
+также направлен на достижение «абстракции с нулевой стоимостью». Хотя некоторые
+из этих абстракций и ведут себя как в языках высокого уровня, но даже тогда Rust
+по-прежнему обеспечивает точный контроль, как делал бы язык низкого уровня.
 
-[rust]: https://www.rust-lang.org
+[rust]: http://rust-lang.org
 
-“The Rust Programming Language” is split into eight sections. This introduction
-is the first. After this:
+Книга «Язык программирования Rust» делится на восемь разделов. Это введение
+является первым из них. Затем идут:
 
-* [Getting started][gs] - Set up your computer for Rust development.
-* [Learn Rust][lr] - Learn Rust programming through small projects.
-* [Effective Rust][er] - Higher-level concepts for writing excellent Rust code.
-* [Syntax and Semantics][ss] - Each bit of Rust, broken down into small chunks.
-* [Nightly Rust][nr] - Cutting-edge features that aren’t in stable builds yet.
-* [Glossary][gl] - A reference of terms used in the book.
-* [Bibliography][bi] - Background on Rust's influences, papers about Rust.
+* [C чего начать][gs] — Настройка компьютера для разработки на Rust.
+* [Изучение Rust][lr] — Обучение программированию на Rust на примере небольших
+проектов.
+* [Эффективное использование Rust][er] — Понятия более высокого уровня для
+написания качественного кода на Rust.
+* [Синтаксис и семантика][ss] — Каждое понятие Rust разбивается на небольшие
+кусочки.
+* [Нестабильные возможности Rust][nr] — Передовые возможности, которые пока не
+добавлены в стабильную сборку.
+* [Глоссарий][gl] — Ссылки на термины, используемые в книге.
+* [Академические исследования][ar] — Литература, которая оказала влияние на Rust.
 
 [gs]: getting-started.html
 [lr]: learn-rust.html
@@ -32,26 +38,32 @@ is the first. After this:
 [ss]: syntax-and-semantics.html
 [nr]: nightly-rust.html
 [gl]: glossary.html
-[bi]: bibliography.html
+[ar]: academic-research.html
 
-After reading this introduction, you’ll want to dive into either ‘Learn Rust’
-or ‘Syntax and Semantics’, depending on your preference: ‘Learn Rust’ if you
-want to dive in with a project, or ‘Syntax and Semantics’ if you prefer to
-start small, and learn a single concept thoroughly before moving onto the next.
-Copious cross-linking connects these parts together.
+После прочтения этого введения, в зависимости от ваших предпочтений, вы можете
+продолжить дальнейшее изучение либо в направлении «Изучение Rust», либо в
+направлении «Синтаксис и семантика». Если вы предпочитаете изучить язык на
+примере реального проекта, лучшим выбором будет раздел «Изучение Rust». Раздел
+«Синтаксис и семантика» подойдёт тем, кто предпочитает тщательно изучить каждое
+понятие языка отдельно, перед тем как двигаться дальше. Большое количество
+перекрёстных ссылок соединяет эти части воедино.
 
-### Contributing
+### Содействие
 
-The source files from which this book is generated can be found on Github:
+Исходные файлы, из которых генерируется оригинал этой книги, могут быть найдены
+на Github:
 [github.com/rust-lang/rust/tree/master/src/doc/trpl](https://github.com/rust-lang/rust/tree/master/src/doc/trpl)
 
-## A brief introduction to Rust
+Исходные файлы перевода этой книги на русский язык также находятся на GitHub:
+[github.com/kgv/rust_book_ru](https://github.com/kgv/rust_book_ru)
 
-Is Rust a language you might be interested in? Let’s examine a few small code
-samples to show off a few of its strengths.
+## Краткое введение в Rust
 
-The main concept that makes Rust unique is called ‘ownership’. Consider this
-small example:
+Чем же Rust может заинтересовать вас? Давайте рассмотрим несколько небольших
+примеров кода, чтобы продемонстрировать некоторые из его сильных сторон.
+
+Основное понятие, которое делает Rust уникальным, называется «владение».
+Рассмотрим следующий небольшой пример:
 
 ```rust
 fn main() {
@@ -59,43 +71,45 @@ fn main() {
 }
 ```
 
-This program makes a [variable binding][var] named `x`. The value of this
-binding is a `Vec<T>`, a ‘vector’, that we create through a [macro][macro]
-defined in the standard library. This macro is called `vec`, and we invoke
-macros with a `!`. This follows a general principle of Rust: make things
-explicit. Macros can do significantly more complicated things than function
-calls, and so they’re visually distinct. The `!` also helps with parsing,
-making tooling easier to write, which is also important.
+Эта программа создаёт [связанное имя][var] `x`. Его значением является `Vec<T>`,
+«вектор», который мы создаём с помощью [макроса][macro], определённого в
+стандартной библиотеке. Этот макрос называется `vec`, и при его вызове
+используется символ `!`. Это следует из общего принципа Rust: делать вещи
+явными. Макрос может делать значительно более сложные вещи, чем вызовы функций,
+и поэтому они визуально отличаются. Символ `!` также помогает при разборе, что
+облегчает написание инструментов, а это тоже важно.
 
-We used `mut` to make `x` mutable: bindings are immutable by default in Rust.
-We’ll be mutating this vector later in the example.
+Мы использовали `mut`, чтобы сделать `x` изменяемым: связанные имена в Rust по
+умолчанию неизменяемы. Дальше в примере мы будем изменять этот вектор.
 
-It’s also worth noting that we didn’t need a type annotation here: while Rust
-is statically typed, we didn’t need to explicitly annotate the type. Rust has
-type inference to balance out the power of static typing with the verbosity of
-annotating types.
+Стоит также отметить, что здесь нам не нужно указывать тип, несмотря на то, что
+Rust является статически типизированным. Rust может выводить типы, что позволяет
+достичь компромисса между мощью статической типизации и многословностью указания
+типов.
 
-Rust prefers stack allocation to heap allocation: `x` is placed directly on the
-stack. However, the `Vec<T>` type allocates space for the elements of the
-vector on the heap. If you’re not familiar with this distinction, you can
-ignore it for now, or check out [‘The Stack and the Heap’][heap]. As a systems
-programming language, Rust gives you the ability to control how your memory is
-allocated, but when we’re getting started, it’s less of a big deal.
+Rust предпочитает выделять память в стеке, а не в куче: `x` находится
+непосредственно в стеке. Однако тип `Vec<T>` выделяет пространство для элементов
+вектора в куче. Если вы не знакомы с различиями этих двух видов выделения
+памяти, можете пока просто проигнорировать эту информацию или же ознакомиться с
+разделом «[Стек и Куча][heap]». Как системный язык программирования, Rust даёт
+вам возможность контролировать выделение памяти. Но не будем забегать вперёд, мы
+только начинаем изучение языка.
 
 [var]: variable-bindings.html
 [macro]: macros.html
 [heap]: the-stack-and-the-heap.html
 
-Earlier, we mentioned that ‘ownership’ is the key new concept in Rust. In Rust
-parlance, `x` is said to ‘own’ the vector. This means that when `x` goes out of
-scope, the vector’s memory will be de-allocated. This is done deterministically
-by the Rust compiler, rather than through a mechanism such as a garbage
-collector. In other words, in Rust, you don’t call functions like `malloc` and
-`free` yourself: the compiler statically determines when you need to allocate
-or deallocate memory, and inserts those calls itself. To err is to be human,
-but compilers never forget.
+Ранее мы упоминали, что «владение» — это то, что делает Rust уникальным. В
+терминологии Rust, `x` «владеет» вектором. Это означает, что как только `x`
+выходит из области видимости, выделенная для вектора память будет освобождена.
+Когда это будет происходить, определяется средствами компилятора Rust, а не
+через механизмы наподобие сборщика мусора. Другими словами, в Rust вы не
+вызываете функции вроде `malloc` и `free` собственноручно: компилятор статически
+определяет, когда нужно выделить или освободить память, и вставляет эти вызовы
+самостоятельно. Человек может совершить ошибку при использовании этих вызовов, а
+компилятор — никогда.
 
-Let’s add another line to our example:
+Давайте добавим ещё одну строку в наш пример:
 
 ```rust
 fn main() {
@@ -105,17 +119,19 @@ fn main() {
 }
 ```
 
-We’ve introduced another binding, `y`. In this case, `y` is a ‘reference’ to
-the first element of the vector. Rust’s references are similar to pointers in
-other languages, but with additional compile-time safety checks. References
-interact with the ownership system by [‘borrowing’][borrowing] what they point
-to, rather than owning it. The difference is, when the reference goes out of
-scope, it will not deallocate the underlying memory. If it did, we’d
-de-allocate twice, which is bad!
+Мы создаём ещё одно имя, `y`. В этом случае, `y` является «ссылкой» на первый
+элемент вектора. Ссылки в Rust похожи на указатели в других языках, но с
+дополнительными проверками безопасности на этапе компиляции. Ссылки
+взаимодействуют с системой прав владения при помощи
+«[заимствования][borrowing]». Ссылки заимствуют то, на что они указывают, а не
+получают права владения им. Разница в том, что при заимствовании ссылка не
+освобождает основную память, когда выходит за пределы области видимости. Если бы
+это было не так, то память освобождалась бы два раза — плохо!
 
 [borrowing]: references-and-borrowing.html
 
-Let’s add a third line. It looks innocent enough, but causes a compiler error:
+Давайте добавим третью строку. На первый взгляд в коде нет ничего такого, но он
+вызывает ошибку компиляции:
 
 ```rust,ignore
 fn main() {
@@ -127,8 +143,8 @@ fn main() {
 }
 ```
 
-`push` is a method on vectors that appends another element to the end of the
-vector. When we try to compile this program, we get an error:
+`push` — это метод, который добавляет ещё один элемент в конец вектора. Когда мы
+пытаемся скомпилировать эту программу, то получаем ошибку:
 
 ```text
 error: cannot borrow `x` as mutable because it is also borrowed as immutable
@@ -145,20 +161,22 @@ fn main() {
 ^
 ```
 
-Whew! The Rust compiler gives quite detailed errors at times, and this is one
-of those times. As the error explains, while we made our binding mutable, we
-still cannot call `push`. This is because we already have a reference to an
-element of the vector, `y`. Mutating something while another reference exists
-is dangerous, because we may invalidate the reference. In this specific case,
-when we create the vector, we may have only allocated space for two elements.
-Adding a third would mean allocating a new chunk of memory for all those elements,
-copying the old values over, and updating the internal pointer to that memory.
-That all works just fine. The problem is that `y` wouldn’t get updated, and so
-we’d have a ‘dangling pointer’. That’s bad. Any use of `y` would be an error in
-this case, and so the compiler has caught this for us.
+Вот так! Компилятор Rust в некоторых случаях выдаёт достаточно подробные ошибки,
+и это как раз один из таких случаев. Как объясняется в ошибке, несмотря на то,
+что мы и сделали наше имя изменяемым, мы всё ещё не можем вызвать метод
+`push`. Это потому, что у нас уже есть ссылка на элемент вектора, `y`. Изменять
+вектор, пока существует другая ссылка на него, опасно, потому что можно сделать
+ссылку недействительной. В данном конкретном случае, когда мы создаём вектор, у
+нас есть выделенное пространство памяти только для двух элементов. Добавление
+третьего элемента будет означать выделение новой области памяти для всех этих
+элементов, копирование старых значений и обновление внутреннего указателя на эту
+память.  Всё это работает просто отлично. Проблема заключается в том, что `y` не
+будет обновлена, из-за чего мы получим «зависший указатель». И это плохо. В этом
+случае любое использование `y` будет означать ошибку. Компилятор обнаружил
+данную проблему.
 
-So how do we solve this problem? There are two approaches we can take. The first
-is making a copy rather than using a reference:
+Так как же нам решить эту проблему? Есть два подхода, которые мы можем
+использовать. Первый заключается в создании копии вместо ссылки:
 
 ```rust
 fn main() {
@@ -170,15 +188,17 @@ fn main() {
 }
 ```
 
-Rust has [move semantics][move] by default, so if we want to make a copy of some
-data, we call the `clone()` method. In this example, `y` is no longer a reference
-to the vector stored in `x`, but a copy of its first element, `"Hello"`. Now
-that we don’t have a reference, our `push()` works just fine.
+По умолчанию, Rust использует [семантику перемещения][move], поэтому, если мы
+хотим сделать копию некоторых данных, мы должны вызывать метод `clone()`. В этом
+примере `y` больше не является ссылкой на вектор, хранящийся в `x`, но является
+копией его первого элемента, `"Hello"`. Теперь, когда у нас больше нет ссылки,
+метод `push()` прекрасно работает.
 
 [move]: ownership.html#move-semantics
 
-If we truly want a reference, we need the other option: ensure that our reference
-goes out of scope before we try to do the mutation. That looks like this:
+Если нам всё же нужна ссылка, то следует использовать другой вариант: убедиться,
+что наша ссылка выходит из области видимости, прежде чем мы попытаемся сделать
+изменения. Это выглядит примерно так:
 
 ```rust
 fn main() {
@@ -192,8 +212,10 @@ fn main() {
 }
 ```
 
-We created an inner scope with an additional set of curly braces. `y` will go out of
-scope before we call `push()`, and so we’re all good.
+Мы создали внутреннюю область видимости с помощью дополнительных фигурных
+скобок. `y` выйдет за пределы этой области видимости до вызова метода `push()`,
+и поэтому все будет хорошо.
 
-This concept of ownership isn’t just good for preventing dangling pointers, but an
-entire set of related problems, like iterator invalidation, concurrency, and more.
+Концепция владения хороша не только для предотвращения проблемы повисших
+указателей, но также и для всей совокупности связанных с этим проблем, таких
+как: недействительность итератора, параллелизм и многое другое.

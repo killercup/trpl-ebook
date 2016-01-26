@@ -1,12 +1,12 @@
-% `type` Aliases
+% Псевдонимы типов
 
-The `type` keyword lets you declare an alias of another type:
+Ключевое слово `type` позволяет объявить псевдоним другого типа:
 
 ```rust
 type Name = String;
 ```
 
-You can then use this type as if it were a real type:
+Затем вы можете использовать этот псевдоним вместо реального типа:
 
 ```rust
 type Name = String;
@@ -14,9 +14,9 @@ type Name = String;
 let x: Name = "Hello".to_string();
 ```
 
-Note, however, that this is an _alias_, not a new type entirely. In other
-words, because Rust is strongly typed, you’d expect a comparison between two
-different types to fail:
+Однако, обратите внимание на то что *псевдоним* не объявляет новый тип. Rust
+строго типизированный язык, например у вас не получится сравнить значения двух
+различных типов:
 
 ```rust,ignore
 let x: i32 = 5;
@@ -27,7 +27,7 @@ if x == y {
 }
 ```
 
-this gives
+Вы получите ошибку при компиляции:
 
 ```text
 error: mismatched types:
@@ -39,7 +39,7 @@ error: mismatched types:
              ^
 ```
 
-But, if we had an alias:
+Но если мы используем псевдоним:
 
 ```rust
 type Num = i32;
@@ -52,10 +52,10 @@ if x == y {
 }
 ```
 
-This compiles without error. Values of a `Num` type are the same as a value of
-type `i32`, in every way.
+То этот пример скомпилируется без ошибок. Значения типа `Num` всегда будут такие
+же как и у типа `i32`.
 
-You can also use type aliases with generics:
+Вы также можете использовать псевдонимы типов с обобщённым кодом:
 
 ```rust
 use std::result;
@@ -68,9 +68,9 @@ enum ConcreteError {
 type Result<T> = result::Result<T, ConcreteError>;
 ```
 
-This creates a specialized version of the `Result` type, which always has a
-`ConcreteError` for the `E` part of `Result<T, E>`. This is commonly used
-in the standard library to create custom errors for each subsection. For
-example, [io::Result][ioresult].
+В этом примере мы создаем свою версию типа `Result`, который всегда будет
+использовать перечисление `ConcreteError` в `Result<T, E>` вместо типа `E`.
+Псевдонимы типов часто используются в модулях стандартной библиотеки для
+создания своих псевдонимов для `Result<T, E>`. Например, [io::Result][ioresult].
 
-[ioresult]: ../std/io/type.Result.html
+[ioresult]: http://doc.rust-lang.org/std/io/type.Result.html

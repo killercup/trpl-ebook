@@ -1,60 +1,59 @@
-% Vectors
+% Вектора
 
-A ‘vector’ is a dynamic or ‘growable’ array, implemented as the standard
-library type [`Vec<T>`][vec]. The `T` means that we can have vectors
-of any type (see the chapter on [generics][generic] for more).
-Vectors always allocate their data on the heap.
-You can create them with the `vec!` macro:
+«Вектор» — это динамический или, по-другому, «растущий» массив, реализованный в
+виде стандартного библиотечного типа [`Vec<T>`][vec] (где `<T>` является
+[обобщённым типом][generic]). Вектора всегда размещают данные в куче. Вы можете
+создавать их с помощью макроса `vec!`:
 
 ```rust
 let v = vec![1, 2, 3, 4, 5]; // v: Vec<i32>
 ```
 
-(Notice that unlike the `println!` macro we’ve used in the past, we use square
-brackets `[]` with `vec!` macro. Rust allows you to use either in either situation,
-this is just convention.)
+(Заметьте, что, в отличие от макроса `println!`, который мы использовали ранее,
+с `vec!` используются квадратные скобки `[]`. Rust разрешает использование и
+круглых, и квадратных скобок в обеих ситуациях — это просто стилистическое
+соглашение.)
 
-There’s an alternate form of `vec!` for repeating an initial value:
+Для создания вектора из повторяющихся значений есть другая форма `vec!`:
 
 ```rust
-let v = vec![0; 10]; // ten zeroes
+let v = vec![0; 10]; // десять нулей
 ```
 
-## Accessing elements
+## Доступ к элементам
 
-To get the value at a particular index in the vector, we use `[]`s:
+Чтобы получить значение по определенному индексу в векторе, мы используем `[]`:
 
 ```rust
 let v = vec![1, 2, 3, 4, 5];
 
-println!("The third element of v is {}", v[2]);
+println!("Третий элемент вектора v равен {}", v[2]);
 ```
 
-The indices count from `0`, so the third element is `v[2]`.
+Индексы отсчитываются от `0`, так что третьим элементом является `v[2]`.
 
-## Iterating
+## Обход
 
-Once you have a vector, you can iterate through its elements with `for`. There
-are three versions:
+Вы можете обойти элементы вектора с помощью `for`. Есть три варианта:
 
 ```rust
 let mut v = vec![1, 2, 3, 4, 5];
 
 for i in &v {
-    println!("A reference to {}", i);
+    println!("Ссылка {}", i);
 }
 
 for i in &mut v {
-    println!("A mutable reference to {}", i);
+    println!("Изменяемая ссылка {}", i);
 }
 
 for i in v {
-    println!("Take ownership of the vector and its element {}", i);
+    println!("Владение вектором и его элементами {}", i);
 }
 ```
 
-Vectors have many more useful methods, which you can read about in [their
-API documentation][vec].
+У векторов есть много других полезных методов, о которых вы можете прочитать в
+[документации API][vec].
 
-[vec]: ../std/vec/index.html
+[vec]: http://doc.rust-lang.org/std/vec/index.html
 [generic]: generics.html

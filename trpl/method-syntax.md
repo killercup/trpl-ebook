@@ -1,26 +1,28 @@
-% Method Syntax
+% Синтаксис методов
 
-Functions are great, but if you want to call a bunch of them on some data, it
-can be awkward. Consider this code:
+Функции — это хорошо, но если вы хотите вызвать несколько связных функций для
+каких-либо данных, то это может быть неудобно. Рассмотрим этот код:
 
 ```rust,ignore
-baz(bar(foo));
+baz(bar(foo)));
 ```
 
-We would read this left-to-right, and so we see ‘baz bar foo’. But this isn’t the
-order that the functions would get called in, that’s inside-out: ‘foo bar baz’.
-Wouldn’t it be nice if we could do this instead?
+Читать данную строку кода следует слева направо, поэтому мы наблюдаем такой
+порядок: «baz bar foo». Но он противоположен порядку, в котором функции будут
+вызываться: «foo bar baz». Было бы классно записать вызовы в том порядке, в
+котором они происходят, не так ли?
 
 ```rust,ignore
 foo.bar().baz();
 ```
 
-Luckily, as you may have guessed with the leading question, you can! Rust provides
-the ability to use this ‘method call syntax’ via the `impl` keyword.
+К счастью, как вы уже наверно догадались, это возможно! Rust предоставляет
+возможность использовать такой *синтаксис вызова метода* с помощью ключевого
+слова `impl`.
 
-# Method calls
+# Вызов методов
 
-Here’s how it works:
+Вот как это работает:
 
 ```rust
 struct Circle {
@@ -41,25 +43,23 @@ fn main() {
 }
 ```
 
-This will print `12.566371`.
+Этот код напечатает `12.566371`.
 
+Мы создали структуру, которая представляет собой круг. Затем мы написали блок
+`impl` и определили метод `area` внутри него.
 
+Методы принимают специальный первый параметр, `&self`. Есть три возможных
+варианта: `self`, `&self` и `&mut self`. Вы можете думать об этом специальном
+параметре как о `x` в `x.foo()`. Три варианта соответствуют трем возможным видам
+элемента `x`: `self` — если это просто значение в стеке, `&self` — если это
+ссылка и `&mut self` — если это изменяемая ссылка. Мы передаем параметр `&self`
+в метод `area`, поэтому мы можем использовать его так же, как и любой другой
+параметр. Так как мы знаем, что это `Circle`, мы можем получить доступ к полю
+`radius` так же, как если бы это была любая другая структура.
 
-We’ve made a `struct` that represents a circle. We then write an `impl` block,
-and inside it, define a method, `area`.
-
-Methods take a special first parameter, of which there are three variants:
-`self`, `&self`, and `&mut self`. You can think of this first parameter as
-being the `foo` in `foo.bar()`. The three variants correspond to the three
-kinds of things `foo` could be: `self` if it’s just a value on the stack,
-`&self` if it’s a reference, and `&mut self` if it’s a mutable reference.
-Because we took the `&self` parameter to `area`, we can use it just like any
-other parameter. Because we know it’s a `Circle`, we can access the `radius`
-just like we would with any other `struct`. 
-
-We should default to using `&self`, as you should prefer borrowing over taking
-ownership, as well as taking immutable references over mutable ones. Here’s an
-example of all three variants:
+По умолчанию следует использовать `&self`, также как следует предпочитать
+заимствование владению, а неизменные ссылки изменяемым. Вот пример, включающий
+все три варианта:
 
 ```rust
 struct Circle {
@@ -70,24 +70,24 @@ struct Circle {
 
 impl Circle {
     fn reference(&self) {
-       println!("taking self by reference!");
+       println!("принимаем self по ссылке!");
     }
 
     fn mutable_reference(&mut self) {
-       println!("taking self by mutable reference!");
+       println!("принимаем self по изменяемой ссылке!");
     }
 
     fn takes_ownership(self) {
-       println!("taking ownership of self!");
+       println!("принимаем владение self!");
     }
 }
 ```
 
-# Chaining method calls
+# Цепочка вызовов методов
 
-So, now we know how to call a method, such as `foo.bar()`. But what about our
-original example, `foo.bar().baz()`? This is called ‘method chaining’. Let’s
-look at an example:
+Итак, теперь мы знаем, как вызвать метод, например `foo.bar()`. Но что насчет
+нашего первоначального примера, `foo.bar().baz()`? Это называется «цепочка
+вызовов», и мы можем сделать это, вернув `self`.
 
 ```rust
 struct Circle {
@@ -115,22 +115,22 @@ fn main() {
 }
 ```
 
-Check the return type:
+Проверьте тип возвращаемого значения:
 
 ```rust
 # struct Circle;
 # impl Circle {
-fn grow(&self, increment: f64) -> Circle {
+fn grow(&self) -> Circle {
 # Circle } }
 ```
 
-We just say we’re returning a `Circle`. With this method, we can grow a new
-`Circle` to any arbitrary size.
+Мы просто указываем, что возвращается `Circle`. С помощью этого метода мы можем
+создать новый круг, площадь которого будет в 100 раз больше, чем у старого.
 
-# Associated functions
+# Статические методы
 
-You can also define associated functions that do not take a `self` parameter.
-Here’s a pattern that’s very common in Rust code:
+Вы также можете определить методы, которые не принимают параметр `self`. Вот
+шаблон программирования, который очень распространен в коде на Rust:
 
 ```rust
 struct Circle {
@@ -154,18 +154,18 @@ fn main() {
 }
 ```
 
-This ‘associated function’ builds a new `Circle` for us. Note that associated
-functions are called with the `Struct::function()` syntax, rather than the
-`ref.method()` syntax. Some other languages call associated functions ‘static
-methods’.
+Этот *статический метод*, который создает новый `Circle`. Обратите внимание, что
+статические методы вызываются с помощью синтаксиса: `Struct::method()`, а не
+`ref.method()`.
 
-# Builder Pattern
+# Шаблон «строитель» (Builder Pattern)
 
-Let’s say that we want our users to be able to create `Circle`s, but we will
-allow them to only set the properties they care about. Otherwise, the `x`
-and `y` attributes will be `0.0`, and the `radius` will be `1.0`. Rust doesn’t
-have method overloading, named arguments, or variable arguments. We employ
-the builder pattern instead. It looks like this:
+Давайте предположим, что нам нужно, чтобы наши пользователи могли создавать
+круги и чтобы у них была возможность задавать только те свойства, которые им
+нужны. В противном случае, атрибуты `x` и `y` будут `0.0`, а `radius` будет
+`1.0`. Rust не поддерживает перегрузку методов, именованные аргументы или
+переменное количество аргументов. Вместо этого мы используем шаблон «строитель».
+Он выглядит следующим образом:
 
 ```rust
 struct Circle {
@@ -188,7 +188,7 @@ struct CircleBuilder {
 
 impl CircleBuilder {
     fn new() -> CircleBuilder {
-        CircleBuilder { x: 0.0, y: 0.0, radius: 1.0, }
+        CircleBuilder { x: 0.0, y: 0.0, radius: 0.0, }
     }
 
     fn x(&mut self, coordinate: f64) -> &mut CircleBuilder {
@@ -218,15 +218,14 @@ fn main() {
                 .radius(2.0)
                 .finalize();
 
-    println!("area: {}", c.area());
+    println!("площадь: {}", c.area());
     println!("x: {}", c.x);
     println!("y: {}", c.y);
 }
 ```
 
-What we’ve done here is make another `struct`, `CircleBuilder`. We’ve defined our
-builder methods on it. We’ve also defined our `area()` method on `Circle`. We
-also made one more method on `CircleBuilder`: `finalize()`. This method creates
-our final `Circle` from the builder. Now, we’ve used the type system to enforce
-our concerns: we can use the methods on `CircleBuilder` to constrain making
-`Circle`s in any way we choose.
+Всё, что мы сделали здесь — это создали ещё одну структуру, `CircleBuilder`. В
+ней мы определили методы строителя. Также мы определили метод `area()` в
+`Circle`. Мы также сделали еще один метод в `CircleBuilder`: `finalize()`. Этот
+метод создаёт наш окончательный `Circle` из строителя. Таким образом, мы можем
+использовать методы `CircleBuilder` чтобы уточнить создание `Circle`.

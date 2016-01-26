@@ -1,74 +1,90 @@
-% Error Handling
+% Обработка ошибок
 
-Like most programming languages, Rust encourages the programmer to handle
-errors in a particular way. Generally speaking, error handling is divided into
-two broad categories: exceptions and return values. Rust opts for return
-values.
+Как и многие языки программирования, Rust призывает разработчика определенным
+способом обрабатывать ошибки. Вообще, существует два общих подхода
+обработки ошибок: с помощью исключений и через возвращаемые значения. И Rust
+предпочитает возвращаемые значения.
 
-In this chapter, we intend to provide a comprehensive treatment of how to deal
-with errors in Rust. More than that, we will attempt to introduce error handling
-one piece at a time so that you'll come away with a solid working knowledge of
-how everything fits together.
+В этой главе мы намерены подробно изложить работу с ошибками в Rust. Более того,
+мы попробуем раз за разом погружаться в обработку ошибок с различных сторон, так
+что под конец у вас будет уверенное практическое представление о том, как все
+это сходится воедино.
 
-When done naïvely, error handling in Rust can be verbose and annoying. This
-chapter will explore those stumbling blocks and demonstrate how to use the
-standard library to make error handling concise and ergonomic.
+В наивной реализации обработка ошибок в Rust может выглядеть многословной и
+раздражающей. Мы рассмотрим основные камни преткновения, а также
+продемонстрируем, как сделать обработку ошибок лаконичной и удобной, пользуясь
+стандартной библиотекой.
 
-# Table of Contents
+# Содержание
 
-This chapter is very long, mostly because we start at the very beginning with
-sum types and combinators, and try to motivate the way Rust does error handling
-incrementally. As such, programmers with experience in other expressive type
-systems may want to jump around.
+Эта глава очень длинная, в основном потому, что мы начнем с самого начала
+— рассмотрения типов-сумм (sum type) и комбинаторов, и далее попытаемся
+последовательно объяснить подход Rust к обработке ошибок. Так что разработчики,
+которые имеют опыт работы с другими выразительными системами типов, могут
+свободно перескакивать от раздела к разделу.
 
-* [The Basics](#the-basics)
-    * [Unwrapping explained](#unwrapping-explained)
-    * [The `Option` type](#the-option-type)
-        * [Composing `Option<T>` values](#composing-optiont-values)
-    * [The `Result` type](#the-result-type)
-        * [Parsing integers](#parsing-integers)
-        * [The `Result` type alias idiom](#the-result-type-alias-idiom)
-    * [A brief interlude: unwrapping isn't evil](#a-brief-interlude-unwrapping-isnt-evil)
-* [Working with multiple error types](#working-with-multiple-error-types)
-    * [Composing `Option` and `Result`](#composing-option-and-result)
-    * [The limits of combinators](#the-limits-of-combinators)
-    * [Early returns](#early-returns)
-    * [The `try!` macro](#the-try-macro)
-    * [Defining your own error type](#defining-your-own-error-type)
-* [Standard library traits used for error handling](#standard-library-traits-used-for-error-handling)
-    * [The `Error` trait](#the-error-trait)
-    * [The `From` trait](#the-from-trait)
-    * [The real `try!` macro](#the-real-try-macro)
-    * [Composing custom error types](#composing-custom-error-types)
-    * [Advice for library writers](#advice-for-library-writers)
-* [Case study: A program to read population data](#case-study-a-program-to-read-population-data)
-    * [Initial setup](#initial-setup)
-    * [Argument parsing](#argument-parsing)
-    * [Writing the logic](#writing-the-logic)
-    * [Error handling with `Box<Error>`](#error-handling-with-boxerror)
-    * [Reading from stdin](#reading-from-stdin)
-    * [Error handling with a custom type](#error-handling-with-a-custom-type)
-    * [Adding functionality](#adding-functionality)
-* [The short story](#the-short-story)
+* [Основы](#the-basics)
+    * [Объяснение `unwrap`](#unwrapping-explained)
+    * [Тип `Option`](#the-option-type)
+        * [Совмещение значений `Option<T>`](#composing-optiont-values)
+    * [Тип `Result`](#the-result-type)
+        * [Преобразование строки в число](#parsing-integers)
+        * [Создание псевдонима типа `Result`](#the-result-type-alias-idiom)
+    * [Короткое отступление: `unwrap` — не обязательно зло](#a-brief-interlude-unwrapping-isnt-evil)
+* [Работа с несколькими типами ошибок](#working-with-multiple-error-types)
+    * [Совмещение `Option` и `Result`](#composing-option-and-result)
+    * [Ограничения комбинаторов](#the-limits-of-combinators)
+    * [Преждевременный `return`](#early-returns)
+    * [Макрос `try!`](#the-try-macro)
+    * [Объявление собственного типа ошибки](#defining-your-own-error-type)
+* [Типажи из стандартной библиотеки, используемые для обработки ошибок](#standard-library-traits-used-for-error-handling)
+    * [Типаж `Error`](#the-error-trait)
+    * [Типаж `From`](#the-from-trait)
+    * [Настоящий макрос `try!`](#the-real-try-macro)
+    * [Совмещение собственных типов ошибок](#composing-custom-error-types)
+    * [Рекомендации для авторов библиотек](#advice-for-library-writers)
+* Практический пример: Программа для чтения демографических данных
+* [Заключение](#the-short-story)
 
-# The Basics
+<a name="the-basics"></a>
 
-You can think of error handling as using *case analysis* to determine whether
-a computation was successful or not. As you will see, the key to ergonomic error
-handling is reducing the amount of explicit case analysis the programmer has to
-do while keeping code composable.
+# Основы
 
-Keeping code composable is important, because without that requirement, we
-could [`panic`](../std/macro.panic!.html) whenever we
-come across something unexpected. (`panic` causes the current task to unwind,
-and in most cases, the entire program aborts.) Here's an example:
+Обработку ошибок можно рассматривать как *вариативный анализ* того, было ли
+некоторое вычисление выполнено успешно или нет. Как будет показано далее,
+ключом к удобству обработки ошибок является сокращение количества явного
+вариативного анализа, который должен выполнять разработчик, сохраняя при этом
+код легко сочетаемым с другим кодом (composability).
+
+*(Примечание переводчика: Вариативный анализ – это один из наиболее
+общеприменимых методов аналитического  мышления, который заключается в
+рассмотрении проблемы, вопроса или некоторой ситуации с точки зрения каждого
+возможного конкретного случая. При этом рассмотрение по отдельности каждого
+такого случая является достаточным для того, чтобы решить первоначальный
+вопрос.*
+
+*Важным аспектом такого подхода к решению проблем является то, что такой анализ
+должен быть исчерпывающим (exhaustive). Другими словами, при использовании
+вариативного анализа должны быть рассмотрены все возможные случаи.*
+
+*В Rust вариативный анализ реализуется с помощью синтаксической конструкции
+[`match`](match.html). При этом компилятор гарантирует, что такой анализ будет
+исчерпывающим: если разработчик не рассмотрит все возможные варианты заданного
+значения, программа не будет скомпилирована.)*
+
+Сохранять сочетаемость кода важно, потому что без этого требования
+мы могли бы просто получать [`panic`](http://doc.rust-lang.org/std/macro.panic!.html) всякий раз,
+когда мы сталкивались бы с чем-то неожиданным. (`panic` вызывает прерывание
+текущего потока и, в большинстве случаев, приводит к завершению всей программы.)
+Вот пример:
 
 ```rust,should_panic
-// Guess a number between 1 and 10.
-// If it matches the number we had in mind, return true. Else, return false.
+// Попробуйте угадать число от 1 до 10.
+// Если заданное число соответствует тому, что мы загадали, возвращается true.
+// В противном случае возвращается false.
 fn guess(n: i32) -> bool {
     if n < 1 || n > 10 {
-        panic!("Invalid number: {}", n);
+        panic!("Неверное число: {}", n);
     }
     n == 5
 }
@@ -78,53 +94,56 @@ fn main() {
 }
 ```
 
-If you try running this code, the program will crash with a message like this:
+Если попробовать запустить этот код, то программа аварийно завершится с
+сообщением вроде этого:
 
 ```text
-thread '<main>' panicked at 'Invalid number: 11', src/bin/panic-simple.rs:5
+thread '<main>' panicked at 'Неверное число: 11', src/bin/panic-simple.rs:6
 ```
 
-Here's another example that is slightly less contrived. A program that accepts
-an integer as an argument, doubles it and prints it.
+Вот другой, менее надуманный пример. Программа, которая принимает число в
+качестве аргумента, удваивает его значение и печатает на экране.
 
-<span id="code-unwrap-double"></span>
+<a name="code-unwrap-double"></a>
 
 ```rust,should_panic
 use std::env;
 
 fn main() {
     let mut argv = env::args();
-    let arg: String = argv.nth(1).unwrap(); // error 1
-    let n: i32 = arg.parse().unwrap(); // error 2
+    let arg: String = argv.nth(1).unwrap(); // ошибка 1
+    let n: i32 = arg.parse().unwrap();      // ошибка 2
     println!("{}", 2 * n);
 }
 ```
 
-If you give this program zero arguments (error 1) or if the first argument
-isn't an integer (error 2), the program will panic just like in the first
-example.
+Если вы запустите эту программу без параметров (ошибка 1) или если первый
+параметр будет не целым числом (ошибка 2), программа завершится паникой, так же,
+как и в первом примере.
 
-You can think of this style of error handling as similar to a bull running
-through a china shop. The bull will get to where it wants to go, but it will
-trample everything in the process.
+Обработка ошибок в подобном стиле подобна слону в посудной лавке. Слон будет
+нестись в направлении, в котором ему вздумается, и крушить все на своем пути.
 
-## Unwrapping explained
+<a name="unwrapping-explained"></a>
 
-In the previous example, we claimed
-that the program would simply panic if it reached one of the two error
-conditions, yet, the program does not include an explicit call to `panic` like
-the first example. This is because the
-panic is embedded in the calls to `unwrap`.
+## Объяснение `unwrap`
 
-To “unwrap” something in Rust is to say, “Give me the result of the
-computation, and if there was an error, just panic and stop the program.”
-It would be better if we just showed the code for unwrapping because it is so
-simple, but to do that, we will first need to explore the `Option` and `Result`
-types. Both of these types have a method called `unwrap` defined on them.
+В предыдущем примере мы утверждали, что программа будет просто паниковать,
+если будет выполнено одно из двух условий для возникновения ошибки, хотя,
+в отличии от первого примера, в коде программы нет явного вызова `panic`.
+Тем не менее, вызов `panic` встроен в вызов `unwrap`.
 
-### The `Option` type
+Вызывать `unwrap` в Rust подобно тому, что сказать: "Верни мне результат
+вычислений, а если произошла ошибка, просто паникуй и останавливай программу".
+Мы могли бы просто показать исходный код функции `unwrap`, ведь это довольно
+просто, но перед этим мы должны разобратся с типами `Option` и `Result`. Оба
+этих типа имеют определенный для них метод `unwrap`.
 
-The `Option` type is [defined in the standard library][5]:
+<a name="the-option-type"></a>
+
+### Тип `Option`
+
+Тип `Option` [объявлен в стандартной библиотеке][5]:
 
 ```rust
 enum Option<T> {
@@ -133,17 +152,17 @@ enum Option<T> {
 }
 ```
 
-The `Option` type is a way to use Rust's type system to express the
-*possibility of absence*. Encoding the possibility of absence into the type
-system is an important concept because it will cause the compiler to force the
-programmer to handle that absence. Let's take a look at an example that tries
-to find a character in a string:
+Тип `Option` — это способ выразить *возможность отсутствия* чего бы то ни было,
+используя систему типов Rust. Выражение *возможности отсутствия* через систему
+типов является важной концепцией, поскольку такой подход позволяет компилятору
+требовать от разработчика обрабатывать такое отсутствие. Давайте взглянем на
+пример, который пытается найти символ в строке:
 
-<span id="code-option-ex-string-find"></span>
+<a name="code-option-ex-string-find"></a>
 
 ```rust
-// Searches `haystack` for the Unicode character `needle`. If one is found, the
-// byte offset of the character is returned. Otherwise, `None` is returned.
+// Поиск Unicode-символа `needle` в `haystack`. Когда первый символ найден,
+// возвращается побайтовое смещение для этого символа. Иначе возвращается `None`.
 fn find(haystack: &str, needle: char) -> Option<usize> {
     for (offset, c) in haystack.char_indices() {
         if c == needle {
@@ -154,39 +173,41 @@ fn find(haystack: &str, needle: char) -> Option<usize> {
 }
 ```
 
-Notice that when this function finds a matching character, it doesn't just
-return the `offset`. Instead, it returns `Some(offset)`. `Some` is a variant or
-a *value constructor* for the `Option` type. You can think of it as a function
-with the type `fn<T>(value: T) -> Option<T>`. Correspondingly, `None` is also a
-value constructor, except it has no arguments. You can think of `None` as a
-function with the type `fn<T>() -> Option<T>`.
+Обратите внимание, что когда эта функция находит соответствующий символ, она
+возвращает не просто `offset`. Вместо этого она возвращает `Some(offset)`.
+`Some` — это вариант или *конструктор значения* для типа `Option`.
+Его можно интерпретировать как функцию типа `fn<T>(value: T) -> Option<T>`.
+Соответственно, `None` — это также конструктор значения, только у него нет
+параметров. Его можно интерпретировать как функцию типа `fn<T>() -> Option<T>`.
 
-This might seem like much ado about nothing, but this is only half of the
-story. The other half is *using* the `find` function we've written. Let's try
-to use it to find the extension in a file name.
+Может показаться, что мы подняли много шума из ничего, но это только половина
+истории. Вторая половина — это *использование* функции `find`, которую мы
+написали. Давайте попробуем использовать ее, чтобы найти расширение
+в имени файла.
 
 ```rust
 # fn find(_: &str, _: char) -> Option<usize> { None }
 fn main() {
     let file_name = "foobar.rs";
     match find(file_name, '.') {
-        None => println!("No file extension found."),
-        Some(i) => println!("File extension: {}", &file_name[i+1..]),
+        None => println!("Расширение файла не найдено."),
+        Some(i) => println!("Расширение файла: {}", &file_name[i+1..]),
     }
 }
 ```
 
-This code uses [pattern matching][1] to do *case
-analysis* on the `Option<usize>` returned by the `find` function. In fact, case
-analysis is the only way to get at the value stored inside an `Option<T>`. This
-means that you, as the programmer, must handle the case when an `Option<T>` is
-`None` instead of `Some(t)`.
+Этот код использует [сопоставление с образцом][1] чтобы выполнить *вариативный
+анализ* для возвращаемого функцией `find` значения `Option<usize>`. На самом
+деле, вариативный анализ является единственным способом добраться до значения,
+сохраненного внутри `Option<T>`. Это означает, что вы, как разработчик, обязаны
+обработать случай, когда значение `Option<T>` равно `None`, а не `Some(t)`.
 
-But wait, what about `unwrap` used in [`unwrap-double`](#code-unwrap-double)?
-There was no case analysis there! Instead, the case analysis was put inside the
-`unwrap` method for you. You could define it yourself if you want:
+Но подождите, как насчет `unwrap`, который мы [`до этого`](#code-unwrap-double)
+использовали? Там не было никакого вариативного анализа! Вместо этого,
+вариативный анализ был перемещен внутрь метода `unwrap`. Вы можете сделать это
+самостоятельно, если захотите:
 
-<span id="code-option-def-unwrap"></span>
+<a name="code-option-def-unwrap"></a>
 
 ```rust
 enum Option<T> {
@@ -205,28 +226,30 @@ impl<T> Option<T> {
 }
 ```
 
-The `unwrap` method *abstracts away the case analysis*. This is precisely the thing
-that makes `unwrap` ergonomic to use. Unfortunately, that `panic!` means that
-`unwrap` is not composable: it is the bull in the china shop.
+Метод `unwrap` *абстрагирует вариативный анализ*. Это именно то, что делает
+`unwrap` удобным в использовании. К сожалению, `panic!` означает, что `unwrap`
+неудобно сочетать с другим кодом: это слон в посудной лавке.
 
-### Composing `Option<T>` values
+<a name="composing-optiont-values"></a>
 
-In [`option-ex-string-find`](#code-option-ex-string-find)
-we saw how to use `find` to discover the extension in a file name. Of course,
-not all file names have a `.` in them, so it's possible that the file name has
-no extension. This *possibility of absence* is encoded into the types using
-`Option<T>`. In other words, the compiler will force us to address the
-possibility that an extension does not exist. In our case, we just print out a
-message saying as such.
+### Совмещение значений `Option<T>`
 
-Getting the extension of a file name is a pretty common operation, so it makes
-sense to put it into a function:
+В [предыдущем примере](#code-option-ex-string-find) мы рассмотрели, как
+можно воспользоватся `find` для того, чтобы получить расширение имени файла.
+Конечно, не во всех именах файлов можно найти `.`, так что существует
+вероятность, что имя некоторого файла не имеет расширения. Эта *возможность
+отсутствия* интерпретируется на уровне типов через использование `Option<T>`.
+Другими словами, компилятор заставит нас рассмотреть возможность того, что
+расширение не существует. В нашем случае мы просто печатаем сообщение об этом.
+
+Получение расширения имени файла — довольно распространенная операция,
+так что имеет смысл вынести код в отдельную функцию:
 
 ```rust
 # fn find(_: &str, _: char) -> Option<usize> { None }
-// Returns the extension of the given file name, where the extension is defined
-// as all characters proceding the first `.`.
-// If `file_name` has no `.`, then `None` is returned.
+// Возвращает расширение заданного имени файла, а именно все символы,
+// идущие за первым вхождением `.` в имя файла.
+// Если в `file_name` нет ни одного вхождения `.`, возвращается `None`.
 fn extension_explicit(file_name: &str) -> Option<&str> {
     match find(file_name, '.') {
         None => None,
@@ -235,25 +258,26 @@ fn extension_explicit(file_name: &str) -> Option<&str> {
 }
 ```
 
-(Pro-tip: don't use this code. Use the
-[`extension`](../std/path/struct.Path.html#method.extension)
-method in the standard library instead.)
+(Подсказка: не используйте этот код. Вместо этого используйте метод
+[`extension`](http://doc.rust-lang.org/std/path/struct.Path.html#method.extension) из стандартной
+библиотеки.)
 
-The code stays simple, but the important thing to notice is that the type of
-`find` forces us to consider the possibility of absence. This is a good thing
-because it means the compiler won't let us accidentally forget about the case
-where a file name doesn't have an extension. On the other hand, doing explicit
-case analysis like we've done in `extension_explicit` every time can get a bit
-tiresome.
+Код выглядит простым, но его важный аспект заключается в том, что функция `find`
+заставляет нас рассмотреть вероятность отсутствия значения. Это хорошо,
+поскольку это означает, что компилятор не позволит нам случайно забыть о том
+варианте, когда в имени файла отсутствует расширение. С другой стороны, каждый
+раз выполнять явный вариативный анализ, подобно тому, как мы делали это в
+`extension_explicit`, может стать немного утомительным.
 
-In fact, the case analysis in `extension_explicit` follows a very common
-pattern: *map* a function on to the value inside of an `Option<T>`, unless the
-option is `None`, in which case, just return `None`.
+На самом деле, вариативный анализ в `extension_explicit` является очень
+распространенным паттерном: если `Option<T>` владеет определенным значением `T`,
+то выполнить его преобразование с помощью функции, а если нет — то просто
+вернуть `None`.
 
-Rust has parametric polymorphism, so it is very easy to define a combinator
-that abstracts this pattern:
+Rust поддерживает параметрический полиморфизм, так что можно очень легко
+объявить комбинатор, который абстрагирует это поведение:
 
-<span id="code-option-map"></span>
+<a name="code-option-map"></a>
 
 ```rust
 fn map<F, T, A>(option: Option<T>, f: F) -> Option<A> where F: FnOnce(T) -> A {
@@ -264,26 +288,28 @@ fn map<F, T, A>(option: Option<T>, f: F) -> Option<A> where F: FnOnce(T) -> A {
 }
 ```
 
-Indeed, `map` is [defined as a method][2] on `Option<T>` in the standard library.
+В действительности, `map` [определен в стандартной библиотеке][2] как метод `Option<T>`.
 
-Armed with our new combinator, we can rewrite our `extension_explicit` method
-to get rid of the case analysis:
+Вооружившись нашим новым комбинатором, мы можем переписать наш метод
+`extension_explicit` так, чтобы избавиться от вариативного анализа:
 
 ```rust
 # fn find(_: &str, _: char) -> Option<usize> { None }
-// Returns the extension of the given file name, where the extension is defined
-// as all characters proceding the first `.`.
-// If `file_name` has no `.`, then `None` is returned.
+// Возвращает расширение заданного имени файла, а именно все символы,
+// идущие за первым вхождением `.` в имя файла.
+// Если в `file_name` нет ни одного вхождения `.`, возвращается `None`.
 fn extension(file_name: &str) -> Option<&str> {
     find(file_name, '.').map(|i| &file_name[i+1..])
 }
 ```
 
-One other pattern that we find is very common is assigning a default value to
-the case when an `Option` value is `None`. For example, maybe your program
-assumes that the extension of a file is `rs` even if none is present. As you
-might imagine, the case analysis for this is not specific to file
-extensions - it can work with any `Option<T>`:
+Есть еще одно поведение, которое можно часто встретить — это использование
+значения по-умолчанию в случае, когда значение `Option` равно `None`.
+К примеру, ваша программа может считать, что расширение файла равно `rs`
+в случае, если на самом деле оно отсутствует.
+
+Легко представить, что этот случай вариативного анализа не специфичен
+только для расширений файлов — такой подход может работать с любым `Option<T>`:
 
 ```rust
 fn unwrap_or<T>(option: Option<T>, default: T) -> T {
@@ -294,8 +320,9 @@ fn unwrap_or<T>(option: Option<T>, default: T) -> T {
 }
 ```
 
-The trick here is that the default value must have the same type as the value
-that might be inside the `Option<T>`. Using it is dead simple in our case:
+Хитрость только в том, что значение по-умолчанию должно иметь тот же тип, что и
+значение, которое может находится внутри  `Option<T>`. Использование этого
+метода элементарно:
 
 ```rust
 # fn find(haystack: &str, needle: char) -> Option<usize> {
@@ -316,21 +343,22 @@ fn main() {
 }
 ```
 
-(Note that `unwrap_or` is [defined as a method][3] on `Option<T>` in the
-standard library, so we use that here instead of the free-standing function we
-defined above. Don't forget to check out the more general [`unwrap_or_else`][4]
-method.)
+(Обратите внимание, что `unwrap_or` [объявлен как метод][3] `Option<T>` в
+стандартной библиотеке, так что мы воспользовались им вместо функции, которую
+мы объявили ранее. Не забудьте также изучить более общий метод
+[`unwrap_or_else`][4]).
 
-There is one more combinator that we think is worth paying special attention to:
-`and_then`. It makes it easy to compose distinct computations that admit the
-*possibility of absence*. For example, much of the code in this section is
-about finding an extension given a file name. In order to do this, you first
-need the file name which is typically extracted from a file *path*. While most
-file paths have a file name, not *all* of them do. For example, `.`, `..` or
-`/`.
+Существует еще один комбинатор, на который, как мы думаем, стоит обратить
+особое внимание: `and_then`. Он позволяет легко сочетать различные вычисления,
+которые допускают *возможность отсутствия*. Пример — большая часть кода в
+этом разделе, который связан с определением расширения заданного имени файла.
+Чтобы делать это, нам для начала необходимо узнать имя файла, которое как правило
+извлекается из *файлового пути*. Хотя большинство файловых путей содержат имя
+файла, подобное нельзя сказать обо *всех* файловых путях. Примером могут
+послужить пути `.`, `..` или `/`.
 
-So, we are tasked with the challenge of finding an extension given a file
-*path*. Let's start with explicit case analysis:
+Таким образом, мы определили задачу нахождения расширения заданного *файлового
+пути*. Начнем с явного вариативного анализа:
 
 ```rust
 # fn extension(file_name: &str) -> Option<&str> { None }
@@ -345,17 +373,16 @@ fn file_path_ext_explicit(file_path: &str) -> Option<&str> {
 }
 
 fn file_name(file_path: &str) -> Option<&str> {
-  // implementation elided
-  unimplemented!()
+  unimplemented!() // опустим реализацию
 }
 ```
 
-You might think that we could just use the `map` combinator to reduce the case
-analysis, but its type doesn't quite fit. Namely, `map` takes a function that
-does something only with the inner value. The result of that function is then
-*always* [rewrapped with `Some`](#code-option-map). Instead, we need something
-like `map`, but which allows the caller to return another `Option`. Its generic
-implementation is even simpler than `map`:
+Можно подумать, мы могли бы просто использовать комбинатор `map`, чтобы
+уменьшить вариативный анализ, но его тип не совсем подходит. Дело в том, что
+`map` принимает функцию, которая делает что-то только с внутренним значением.
+Результат такой функции *всегда* [оборачивается в `Some`](#code-option-map).
+Вместо этого, нам нужен метод, похожий `map`, но который позволяет вызывающему
+передать еще один `Option`. Его общая реализация даже проще, чем `map`:
 
 ```rust
 fn and_then<F, T, A>(option: Option<T>, f: F) -> Option<A>
@@ -367,7 +394,8 @@ fn and_then<F, T, A>(option: Option<T>, f: F) -> Option<A>
 }
 ```
 
-Now we can rewrite our `file_path_ext` function without explicit case analysis:
+Теперь мы можем переписать нашу функцию `file_path_ext` без явного вариативного
+анализа:
 
 ```rust
 # fn extension(file_name: &str) -> Option<&str> { None }
@@ -377,24 +405,27 @@ fn file_path_ext(file_path: &str) -> Option<&str> {
 }
 ```
 
-The `Option` type has many other combinators [defined in the standard
-library][5]. It is a good idea to skim this list and familiarize
-yourself with what's available—they can often reduce case analysis
-for you. Familiarizing yourself with these combinators will pay
-dividends because many of them are also defined (with similar
-semantics) for `Result`, which we will talk about next.
+Тип `Option` имеет много других комбинаторов [определенных в стандартной
+библиотеке][5]. Очень полезно просмотреть этот список и ознакомиться с
+доступными методами — они не раз помогут вам сократить количество вариативного
+анализа. Ознакомление с этими комбинаторами окупится еще и потому, что многие
+из них определены с аналогичной семантикой и для типа `Result`, о котором мы
+поговорим далее.
 
-Combinators make using types like `Option` ergonomic because they reduce
-explicit case analysis. They are also composable because they permit the caller
-to handle the possibility of absence in their own way. Methods like `unwrap`
-remove choices because they will panic if `Option<T>` is `None`.
+Комбинаторы упрощают использование типов вроде `Option`, ведь
+они сокращают явный вариативный анализ. Они также соответствуют требованиям
+сочетаемости, поскольку они позволяют вызывающему обрабатывать возможность
+отсутствия результата собственным способом. Такие методы, как `unwrap`,
+лишают этой возможности, ведь они будут паниковать в случае, когда `Option<T>`
+равен `None`.
 
-## The `Result` type
+<a name="the-result-type"></a>
 
-The `Result` type is also
-[defined in the standard library][6]:
+## Тип `Result`
 
-<span id="code-result-def"></span>
+Тип `Result` также [определен в стандартной библиотеке][6]:
+
+<a name="code-result-def"></a>
 
 ```rust
 enum Result<T, E> {
@@ -403,29 +434,28 @@ enum Result<T, E> {
 }
 ```
 
-The `Result` type is a richer version of `Option`. Instead of expressing the
-possibility of *absence* like `Option` does, `Result` expresses the possibility
-of *error*. Usually, the *error* is used to explain why the result of some
-computation failed. This is a strictly more general form of `Option`. Consider
-the following type alias, which is semantically equivalent to the real
-`Option<T>` in every way:
+Тип `Result` — это продвинутая версия `Option`. Вместо того, чтобы выражать
+возможность *отсутствия*, как это делает `Option`, `Result` выражает возможность
+*ошибки*. Как правило, *ошибки* необходимы для объяснения того, почему
+результат определенного вычисления не был получен. Строго говоря, это более
+общая форма `Option`. Рассмотрим следующий псевдоним типа, который во всех
+смыслах семантически эквивалентен реальному `Option<T>`:
 
 ```rust
 type Option<T> = Result<T, ()>;
 ```
 
-This fixes the second type parameter of `Result` to always be `()` (pronounced
-“unit” or “empty tuple”). Exactly one value inhabits the `()` type: `()`. (Yup,
-the type and value level terms have the same notation!)
+Здесь второй параметр типа `Result` фиксируется и определяется через `()`
+(произносится как "unit" или "пустой кортеж"). Тип `()` имеет ровно одно
+значение — `()`. (Да, это тип и значение этого типа, которые выглядят
+одинаково!)
 
-The `Result` type is a way of representing one of two possible outcomes in a
-computation. By convention, one outcome is meant to be expected or “`Ok`” while
-the other outcome is meant to be unexpected or “`Err`”.
+Тип `Result` — это способ выразить один из двух возможных исходов вычисления.
+По соглашению, один исход означает ожидаемый результат или "`Ok`", в то время
+как другой исход означает исключительную ситуацию или "`Err`".
 
-Just like `Option`, the `Result` type also has an
-[`unwrap` method
-defined][7]
-in the standard library. Let's define it:
+Подобно `Option`, тип `Result` имеет метод `unwrap`,
+[определенный в стандартной библиотеке][7]. Давайте объявим его самостоятельно:
 
 ```rust
 # enum Result<T, E> { Ok(T), Err(E) }
@@ -440,22 +470,25 @@ impl<T, E: ::std::fmt::Debug> Result<T, E> {
 }
 ```
 
-This is effectively the same as our [definition for
-`Option::unwrap`](#code-option-def-unwrap), except it includes the
-error value in the `panic!` message. This makes debugging easier, but
-it also requires us to add a [`Debug`][8] constraint on the `E` type
-parameter (which represents our error type). Since the vast majority
-of types should satisfy the `Debug` constraint, this tends to work out
-in practice. (`Debug` on a type simply means that there's a reasonable
-way to print a human readable description of values with that type.)
+Это фактически то же самое, что и
+[определение `Option::unwrap`](#code-option-def-unwrap), за исключением
+того, что мы добавили значение ошибки в сообщение `panic!`. Это упрощает
+отладку, но это также вынуждает нас требовать от типа-параметра `E`
+(который представляет наш тип ошибки) реализации [`Debug`][8]. Поскольку
+подавляющее большинство типов должны реализовывать `Debug`, обычно на практике
+такое ограничение не мешает. (Реализация `Debug` для некоторого типа
+просто означает, что существует разумный способ печати удобочитаемого описания
+значения этого типа.)
 
-OK, let's move on to an example.
+Окей, давайте перейдем к примеру.
 
-### Parsing integers
+<a name="parsing-integers"></a>
 
-The Rust standard library makes converting strings to integers dead simple.
-It's so easy in fact, that it is very tempting to write something like the
-following:
+### Преобразование строки в число
+
+Стандартная библиотека Rust позволяет элементарно преобразовывать строки
+в целые числа. На самом деле это настолько просто, что возникает соблазн написать
+что-то вроде:
 
 ```rust
 fn double_number(number_str: &str) -> i32 {
@@ -468,19 +501,19 @@ fn main() {
 }
 ```
 
-At this point, you should be skeptical of calling `unwrap`. For example, if
-the string doesn't parse as a number, you'll get a panic:
+Здесь вы должны быть скептически настроены по-поводу вызова `unwrap`.
+Если строку нельзя преобразовать в число, вы получите панику:
 
 ```text
 thread '<main>' panicked at 'called `Result::unwrap()` on an `Err` value: ParseIntError { kind: InvalidDigit }', /home/rustbuild/src/rust-buildbot/slave/beta-dist-rustc-linux/build/src/libcore/result.rs:729
 ```
 
-This is rather unsightly, and if this happened inside a library you're
-using, you might be understandably annoyed. Instead, we should try to
-handle the error in our function and let the caller decide what to
-do. This means changing the return type of `double_number`. But to
-what? Well, that requires looking at the signature of the [`parse`
-method][9] in the standard library:
+Это довольно неприятно, и если бы подобное произошло в используемой вами
+библиотеке, вы могли бы небезосновательно разгневаться. Так что нам стоит
+попытаться обработать ошибку в нашей функции, и пусть вызывающий сам решит что
+с этим делать. Это означает необходимость изменения типа, который возвращается
+`double_number`. Но на какой? Чтобы понять это, необходимо посмотреть на
+сигнатуру [`метода parse`][9] из стандартной библиотеки:
 
 ```rust,ignore
 impl str {
@@ -488,27 +521,28 @@ impl str {
 }
 ```
 
-Hmm. So we at least know that we need to use a `Result`. Certainly, it's
-possible that this could have returned an `Option`. After all, a string either
-parses as a number or it doesn't, right? That's certainly a reasonable way to
-go, but the implementation internally distinguishes *why* the string didn't
-parse as an integer. (Whether it's an empty string, an invalid digit, too big
-or too small.) Therefore, using a `Result` makes sense because we want to
-provide more information than simply “absence.” We want to say *why* the
-parsing failed. You should try to emulate this line of reasoning when faced
-with a choice between `Option` and `Result`. If you can provide detailed error
-information, then you probably should. (We'll see more on this later.)
+Хмм. По крайней мере мы знаем, что должны использовать `Result`. Вполне
+возможно, что метод мог возвращать `Option`. В конце концов, строка
+либо парсится как число, либо нет, не так ли? Это, конечно, разумный путь, но
+внутренняя реализация знает *почему* строка не может быть преобразована в целое число.
+(Это может быть пустая строка, или неправильные цифры, слишком большая или
+слишком маленькая длина и т.д.) Таким образом, использование `Result` имеет
+смысл, ведь мы хотим предоставить больше информации, чем просто "отсутствие".
+Мы хотим сказать, *почему* преобразование не удалось. Вам стоит рассуждать похожим
+образом, когда вы сталкиваетесь с выбором между `Option` и `Result`.
+Если вы можете предоставить подробную информацию об ошибке, то вам, вероятно,
+следует это сделать. (Позже мы поговорим об этом подробнее.)
 
-OK, but how do we write our return type? The `parse` method as defined
-above is generic over all the different number types defined in the
-standard library. We could (and probably should) also make our
-function generic, but let's favor explicitness for the moment. We only
-care about `i32`, so we need to [find its implementation of
-`FromStr`](../std/primitive.i32.html) (do a `CTRL-F` in your browser
-for “FromStr”) and look at its [associated type][10] `Err`. We did
-this so we can find the concrete error type. In this case, it's
-[`std::num::ParseIntError`](../std/num/struct.ParseIntError.html).
-Finally, we can rewrite our function:
+Хорошо, но как мы запишем наш тип возвращаемого значения? Метод `parse`
+является обобщенным (generic) для всех различных типов чисел из
+стандартной библиотеки. Мы могли бы (и, вероятно, должны) также сделать
+нашу функцию обобщенной, но давайте пока остановимся на конкретной
+реализации. Нас интересует только тип `i32`, так что нам стоит [найти его
+реализацию `FromStr`](http://doc.rust-lang.org/std/primitive.i32.html) (выполните поиск в вашем
+браузере по строке "FromStr") и посмотреть на его [ассоциированный тип][10]
+`Err`. Мы делаем это, чтобы определить конкретный тип ошибки. В данном
+случае, это [`std::num::ParseIntError`](http://doc.rust-lang.org/std/num/struct.ParseIntError.html).
+Наконец, мы можем переписать нашу функцию:
 
 ```rust
 use std::num::ParseIntError;
@@ -528,12 +562,13 @@ fn main() {
 }
 ```
 
-This is a little better, but now we've written a lot more code! The case
-analysis has once again bitten us.
+Неплохо, но нам пришлось написать гораздо больше кода! И нас опять раздражает
+вариативный анализ.
 
-Combinators to the rescue! Just like `Option`, `Result` has lots of combinators
-defined as methods. There is a large intersection of common combinators between
-`Result` and `Option`. In particular, `map` is part of that intersection:
+Комбинаторы спешат на помощь! Подобно `Option`, `Result` имеет много
+комбинаторов, определенных в качестве методов. Существует большой
+список комбинаторов, общих между `Result` и `Option`. И `map` входит в этот
+список:
 
 ```rust
 use std::num::ParseIntError;
@@ -550,24 +585,24 @@ fn main() {
 }
 ```
 
-The usual suspects are all there for `Result`, including
-[`unwrap_or`](../std/result/enum.Result.html#method.unwrap_or) and
-[`and_then`](../std/result/enum.Result.html#method.and_then).
-Additionally, since `Result` has a second type parameter, there are
-combinators that affect only the error type, such as
-[`map_err`](../std/result/enum.Result.html#method.map_err) (instead of
-`map`) and [`or_else`](../std/result/enum.Result.html#method.or_else)
-(instead of `and_then`).
+Все ожидаемые методы реализованы для `Result`, включая
+[`unwrap_or`](http://doc.rust-lang.org/std/result/enum.Result.html#method.unwrap_or) и
+[`and_then`](http://doc.rust-lang.org/std/result/enum.Result.html#method.and_then). Кроме того,
+поскольку `Result` имеет второй параметр типа, существуют комбинаторы,
+которые влияют только на значение ошибки, такие как
+[`map_err`](http://doc.rust-lang.org/std/result/enum.Result.html#method.map_err) (аналог `map`) и
+[`or_else`](http://doc.rust-lang.org/std/result/enum.Result.html#method.or_else) (аналог `and_then`).
 
-### The `Result` type alias idiom
+<a name="the-result-type-alias-idiom"></a>
 
-In the standard library, you may frequently see types like
-`Result<i32>`. But wait, [we defined `Result`](#code-result-def) to
-have two type parameters. How can we get away with only specifying
-one? The key is to define a `Result` type alias that *fixes* one of
-the type parameters to a particular type. Usually the fixed type is
-the error type. For example, our previous example parsing integers
-could be rewritten like this:
+### Создание псевдонима типа `Result`
+
+В стандартной библиотеке можно часто увидеть типы вроде `Result<i32>`.
+Но постойте, ведь [мы определили `Result`](#code-result-def) с двумя
+параметрами типа. Как мы можем обойти это, указывая только один из них? Ответ
+заключается в определении псевдонима типа `Result`, который *фиксирует* один из
+параметров конкретным типом. Обычно фиксируется тип ошибки. Например, наш
+предыдущий пример с преобразованием строк в числа можно переписать так:
 
 ```rust
 use std::num::ParseIntError;
@@ -580,99 +615,107 @@ fn double_number(number_str: &str) -> Result<i32> {
 }
 ```
 
-Why would we do this? Well, if we have a lot of functions that could return
-`ParseIntError`, then it's much more convenient to define an alias that always
-uses `ParseIntError` so that we don't have to write it out all the time.
+Зачем мы это делаем? Что ж, если у нас есть много функций, которые могут вернуть
+`ParseIntError`, то гораздо удобнее определить псевдоним, который всегда
+использует `ParseIntError`, так что мы не будем повторяться все время.
 
-The most prominent place this idiom is used in the standard library is
-with [`io::Result`](../std/io/type.Result.html). Typically, one writes
-`io::Result<T>`, which makes it clear that you're using the `io`
-module's type alias instead of the plain definition from
-`std::result`. (This idiom is also used for
-[`fmt::Result`](../std/fmt/type.Result.html).)
+Самый заметный случай использования такого подхода в стандартной библиотеке —
+псевдоним [`io::Result`](http://doc.rust-lang.org/std/io/type.Result.html). Как правило, достаточно
+писать `io::Result<T>`, чтобы было понятно, что вы используете псевдоним типа
+из модуля `io`, а не обычное определение из `std::result`. (Этот подход также
+используется для [`fmt::Result`](http://doc.rust-lang.org/std/fmt/type.Result.html))
 
-## A brief interlude: unwrapping isn't evil
+<a name="a-brief-interlude-unwrapping-isnt-evil"></a>
 
-If you've been following along, you might have noticed that I've taken a pretty
-hard line against calling methods like `unwrap` that could `panic` and abort
-your program. *Generally speaking*, this is good advice.
+## Короткое отступление: `unwrap` — не обязательно зло
 
-However, `unwrap` can still be used judiciously. What exactly justifies use of
-`unwrap` is somewhat of a grey area and reasonable people can disagree. I'll
-summarize some of my *opinions* on the matter.
+Если вы были внимательны, то возможно заметили, что я занял довольно жесткую
+позицию по отношению к методам вроде `unwrap`, которые могут вызвать `panic` и
+прервать исполнение вашей программы. *В основном*, это хороший совет.
 
-* **In examples and quick 'n' dirty code.** Sometimes you're writing examples
-  or a quick program, and error handling simply isn't important. Beating the
-  convenience of `unwrap` can be hard in such scenarios, so it is very
-  appealing.
-* **When panicking indicates a bug in the program.** When the invariants of
-  your code should prevent a certain case from happening (like, say, popping
-  from an empty stack), then panicking can be permissible. This is because it
-  exposes a bug in your program. This can be explicit, like from an `assert!`
-  failing, or it could be because your index into an array was out of bounds.
+Тем не менее, `unwrap` все-таки можно использовать разумно. Факторы, которые
+оправдывают использование `unwrap`, являются несколько туманными, и разумные люди
+могут со мной не согласиться. Я кратко изложу свое *мнение* по этому вопросу:
 
-This is probably not an exhaustive list. Moreover, when using an
-`Option`, it is often better to use its
-[`expect`](../std/option/enum.Option.html#method.expect)
-method. `expect` does exactly the same thing as `unwrap`, except it
-prints a message you give to `expect`. This makes the resulting panic
-a bit nicer to deal with, since it will show your message instead of
-“called unwrap on a `None` value.”
+* **Примеры и "грязный" код.** Когда вы пишете просто пример или быстрый
+скрипт, обработка ошибок просто не требуется. Для подобных случаев трудно
+найти что-либо удобнее чем `unwrap`, так что здесь его использование очень
+привлекательно.
+* **Паника указывает на ошибку в программе.** Если логика вашего кода
+должна предотвращать определенное поведение (скажем, получение элемента из
+пустого стека), то использование `panic` также допустимо. Дело в том, что в
+этом случае паника будет сообщать о баге в вашей программе. Это может
+происходить явно, например от неудачного вызова `assert!`, или происходить
+потому, что индекс по массиву находится за пределами выделенной памяти.
 
-My advice boils down to this: use good judgment. There's a reason why the words
-“never do X” or “Y is considered harmful” don't appear in my writing. There are
-trade offs to all things, and it is up to you as the programmer to determine
-what is acceptable for your use cases. My goal is only to help you evaluate
-trade offs as accurately as possible.
+Вероятно, это не исчерпывающий список. Кроме того, при использовании
+`Option` зачастую лучше использовать метод
+[`expect`](http://doc.rust-lang.org/std/option/enum.Option.html#method.expect). Этот метод делает
+ровно то же, что и `unwrap`, за исключением того, что в случае паники
+напечатает ваше сообщение. Это позволит лучше понять причину ошибки, ведь
+будет показано конкретное сообщение, а не просто "called unwrap on a `None`
+value".
 
-Now that we've covered the basics of error handling in Rust, and
-explained unwrapping, let's start exploring more of the standard
-library.
+Мой совет сводится к следующему: используйте здравый смысл. Есть причины, по
+которым слова вроде "никогда не делать X" или "Y считается вредным" не появятся
+в этой статье. У любых решений существуют компромиссы, и это ваша задача,
+как разработчика, определить, что именно является приемлемым для вашего случая.
+Моя цель состоит только в том, чтобы помочь вам оценить компромиссы как можно
+точнее.
 
-# Working with multiple error types
+Теперь, когда мы рассмотрели основы обработки ошибок в Rust и разобрались с
+`unwrap`, давайте подробнее изучим стандартную библиотеку.
 
-Thus far, we've looked at error handling where everything was either an
-`Option<T>` or a `Result<T, SomeError>`. But what happens when you have both an
-`Option` and a `Result`? Or what if you have a `Result<T, Error1>` and a
-`Result<T, Error2>`? Handling *composition of distinct error types* is the next
-challenge in front of us, and it will be the major theme throughout the rest of
-this chapter.
+<a name="working-with-multiple-error-types"></a>
 
-## Composing `Option` and `Result`
+# Работа с несколькими типами ошибок
 
-So far, I've talked about combinators defined for `Option` and combinators
-defined for `Result`. We can use these combinators to compose results of
-different computations without doing explicit case analysis.
+До этого момента мы расматривали обработку ошибок только для случаев, когда все
+сводилось либо только к `Option<T>`, либо только к `Result<T, SomeError>`.
+Но что делать, когда у вас есть и `Option`, и `Result`? Или если у вас есть
+`Result<T, Error1>` и `Result<T, Error2>`? Наша следующуя задача — обработка
+*композиции различных типов ошибок*, и это будет главной темой на протяжении
+всей этой главы.
 
-Of course, in real code, things aren't always as clean. Sometimes you have a
-mix of `Option` and `Result` types. Must we resort to explicit case analysis,
-or can we continue using combinators?
+<a name="composing-option-and-result"></a>
 
-For now, let's revisit one of the first examples in this chapter:
+## Совмещение `Option` и `Result`
+
+Пока что мы говорили о комбинаторах, определенных для `Option`, и комбинаторах,
+определенных для `Result`. Эти комбинаторы можно использовать для того, чтобы
+сочетать результаты различных вычислений, не делая подробного вариативного
+анализа.
+
+Конечно, в реальном коде все происходит не так гладко. Иногда у вас
+есть сочетания типов `Option` и `Result`. Должны ли мы прибегать к явному
+вариативному анализу, или можно продолжить использовать комбинаторы?
+
+Давайте на время вернемся к одному из первых примеров в этой главе:
 
 ```rust,should_panic
 use std::env;
 
 fn main() {
     let mut argv = env::args();
-    let arg: String = argv.nth(1).unwrap(); // error 1
-    let n: i32 = arg.parse().unwrap(); // error 2
+    let arg: String = argv.nth(1).unwrap(); // ошибка 1
+    let n: i32 = arg.parse().unwrap(); // ошибка 2
     println!("{}", 2 * n);
 }
 ```
 
-Given our new found knowledge of `Option`, `Result` and their various
-combinators, we should try to rewrite this so that errors are handled properly
-and the program doesn't panic if there's an error.
+Учитывая наши знания о типах `Option` и `Result`, а также их различных
+комбинаторах, мы можем попытаться переписать этот код так, чтобы ошибки
+обрабатывались должным образом, и программа не паниковала в случае ошибки.
 
-The tricky aspect here is that `argv.nth(1)` produces an `Option` while
-`arg.parse()` produces a `Result`. These aren't directly composable. When faced
-with both an `Option` and a `Result`, the solution is *usually* to convert the
-`Option` to a `Result`. In our case, the absence of a command line parameter
-(from `env::args()`) means the user didn't invoke the program correctly. We
-could just use a `String` to describe the error. Let's try:
+Ньюанс заключается в том, что `argv.nth(1)` возвращает `Option`, в
+то время как `arg.parse()` возвращает `Result`. Они не могут быть скомпонованы
+непосредственно. Когда вы сталкиваетесь одновременно с `Option` и` Result`,
+*обычно* наилучшее решение — преобразовать `Option` в `Result`. В нашем случае,
+отсутствие параметра командной строки (из `env::args()`) означает, что
+пользователь не правильно вызвал программу. Мы могли бы просто использовать
+`String` для описания ошибки. Давайте попробуем:
 
-<span id="code-error-double-string"></span>
+<a name="code-error-double-string"></a>
 
 ```rust
 use std::env;
@@ -691,11 +734,12 @@ fn main() {
 }
 ```
 
-There are a couple new things in this example. The first is the use of the
-[`Option::ok_or`](../std/option/enum.Option.html#method.ok_or)
-combinator. This is one way to convert an `Option` into a `Result`. The
-conversion requires you to specify what error to use if `Option` is `None`.
-Like the other combinators we've seen, its definition is very simple:
+Раcсмотрим пару новых моментов на этом примере. Во-первых, использование
+комбинатора [`Option::ok_or`](http://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or).
+Это один из способов преобразования `Option` в `Result`. Такое преобразование
+требует явного определения ошибки, которую необходимо вернуть в случае, когда
+значение `Option` равно `None`. Как и для всех комбинаторов, которые мы
+рассматривали, его объявление очень простое:
 
 ```rust
 fn ok_or<T, E>(option: Option<T>, err: E) -> Result<T, E> {
@@ -706,32 +750,34 @@ fn ok_or<T, E>(option: Option<T>, err: E) -> Result<T, E> {
 }
 ```
 
-The other new combinator used here is
-[`Result::map_err`](../std/result/enum.Result.html#method.map_err).
-This is just like `Result::map`, except it maps a function on to the *error*
-portion of a `Result` value. If the `Result` is an `Ok(...)` value, then it is
-returned unmodified.
+Второй новый комбинатор, который мы использовали —
+[`Result::map_err`](http://doc.rust-lang.org/std/result/enum.Result.html#method.map_err). Это то же
+самое, что и `Result::map`, за исключением того, функция применяется к
+*ошибке* внутри `Result`. Если значение `Result` равно `Оk(...)`, то оно
+возвращается без изменений.
 
-We use `map_err` here because it is necessary for the error types to remain
-the same (because of our use of `and_then`). Since we chose to convert the
-`Option<String>` (from `argv.nth(1)`) to a `Result<String, String>`, we must
-also convert the `ParseIntError` from `arg.parse()` to a `String`.
+Мы используем `map_err`, потому что нам необходимо привести все ошибки к
+одинаковому типу (из-за нашего использования `and_then`). Поскольку мы решили
+преобразовывать `Option<String>` (из `argv.nth(1)`) в `Result<String, String>`,
+мы также обязаны преобразовывать `ParseIntError` из `arg.parse()` в `String`.
 
-## The limits of combinators
+<a name="the-limits-of-combinators"></a>
 
-Doing IO and parsing input is a very common task, and it's one that I
-personally have done a lot of in Rust. Therefore, we will use (and continue to
-use) IO and various parsing routines to exemplify error handling.
+## Ограничения комбинаторов
 
-Let's start simple. We are tasked with opening a file, reading all of its
-contents and converting its contents to a number. Then we multiply it by `2`
-and print the output.
+Работа с IO и анализ входных данных — очень типичные задачи, и это то, чем
+лично я много занимаюсь с Rust. Так что мы будем использовать IO и различные
+процедуры анализа как примеры обработки ошибок.
 
-Although I've tried to convince you not to use `unwrap`, it can be useful
-to first write your code using `unwrap`. It allows you to focus on your problem
-instead of the error handling, and it exposes the points where proper error
-handling need to occur. Let's start there so we can get a handle on the code,
-and then refactor it to use better error handling.
+Давайте начнем с простого. Поставим задачу открыть файл, прочесть все его
+содержимое и преобразовать это содержимое в число. После этого нужно будет
+умножить значение на `2` и распечатать результат.
+
+Хоть я и пытался убедить вас не использовать `unwrap`, иногда бывает
+полезным для начала написать код с `unwrap`. Это позволяет сосредоточиться
+на проблеме, а не на обработке ошибок, и это выявляет места, где надлежащая
+обработка ошибок необходима. Давайте начнем с того, что напишем просто
+работающий код, а затем отрефакторим его для лучшей обработки ошибок.
 
 ```rust,should_panic
 use std::fs::File;
@@ -739,10 +785,10 @@ use std::io::Read;
 use std::path::Path;
 
 fn file_double<P: AsRef<Path>>(file_path: P) -> i32 {
-    let mut file = File::open(file_path).unwrap(); // error 1
+    let mut file = File::open(file_path).unwrap(); // ошибка 1
     let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap(); // error 2
-    let n: i32 = contents.trim().parse().unwrap(); // error 3
+    file.read_to_string(&mut contents).unwrap();   // ошибка 2
+    let n: i32 = contents.trim().parse().unwrap(); // ошибка 3
     2 * n
 }
 
@@ -752,47 +798,49 @@ fn main() {
 }
 ```
 
-(N.B. The `AsRef<Path>` is used because those are the
-[same bounds used on
-`std::fs::File::open`](../std/fs/struct.File.html#method.open).
-This makes it ergnomic to use any kind of string as a file path.)
+(Замечание: Мы используем `AsRef` по [тем же причинам, почему он используется в
+`std::fs::File::open`](http://doc.rust-lang.org/std/fs/struct.File.html#method.open). Это позволяет
+удобно использовать любой тип строки в качестве пути к файлу.)
 
-There are three different errors that can occur here:
+У нас есть три потенциальные ошибки, которые могут возникнуть:
 
-1. A problem opening the file.
-2. A problem reading data from the file.
-3. A problem parsing the data as a number.
+1. Проблема при открытии файла.
+2. Проблема при чтении данных из файла.
+3. Проблема при преобразовании данных в число.
 
-The first two problems are described via the
-[`std::io::Error`](../std/io/struct.Error.html) type. We know this
-because of the return types of
-[`std::fs::File::open`](../std/fs/struct.File.html#method.open) and
-[`std::io::Read::read_to_string`](../std/io/trait.Read.html#method.read_to_string).
-(Note that they both use the [`Result` type alias
-idiom](#the-result-type-alias-idiom) described previously. If you
-click on the `Result` type, you'll [see the type
-alias](../std/io/type.Result.html), and consequently, the underlying
-`io::Error` type.)  The third problem is described by the
-[`std::num::ParseIntError`](../std/num/struct.ParseIntError.html)
-type. The `io::Error` type in particular is *pervasive* throughout the
-standard library. You will see it again and again.
+Первые две проблемы определяются типом
+[`std::io::Error`](http://doc.rust-lang.org/std/io/struct.Error.html). Мы знаем это из типа
+возвращаемого значения методов
+[`std::fs::File::open`](http://doc.rust-lang.org/std/fs/struct.File.html#method.open) и
+[`std::io::Read::read_to_string`](http://doc.rust-lang.org/std/io/trait.Read.html#method.read_to_string).
+(Обратите внимание, что они оба используют
+[концепцию с псевдонимом типа `Result`](#the-result-type-alias-idiom),
+описанную ранее. Если вы кликните на тип `Result`, вы
+[увидите псевдоним типа](http://doc.rust-lang.org/std/io/type.Result.html), и следовательно, лежащий
+в основе тип `io::Error`.) Третья проблема определяется типом
+[`std::num::ParseIntError`](http://doc.rust-lang.org/std/num/struct.ParseIntError.html). Кстати, тип
+`io::Error` *часто* используется по всей стандартной библиотеке. Вы будете
+видеть его снова и снова.
 
-Let's start the process of refactoring the `file_double` function. To make this
-function composable with other components of the program, it should *not* panic
-if any of the above error conditions are met. Effectively, this means that the
-function should *return an error* if any of its operations fail. Our problem is
-that the return type of `file_double` is `i32`, which does not give us any
-useful way of reporting an error. Thus, we must start by changing the return
-type from `i32` to something else.
+Давайте начнем рефакторинг функции `file_double`. Для того, чтобы эту функцию
+можно было сочетать с остальным кодом, она *не должна* паниковать, если какие-либо
+из перечисленных выше ошибок действительно произойдут. Фактически, это
+означает, что функция должна *возвращать ошибку*, если любая из возможных
+операций завершилась неудачей. Проблема состоит в том, что тип возвращаемого
+значения сейчас `i32`, который не дает нам никакого разумного способа сообщить
+об ошибке. Таким образом, мы должны начать с изменения типа возвращаемого
+значения с `i32` на что-то другое.
 
-The first thing we need to decide: should we use `Option` or `Result`? We
-certainly could use `Option` very easily. If any of the three errors occur, we
-could simply return `None`. This will work *and it is better than panicking*,
-but we can do a lot better. Instead, we should pass some detail about the error
-that occurred. Since we want to express the *possibility of error*, we should
-use `Result<i32, E>`. But what should `E` be? Since two *different* types of
-errors can occur, we need to convert them to a common type. One such type is
-`String`. Let's see how that impacts our code:
+Первое, что мы должны решить: какой из типов использовать: `Option` или
+`Result`? Мы, конечно, могли бы с легкостью использовать `Option`. Если
+какая-либо из трех ошибок происходит, мы могли бы просто вернуть `None`. Это
+будет работать, и *это лучше, чем просто паниковать*, но мы можем сделать
+гораздо лучше. Вместо этого, мы будем сообщать некоторые детали о возникшей
+проблеме. Поскольку мы хотим выразить *возможность ошибки*, мы должны
+использовать `Result<i32, E>`. Но каким должен быть тип `E`? Поскольку может
+возникнуть два *разных* типа ошибок, мы должны преобразовать их к общему типу.
+Одним из таких типов является `String`. Давайте посмотрим, как это отразится на
+нашем коде:
 
 ```rust
 use std::fs::File;
@@ -818,44 +866,47 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
 fn main() {
     match file_double("foobar") {
         Ok(n) => println!("{}", n),
-        Err(err) => println!("Error: {}", err),
+        Err(err) => println!("Ошибка: {}", err),
     }
 }
 ```
 
-This code looks a bit hairy. It can take quite a bit of practice before code
-like this becomes easy to write. The way we write it is by *following the
-types*. As soon as we changed the return type of `file_double` to
-`Result<i32, String>`, we had to start looking for the right combinators. In
-this case, we only used three different combinators: `and_then`, `map` and
-`map_err`.
+Выглядит немного запутанно. Может потребоваться довольно много практики,
+прежде вы сможете писать такое. Написание кода в таком стиле называется
+*следованием за типом*. Когда мы изменили тип возвращаемого значения
+`file_double` на `Result<i32, String>`, нам пришлось начать подбирать
+правильные комбинатороы. В данном случае мы использовали только три различных
+комбинатора: `and_then`, `map` и `map_err`.
 
-`and_then` is used to chain multiple computations where each computation could
-return an error. After opening the file, there are two more computations that
-could fail: reading from the file and parsing the contents as a number.
-Correspondingly, there are two calls to `and_then`.
+Комбинатор `and_then` используется для объединения по цепочке нескольких
+вычислений, где каждое вычисление может вернуть ошибку. После открытия файла
+есть еще два вычисления, которые могут завершиться неудачей: чтение из файла и
+преобразование содержимого в число. Соответственно, имеем два вызова `and_then`.
 
-`map` is used to apply a function to the `Ok(...)` value of a `Result`. For
-example, the very last call to `map` multiplies the `Ok(...)` value (which is
-an `i32`) by `2`. If an error had occurred before that point, this operation
-would have been skipped because of how `map` is defined.
+Комбинатор `map` используется, чтобы применить функцию к значению `Ok(...)`
+типа `Result`. Например, в самом последнем вызове, `map` умножает значение
+`Ok(...)` (типа `i32`) на `2`. Если ошибка произошла до этого
+момента, эта операция была бы пропущена. Это следует из определения `map`.
 
-`map_err` is the trick that makes all of this work. `map_err` is just like
-`map`, except it applies a function to the `Err(...)` value of a `Result`. In
-this case, we want to convert all of our errors to one type: `String`. Since
-both `io::Error` and `num::ParseIntError` implement `ToString`, we can call the
-`to_string()` method to convert them.
+Комбинатор `map_err` — это уловка, которая позволяют всему этому заработать.
+Этот комбинатор, такой же, как и `map`, за исключением того, что применяет
+функцию к `Err(...)` значению `Result`. В данном случае мы хотим привести
+все наши ошибки к одному типу — `String`. Поскольку как `io::Error`, так и
+`num::ParseIntError` реализуют `ToString`, мы можем вызвать метод `to_string`,
+чтобы выполнить преобразование.
 
-With all of that said, the code is still hairy. Mastering use of combinators is
-important, but they have their limits. Let's try a different approach: early
-returns.
+Не смотря на все сказанное, код по-прежнему выглядит запутанным. Мастерство
+использования комбинаторов является важным, но у них есть свои недостатки.
+Давайте попробуем другой подход: преждевременный возврат.
 
-## Early returns
+<a name="early-returns"></a>
 
-I'd like to take the code from the previous section and rewrite it using *early
-returns*. Early returns let you exit the function early. We can't return early
-in `file_double` from inside another closure, so we'll need to revert back to
-explicit case analysis.
+## Преждевременный `return`
+
+Давайте возьмем код из предыдущего раздела и перепишем его с применением
+*раннего возврата*. Ранний `return` позволяет выйти из функции досрочно. Мы не
+можем выполнить `return` для `file_double` внутри замыкания, поэтому нам
+необходимо вернуться к явному вариативному анализу.
 
 ```rust
 use std::fs::File;
@@ -881,32 +932,35 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
 fn main() {
     match file_double("foobar") {
         Ok(n) => println!("{}", n),
-        Err(err) => println!("Error: {}", err),
+        Err(err) => println!("Ошибка: {}", err),
     }
 }
 ```
 
-Reasonable people can disagree over whether this code is better that the code
-that uses combinators, but if you aren't familiar with the combinator approach,
-this code looks simpler to read to me. It uses explicit case analysis with
-`match` and `if let`. If an error occurs, it simply stops executing the
-function and returns the error (by converting it to a string).
+Кто-то может обосновано не согласиться с тем, что этот код лучше,
+чем тот, который использует комбинаторы, но если вы не знакомы с комбинаторами,
+на мой взгляд, этот код будет выглядеть проще. Он выполняет явный вариативный
+анализ с помощью `match` и `if let`. Если происходит ошибка, мы просто
+прекращаем выполнение функции и возвращаем ошибку (после преобразования
+в строку).
 
-Isn't this a step backwards though? Previously, we said that the key to
-ergonomic error handling is reducing explicit case analysis, yet we've reverted
-back to explicit case analysis here. It turns out, there are *multiple* ways to
-reduce explicit case analysis. Combinators aren't the only way.
+Разве это не шаг назад? Ранее мы говорили, что ключ к удобной обработке ошибок
+— сокращение явного вариативного анализа, но здесь мы вернулись к тому, с чего
+начинали. Оказывается, существует *несколько* способов его уменьшения.
+И комбинаторы — не единственный путь.
 
-## The `try!` macro
+<a name="the-try-macro"></a>
 
-A cornerstone of error handling in Rust is the `try!` macro. The `try!` macro
-abstracts case analysis just like combinators, but unlike combinators, it also
-abstracts *control flow*. Namely, it can abstract the *early return* pattern
-seen above.
+## Макрос `try!`
 
-Here is a simplified definition of a `try!` macro:
+Краеугольный камень обработки ошибок в Rust — это макрос `try!`. Этот макрос
+абстрагирует анализ вариантов так же, как и комбинаторы, но в отличие от них,
+он также абстрагирует *поток выполнения*. А именно, он умеет абстрагировать
+идею *досрочного возврата*, которую мы только что реализовали.
 
-<span id="code-try-def-simple"></span>
+Вот упрощенное определение макроса `try!:
+
+<a name="code-try-def-simple"></a>
 
 ```rust
 macro_rules! try {
@@ -917,12 +971,12 @@ macro_rules! try {
 }
 ```
 
-(The [real definition](../std/macro.try!.html) is a bit more
-sophisticated. We will address that later.)
+([Реальное определение](http://doc.rust-lang.org/std/macro.try!.html) выглядит немного сложнее. Мы
+обсудим это далее).
 
-Using the `try!` macro makes it very easy to simplify our last example. Since
-it does the case analysis and the early return for us, we get tighter code that
-is easier to read:
+Использование макроса `try!` может очень легко упростить наш последний
+пример. Поскольку он выполняет анализ вариантов и досрочной возврат из функции,
+мы получаем более плотный код, который легче читать:
 
 ```rust
 use std::fs::File;
@@ -940,66 +994,74 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
 fn main() {
     match file_double("foobar") {
         Ok(n) => println!("{}", n),
-        Err(err) => println!("Error: {}", err),
+        Err(err) => println!("Ошибка: {}", err),
     }
 }
 ```
 
-The `map_err` calls are still necessary given
-[our definition of `try!`](#code-try-def-simple).
-This is because the error types still need to be converted to `String`.
-The good news is that we will soon learn how to remove those `map_err` calls!
-The bad news is that we will need to learn a bit more about a couple important
-traits in the standard library before we can remove the `map_err` calls.
+Вызов `map_err` по-прежнему необходим, учитывая
+[наше определение `try!`](#code-try-def-simple), поскольку ошибки все еще
+должны быть преобразованы в `String`. Хорошей новостью является то, что в
+ближайшее время мы узнаем, как убрать все эти вызовы `map_err`! Плохая новость
+состоит в том, что для этого нам придется кое-что узнать о паре важных типажей
+из стандартной библиотеки.
 
-## Defining your own error type
+<a name="defining-your-own-error-type"></a>
 
-Before we dive into some of the standard library error traits, I'd like to wrap
-up this section by removing the use of `String` as our error type in the
-previous examples.
+## Объявление собственного типа ошибки
 
-Using `String` as we did in our previous examples is convenient because it's
-easy to convert errors to strings, or even make up your own errors as strings
-on the spot. However, using `String` for your errors has some downsides.
+Прежде чем мы погрузимся в аспекты некоторых типажей из стандартной библиотеки,
+связанных с ошибками, я бы хотел завершить этот раздел отказом от использования
+`String` как типа ошибки в наших примерах.
 
-The first downside is that the error messages tend to clutter your
-code. It's possible to define the error messages elsewhere, but unless
-you're unusually disciplined, it is very tempting to embed the error
-message into your code. Indeed, we did exactly this in a [previous
-example](#code-error-double-string).
+Использование `String` в том стиле, в котором мы использовали его в предыдущих
+примерах удобно потому, что достаточно легко конвертировать любые ошибки в
+строки, или даже создавать свои собственные ошибки на ходу. Тем не менее,
+использование типа `String` для ошибок имеет некоторые недостатки.
 
-The second and more important downside is that `String`s are *lossy*. That is,
-if all errors are converted to strings, then the errors we pass to the caller
-become completely opaque. The only reasonable thing the caller can do with a
-`String` error is show it to the user. Certainly, inspecting the string to
-determine the type of error is not robust. (Admittedly, this downside is far
-more important inside of a library as opposed to, say, an application.)
+Первый недостаток в том, что сообщения об ошибках, как правило, загромождают
+код. Можно определять сообщения об ошибках в другом месте, но это поможет
+только если вы необыкновенно дисциплинированны, поскольку очень заманчиво
+вставлять сообщения об ошибках прямо в код. На самом деле, мы именно этим и
+занимались в [предыдущем примере](#code-error-double-string).
 
-For example, the `io::Error` type embeds an
-[`io::ErrorKind`](../std/io/enum.ErrorKind.html),
-which is *structured data* that represents what went wrong during an IO
-operation. This is important because you might want to react differently
-depending on the error. (e.g., A `BrokenPipe` error might mean quitting your
-program gracefully while a `NotFound` error might mean exiting with an error
-code and showing an error to the user.) With `io::ErrorKind`, the caller can
-examine the type of an error with case analysis, which is strictly superior
-to trying to tease out the details of an error inside of a `String`.
+Второй и более важный недостаток заключается в том, что использование `String`
+чревато *потерей информации*. Другими словами, если все ошибки будут
+преобразованы в строки, то когда мы будем возвращать их вызывающей стороне, они
+не будут иметь никакого смысла. Единственное разумное, что вызывающая сторона
+может сделать с ошибкой типа `String` — это показать ее пользователю.
+Безусловно, можно проверить строку по значению, чтобы определить тип ошибки, но
+такой подход не может похвастаться надежностью. (Правда, в гораздо большей
+степени это недостаток для библиотек, чем для конечных приложений).
 
-Instead of using a `String` as an error type in our previous example of reading
-an integer from a file, we can define our own error type that represents errors
-with *structured data*. We endeavor to not drop information from underlying
-errors in case the caller wants to inspect the details.
+Например, тип `io::Error` включает в себя тип
+[`io::ErrorKind`](http://doc.rust-lang.org/std/io/enum.ErrorKind.html), который является
+*структурированными данными*, представляющими то, что пошло не так во время
+выполнения операции ввода-вывода. Это важно, поскольку может возникнуть
+необходимость по-разному реагировать на различные причины ошибки. (Например,
+ошибка `BrokenPipe` может изящно завершать программу, в то время как ошибка
+`NotFound` будет завершать программу с кодом ошибки и показывать соответствующее
+сообщение пользователю.) Благодаря `io::ErrorKind`, вызывающая сторона может
+исследовать тип ошибки с помощью вариативного анализа, и это значительно лучше
+попытки вычленить детали об ошибке из `String`.
 
-The ideal way to represent *one of many possibilities* is to define our own
-sum type using `enum`. In our case, an error is either an `io::Error` or a
-`num::ParseIntError`, so a natural definition arises:
+Вместо того, чтобы использовать `String` как тип ошибки в нашем предыдущем
+примере про чтение числа из файла, мы можем определить свой собственный тип,
+который представляет ошибку в виде *структурированных данных*. Мы постараемся
+не потерять никакую информацию от изначальных ошибок на тот случай, если
+вызывающая сторона захочет исследовать детали.
+
+Идеальным способом представления *одного варианта из многих* является
+определение нашего собственного типа-суммы с помощью `enum`. В нашем случае,
+ошибка представляет собой либо `io::Error`, либо `num::ParseIntError`, из чего
+естественным образом вытекает определение:
 
 ```rust
 use std::io;
 use std::num;
 
-// We derive `Debug` because all types should probably derive `Debug`.
-// This gives us a reasonable human readable description of `CliError` values.
+// Мы реализуем `Debug` поскольку, по всей видимости, все типы должны реализовывать `Debug`.
+// Это дает нам возможность получить адекватное и читаемое описание значения CliError
 #[derive(Debug)]
 enum CliError {
     Io(io::Error),
@@ -1007,9 +1069,9 @@ enum CliError {
 }
 ```
 
-Tweaking our code is very easy. Instead of converting errors to strings, we
-simply convert them to our `CliError` type using the corresponding value
-constructor:
+Осталось только немного подогнать наш код из примера. Вместо преобразования
+ошибок в строки, мы будем просто конвертировать их в наш тип `CliError`,
+используя соответствующий конструктор значения:
 
 ```rust
 # #[derive(Debug)]
@@ -1029,36 +1091,43 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, CliError> {
 fn main() {
     match file_double("foobar") {
         Ok(n) => println!("{}", n),
-        Err(err) => println!("Error: {:?}", err),
+        Err(err) => println!("Ошибка: {:?}", err),
     }
 }
 ```
 
-The only change here is switching `map_err(|e| e.to_string())` (which converts
-errors to strings) to `map_err(CliError::Io)` or `map_err(CliError::Parse)`.
-The *caller* gets to decide the level of detail to report to the user. In
-effect, using a `String` as an error type removes choices from the caller while
-using a custom `enum` error type like `CliError` gives the caller all of the
-conveniences as before in addition to *structured data* describing the error.
+Единственное изменение здесь — замена вызова `map_err(|e| e.to_string())`
+(который преобразовывал ошибки в строки) на `map_err(CliError::Io)` или
+`map_err(CliError::Parse)`. Теперь *вызывающая сторона* определяет уровень
+детализации сообщения об ошибке для конечного пользователя. В действительности,
+использование `String` как типа ошибки лишает вызывающего возможности
+выбора, в то время использование собственного типа `enum`, на подобие
+`CliError`, дает вызывающему тот же уровень удобства, который был ранее, и
+кроме этого *структурированные данные*, описывающие ошибку.
 
-A rule of thumb is to define your own error type, but a `String` error type
-will do in a pinch, particularly if you're writing an application. If you're
-writing a library, defining your own error type should be strongly preferred so
-that you don't remove choices from the caller unnecessarily.
+Практическое правило заключается в том, что необходимо определять свой
+собственный тип ошибки, а тип `String` для ошибок использовать в крайнем случае,
+в основном когда вы пишете конечное приложение. Если вы пишете библиотеку,
+определение своего собственного типа ошибки наиболее предпочтительно. Таким
+образом, вы не лишите пользователя вашей библиотеки возможности выбирать
+наиболее предпочтительное для его конкретного случая поведение.
 
-# Standard library traits used for error handling
+<a name="standard-library-traits-used-for-error-handling"></a>
 
-The standard library defines two integral traits for error handling:
-[`std::error::Error`](../std/error/trait.Error.html) and
-[`std::convert::From`](../std/convert/trait.From.html). While `Error`
-is designed specifically for generically describing errors, the `From`
-trait serves a more general role for converting values between two
-distinct types.
+# Типажи из стандартной библиотеки, используемые для обработки ошибок
 
-## The `Error` trait
+Стандартная библиотека определяет два встроенных типажа, полезных для
+обработки ошибок [`std::error::Error`](http://doc.rust-lang.org/std/error/trait.Error.html) и
+[`std::convert::From`](http://doc.rust-lang.org/std/convert/trait.From.html). И если `Error`
+разработан специально для создания общего описания ошибки, то типаж `From`
+играет широкую роль в преобразовании значений между различными типами.
 
-The `Error` trait is [defined in the standard
-library](../std/error/trait.Error.html):
+<a name="the-error-trait"></a>
+
+## Типаж `Error`
+
+Типаж `Error`
+[объявлен в стандартной библиотеке](http://doc.rust-lang.org/std/error/trait.Error.html):
 
 ```rust
 use std::fmt::{Debug, Display};
@@ -1072,35 +1141,36 @@ trait Error: Debug + Display {
 }
 ```
 
-This trait is super generic because it is meant to be implemented for *all*
-types that represent errors. This will prove useful for writing composable code
-as we'll see later. Otherwise, the trait allows you to do at least the
-following things:
+Этот типаж очень обобщенный, поскольку предполагается, что он должен быть
+реализован для *всех* типов, которые представляют собой ошибки. Как мы увидим
+дальше, он нам очень пригодится для написания сочетаемого кода. Этот типаж,
+как минимум, позволяет выполнять следующие вещи:
 
-* Obtain a `Debug` representation of the error.
-* Obtain a user-facing `Display` representation of the error.
-* Obtain a short description of the error (via the `description` method).
-* Inspect the causal chain of an error, if one exists (via the `cause` method).
+* Получать строковое представление ошибки для разработчика (`Debug`).
+* Получать понятное для пользователя представление ошибки (`Display`).
+* Получать краткое описание ошибки (метод `description`).
+* Изучать по цепочке первопричину ошибки, если она существует (метод `cause`).
 
-The first two are a result of `Error` requiring impls for both `Debug` and
-`Display`. The latter two are from the two methods defined on `Error`. The
-power of `Error` comes from the fact that all error types impl `Error`, which
-means errors can be existentially quantified as a
-[trait object](../book/trait-objects.html).
-This manifests as either `Box<Error>` or `&Error`. Indeed, the `cause` method
-returns an `&Error`, which is itself a trait object. We'll revisit the
-`Error` trait's utility as a trait object later.
+Первые две возможности возникают в результате того, что типаж `Error` требует
+в свою очередь реализации типажей `Debug` и `Display`. Последние два факта
+исходят из двух методов, определенных в самом `Error`. Мощь `Еrror` заключается
+в том, что все существующие типы ошибок его реализуют, что в свою очередь
+означает что любые ошибки могут быть сохранены как
+[типажи-объекты](trait-objects.html) (trait
+object). Обычно это выглядит как `Box<Error>`, либо `&Error`. Например, метод
+`cause` возвращает `&Error`, который как раз является типажом-объектом. Позже мы
+вернемся к применению `Error` как типажа-объекта.
 
-For now, it suffices to show an example implementing the `Error` trait. Let's
-use the error type we defined in the
-[previous section](#defining-your-own-error-type):
+В настоящее время достаточно показать пример, реализующий типаж `Error`.
+Давайте воспользуемся для этого типом ошибки, который мы определили в
+[предыдущем разделе](#defining-your-own-error-type):
 
 ```rust
 use std::io;
 use std::num;
 
-// We derive `Debug` because all types should probably derive `Debug`.
-// This gives us a reasonable human readable description of `CliError` values.
+// Мы реализуем `Debug` поскольку, по всей видимости, все типы должны реализовывать `Debug`.
+// Это дает нам возможность получить адекватное и читаемое описание значения CliError
 #[derive(Debug)]
 enum CliError {
     Io(io::Error),
@@ -1108,13 +1178,13 @@ enum CliError {
 }
 ```
 
-This particular error type represents the possibility of two types of errors
-occurring: an error dealing with I/O or an error converting a string to a
-number. The error could represent as many error types as you want by adding new
-variants to the `enum` definition.
+Данный тип ошибки отражает возможность возникновения двух других типов ошибок:
+ошибка работы с IО или ошибка преобразования строки в число. Определение ошибки может
+отражать столько других видов ошибок, сколько необходимо, за счет добавления
+новых вариантов в объявлении `enum`.
 
-Implementing `Error` is pretty straight-forward. It's mostly going to be a lot
-explicit case analysis.
+Реализация `Error` довольно прямолинейна и главным образом состоит из явного
+анализа вариантов:
 
 ```rust,ignore
 use std::error;
@@ -1123,8 +1193,8 @@ use std::fmt;
 impl fmt::Display for CliError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            // Both underlying errors already impl `Display`, so we defer to
-            // their implementations.
+            // Оба изначальных типа ошибок уже реализуют `Display`,
+            // так что мы можем использовать их реализации
             CliError::Io(ref err) => write!(f, "IO error: {}", err),
             CliError::Parse(ref err) => write!(f, "Parse error: {}", err),
         }
@@ -1133,24 +1203,19 @@ impl fmt::Display for CliError {
 
 impl error::Error for CliError {
     fn description(&self) -> &str {
-        // Both underlying errors already impl `Error`, so we defer to their
-        // implementations.
+        // Оба изначальных типа ошибок уже реализуют `Error`,
+        // так что мы можем использовать их реализацией
         match *self {
             CliError::Io(ref err) => err.description(),
-            // Normally we can just write `err.description()`, but the error
-            // type has a concrete method called `description`, which conflicts
-            // with the trait method. For now, we must explicitly call
-            // `description` through the `Error` trait.
-            CliError::Parse(ref err) => error::Error::description(err),
+            CliError::Parse(ref err) => err.description(),
         }
     }
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            // N.B. Both of these implicitly cast `err` from their concrete
-            // types (either `&io::Error` or `&num::ParseIntError`)
-            // to a trait object `&Error`. This works because both error types
-            // implement `Error`.
+            // В обоих случаях просходит неявное преобразование значения `err`
+            // из конкретного типа (`&io::Error` или `&num::ParseIntError`)
+            // в типаж-обьект `&Error`. Это работает потому что оба типа реализуют `Error`.
             CliError::Io(ref err) => Some(err),
             CliError::Parse(ref err) => Some(err),
         }
@@ -1158,17 +1223,17 @@ impl error::Error for CliError {
 }
 ```
 
-We note that this is a very typical implementation of `Error`: match on your
-different error types and satisfy the contracts defined for `description` and
-`cause`.
+Хочется отметить, что это очень типичная реализация `Error`: реализация
+методов `description` и `cause` в соответствии с каждым возможным видом ошибки.
 
-## The `From` trait
+<a name="the-from-trait"></a>
 
-The `std::convert::From` trait is
-[defined in the standard
-library](../std/convert/trait.From.html):
+## Типаж `From`
 
-<span id="code-from-def"></span>
+Типаж `std::convert::From` объявлен в
+[стандартной библиотеке](http://doc.rust-lang.org/std/convert/trait.From.html):
+
+<a name="code-from-def"></a>
 
 ```rust
 trait From<T> {
@@ -1176,14 +1241,13 @@ trait From<T> {
 }
 ```
 
-Deliciously simple, yes? `From` is very useful because it gives us a generic
-way to talk about conversion *from* a particular type `T` to some other type
-(in this case, “some other type” is the subject of the impl, or `Self`).
-The crux of `From` is the
-[set of implementations provided by the standard
-library](../std/convert/trait.From.html).
+Очень просто, не правда ли? Типаж `From` чрезвычайно полезен, поскольку
+создает общий подход для преобразования *из* определенного типа `Т` в какой-то
+другой тип (в данном случае, "другим типом" является тип, реализующий данный
+типаж, или `Self`). Самое важное в типаже `From` — [множество его реализаций,
+предоставляемых стандартной библиотекой](http://doc.rust-lang.org/std/convert/trait.From.html).
 
-Here are a few simple examples demonstrating how `From` works:
+Вот несколько простых примеров, демонстрирующих работу `From`:
 
 ```rust
 let string: String = From::from("foo");
@@ -1191,20 +1255,21 @@ let bytes: Vec<u8> = From::from("foo");
 let cow: ::std::borrow::Cow<str> = From::from("foo");
 ```
 
-OK, so `From` is useful for converting between strings. But what about errors?
-It turns out, there is one critical impl:
+
+Итак, `From` полезен для выполнения преобразований между строками. Но как
+насчет ошибок? Оказывается, существует одна важная реализация:
 
 ```rust,ignore
 impl<'a, E: Error + 'a> From<E> for Box<Error + 'a>
 ```
 
-This impl says that for *any* type that impls `Error`, we can convert it to a
-trait object `Box<Error>`. This may not seem terribly surprising, but it is
-useful in a generic context.
+Эта реализация говорит, что *любой* тип, который реализует `Error`, можно
+конвертировать в типаж-объект `Box<Error>`. Выглядит не слишком впечатляюще, но
+это очень полезно в общем контексте.
 
-Remember the two errors we were dealing with previously? Specifically,
-`io::Error` and `num::ParseIntError`. Since both impl `Error`, they work with
-`From`:
+Помните те две ошибки, с которыми мы имели дело ранее, а именно, `io::Error`
+and `num::ParseIntError`? Поскольку обе они реализуют `Error`, они также
+работают с `From`:
 
 ```rust
 use std::error::Error;
@@ -1212,31 +1277,33 @@ use std::fs;
 use std::io;
 use std::num;
 
-// We have to jump through some hoops to actually get error values.
+// Получаем значения ошибок
 let io_err: io::Error = io::Error::last_os_error();
 let parse_err: num::ParseIntError = "not a number".parse::<i32>().unwrap_err();
 
-// OK, here are the conversions.
+// Собственно, конвертация
 let err1: Box<Error> = From::from(io_err);
 let err2: Box<Error> = From::from(parse_err);
 ```
 
-There is a really important pattern to recognize here. Both `err1` and `err2`
-have the *same type*. This is because they are existentially quantified types,
-or trait objects. In particular, their underlying type is *erased* from the
-compiler's knowledge, so it truly sees `err1` and `err2` as exactly the same.
-Additionally, we constructed `err1` and `err2` using precisely the same
-function call: `From::from`. This is because `From::from` is overloaded on both
-its argument and its return type.
+Здесь нужно разобрать очень важный паттерн. Переменные `err1` и `err2` имеют
+*одинаковый тип* — типаж-объект. Это означает, что их реальные типы
+скрыты от компилятора, так что по факту он рассматривает `err1` и `err2` как
+одинаковые сущности. Кроме того, мы создали `err1` и `err2`, используя один и
+тот же вызов функции — `From::from`. Мы можем так делать, поскольку функция
+`From::from` перегружена по ее аргументу и возвращаемому типу.
 
-This pattern is important because it solves a problem we had earlier: it gives
-us a way to reliably convert errors to the same type using the same function.
+Эта возможность очень важна для нас, поскольку она решает нашу предыдущую
+проблему, позволяя эффективно конвертировать разные ошибки в один и тот же тип,
+пользуясь только одной функцией.
 
-Time to revisit an old friend; the `try!` macro.
+Настало время вернуться к нашему старому другу — макросу `try!`.
 
-## The real `try!` macro
+<a name="the-real-try-macro"></a>
 
-Previously, we presented this definition of `try!`:
+## Настоящий макрос `try!`
+
+До этого мы привели такое определение `try!`:
 
 ```rust
 macro_rules! try {
@@ -1247,10 +1314,10 @@ macro_rules! try {
 }
 ```
 
-This is not its real definition. Its real definition is
-[in the standard library](../std/macro.try!.html):
+Но это не настоящее определение. Реальное определение можно найти
+в [стандартной библиотеке](http://doc.rust-lang.org/std/macro.try!.html):
 
-<span id="code-try-def"></span>
+<a name="code-try-def"></a>
 
 ```rust
 macro_rules! try {
@@ -1261,12 +1328,13 @@ macro_rules! try {
 }
 ```
 
-There's one tiny but powerful change: the error value is passed through
-`From::from`. This makes the `try!` macro a lot more powerful because it gives
-you automatic type conversion for free.
+Здесь есть одно маленькое, но очень важное изменение: значение ошибки
+пропускается через вызов `From::from`. Это делает макрос `try!` очень мощным
+инструментом, поскольку он дает нам возможность бесплатно выполнять
+автоматическое преобразование типов.
 
-Armed with our more powerful `try!` macro, let's take a look at code we wrote
-previously to read a file and convert its contents to an integer:
+Вооружившись более мощным макросом `try!`, давайте взглянем на код, написанный
+нами ранее, который читает файл и конвертирует его содержимое в число:
 
 ```rust
 use std::fs::File;
@@ -1282,10 +1350,10 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
 }
 ```
 
-Earlier, we promised that we could get rid of the `map_err` calls. Indeed, all
-we have to do is pick a type that `From` works with. As we saw in the previous
-section, `From` has an impl that let's it convert any error type into a
-`Box<Error>`:
+Ранее мы говорили, что мы можем избавиться от вызовов `map_err`. На самом деле,
+все что мы должны для этого сделать — это найти тип, который работает с
+`From`. Как мы увидели в предыдущем разделе, `From` имеет реализацию, которая
+позволяет преобразовать любой тип ошибки в `Box<Error>`:
 
 ```rust
 use std::error::Error;
@@ -1302,40 +1370,43 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, Box<Error>> {
 }
 ```
 
-We are getting very close to ideal error handling. Our code has very little
-overhead as a result from error handling because the `try!` macro encapsulates
-three things simultaneously:
+Мы уже очень близки к идеальной обработке ошибок. Наш код имеет очень мало
+накладных расходов из-за обработки ошибок, ведь макрос `try!` инкапсулирует
+сразу три вещи:
 
-1. Case analysis.
-2. Control flow.
-3. Error type conversion.
+1. Вариативный анализ.
+2. Поток выполнения.
+3. Преобразование типов ошибок.
 
-When all three things are combined, we get code that is unencumbered by
-combinators, calls to `unwrap` or case analysis.
+Когда все эти три вещи объединены вместе, мы получаем код, который не
+обременен комбинаторами, вызовами `unwrap` или постоянным анализом вариантов.
 
-There's one little nit left: the `Box<Error>` type is *opaque*. If we
-return a `Box<Error>` to the caller, the caller can't (easily) inspect
-underlying error type. The situation is certainly better than `String`
-because the caller can call methods like
-[`description`](../std/error/trait.Error.html#tymethod.description)
-and [`cause`](../std/error/trait.Error.html#method.cause), but the
-limitation remains: `Box<Error>` is opaque. (N.B. This isn't entirely
-true because Rust does have runtime reflection, which is useful in
-some scenarios that are [beyond the scope of this
-chapter](https://crates.io/crates/error).)
+Но осталась одна маленькая деталь: тип `Box<Error>` *не несет никакой
+информации*. Если мы возвращаем `Box<Error>` вызывающей стороне, нет никакой
+возможности (легко) узнать базовый тип ошибки. Ситуация, конечно, лучше, чем
+со `String`, посольку появилась возможность вызывать методы, вроде
+[`description`](http://doc.rust-lang.org/std/error/trait.Error.html#tymethod.description) или
+[`cause`](http://doc.rust-lang.org/std/error/trait.Error.html#method.cause), но ограничение
+остается: `Box<Error>` не предоставляет никакой информации о сути ошибки. (Замечание:
+Это не совсем верно, поскольку в Rust есть инструменты рефлексии во время
+выполнения, которые полезны при некоторых сценариях, но их рассмотрение
+[выходит за рамки этой главы](https://crates.io/crates/error)).
 
-It's time to revisit our custom `CliError` type and tie everything together.
+Настало время вернуться к нашему собственному типу `CliError` и связать все
+в одно целое.
 
-## Composing custom error types
+<a name="composing-custom-error-types"></a>
 
-In the last section, we looked at the real `try!` macro and how it does
-automatic type conversion for us by calling `From::from` on the error value.
-In particular, we converted errors to `Box<Error>`, which works, but the type
-is opaque to callers.
+## Совмещение собственных типов ошибок
 
-To fix this, we use the same remedy that we're already familiar with: a custom
-error type. Once again, here is the code that reads the contents of a file and
-converts it to an integer:
+В последнем разделе мы рассмотрели реальный макрос `try!` и то, как он
+выполняет автоматическое преобразование значений ошибок с помощью вызова
+`From::from`. В нашем случае мы конвертировали ошибки в `Box<Error>`, который
+работает, но его значение скрыто для вызывающей стороны.
+
+Чтобы исправить это, мы используем средство, с которым мы уже знакомы:
+создание собственного типа ошибки. Давайте вспомним код, который считывает
+содержимое файла и преобразует его в целое число:
 
 ```rust
 use std::fs::File;
@@ -1343,8 +1414,8 @@ use std::io::{self, Read};
 use std::num;
 use std::path::Path;
 
-// We derive `Debug` because all types should probably derive `Debug`.
-// This gives us a reasonable human readable description of `CliError` values.
+// Мы реализуем `Debug` поскольку, по всей видимости, все типы должны реализовывать `Debug`.
+// Это дает нам возможность получить адекватное и читаемое описание значения CliError
 #[derive(Debug)]
 enum CliError {
     Io(io::Error),
@@ -1360,12 +1431,12 @@ fn file_double_verbose<P: AsRef<Path>>(file_path: P) -> Result<i32, CliError> {
 }
 ```
 
-Notice that we still have the calls to `map_err`. Why? Well, recall the
-definitions of [`try!`](#code-try-def) and [`From`](#code-from-def). The
-problem is that there is no `From` impl that allows us to convert from error
-types like `io::Error` and `num::ParseIntError` to our own custom `CliError`.
-Of course, it is easy to fix this! Since we defined `CliError`, we can impl
-`From` with it:
+Обратите внимание, что здесь у нас еще остались вызовы `map_err`. Почему?
+Вспомните определения [`try!`](#code-try-def) и [`From`](#code-from-def).
+Проблема в том, что не существует такой реализации `From`, которая позволяет
+конвертировать типы ошибок `io::Error` и `num::ParseIntError` в наш собственный
+тип `CliError`. Но мы можем легко это исправить! Поскольку мы определили тип
+`CliError`, мы можем также реализовать для него типаж `From`:
 
 ```rust
 # #[derive(Debug)]
@@ -1386,11 +1457,11 @@ impl From<num::ParseIntError> for CliError {
 }
 ```
 
-All these impls are doing is teaching `From` how to create a `CliError` from
-other error types. In our case, construction is as simple as invoking the
-corresponding value constructor. Indeed, it is *typically* this easy.
+Все эти реализации позволяют `From` создавать значения `CliError` из других
+типов ошибок. В нашем случае такое создание состоит из простого вызова
+конструктора значения. *Как правило*, это все что нужно.
 
-We can finally rewrite `file_double`:
+Наконец, мы можем переписать `file_double`:
 
 ```rust
 # use std::io;
@@ -1416,14 +1487,15 @@ fn file_double<P: AsRef<Path>>(file_path: P) -> Result<i32, CliError> {
 }
 ```
 
-The only thing we did here was remove the calls to `map_err`. They are no
-longer needed because the `try!` macro invokes `From::from` on the error value.
-This works because we've provided `From` impls for all the error types that
-could appear.
+Единственное, что мы сделали — это удалили вызовы `map_err`. Они нам больше не
+нужны, поскольку макрос `try!` выполняет `From::from` над значениями ошибок. И
+это работает, поскольку мы предоставили реализации `From` для всех типов
+ошибок, которые могут возникнуть.
 
-If we modified our `file_double` function to perform some other operation, say,
-convert a string to a float, then we'd need to add a new variant to our error
-type:
+Если бы мы изменили нашу функцию `file_double` таким образом, чтобы она начала
+выполнять какие-то другие операции, например, преобразовать строку в число
+с плавающей точкой, то мы должны были бы добавить новый вариант к нашему типу
+ошибок:
 
 ```rust
 use std::io;
@@ -1436,7 +1508,7 @@ enum CliError {
 }
 ```
 
-And add a new `From` impl:
+И добавить новую реализацию для `From`:
 
 ```rust
 # enum CliError {
@@ -1454,699 +1526,92 @@ impl From<num::ParseFloatError> for CliError {
 }
 ```
 
-And that's it!
+Вот и все!
 
-## Advice for library writers
+<a name="advice-for-library-writers"></a>
 
-If your library needs to report custom errors, then you should
-probably define your own error type. It's up to you whether or not to
-expose its representation (like
-[`ErrorKind`](../std/io/enum.ErrorKind.html)) or keep it hidden (like
-[`ParseIntError`](../std/num/struct.ParseIntError.html)). Regardless
-of how you do it, it's usually good practice to at least provide some
-information about the error beyond just its `String`
-representation. But certainly, this will vary depending on use cases.
+## Рекомендации для авторов библиотек
 
-At a minimum, you should probably implement the
-[`Error`](../std/error/trait.Error.html)
-trait. This will give users of your library some minimum flexibility for
-[composing errors](#the-real-try!-macro). Implementing the `Error` trait also
-means that users are guaranteed the ability to obtain a string representation
-of an error (because it requires impls for both `fmt::Debug` and
+Если в вашей библиотеке могут возникать специфические ошибки, то вы наверняка
+должны определить для них свой собственный тип. На ваше усмотрение вы можете
+сделать его внутреннее представление публичным (как
+[`ErrorKind`](http://doc.rust-lang.org/std/io/enum.ErrorKind.html)), или оставить его скрытым
+(подобно [`ParseIntError`](http://doc.rust-lang.org/std/num/struct.ParseIntError.html)). Независимо
+от того, что вы предпримете, считается хорошим тоном обеспечить по крайней
+мере некоторую информацию об ошибке помимо ее строкового представления. Но,
+конечно, все зависит от конкретных случаев использования.
+
+Как минимум, вы скорее всего должны реализовать типаж
+[`Error`](http://doc.rust-lang.org/std/error/trait.Error.html). Это даст пользователям вашей
+библиотеки некоторую минимальную гибкость при
+[совмещении ошибок](#the-real-try-macro). Реализация типажа `Error` также
+означает, что пользователям гарантируется возможность получения строкового
+представления ошибки (это следует из необходимости реализации `fmt::Debug` и
 `fmt::Display`).
 
-Beyond that, it can also be useful to provide implementations of `From` on your
-error types. This allows you (the library author) and your users to
-[compose more detailed errors](#composing-custom-error-types). For example,
-[`csv::Error`](http://burntsushi.net/rustdoc/csv/enum.Error.html)
-provides `From` impls for both `io::Error` and `byteorder::Error`.
-
-Finally, depending on your tastes, you may also want to define a
-[`Result` type alias](#the-result-type-alias-idiom), particularly if your
-library defines a single error type. This is used in the standard library
-for [`io::Result`](../std/io/type.Result.html)
-and [`fmt::Result`](../std/fmt/type.Result.html).
-
-# Case study: A program to read population data
-
-This chapter was long, and depending on your background, it might be
-rather dense. While there is plenty of example code to go along with
-the prose, most of it was specifically designed to be pedagogical. So,
-we're going to do something new: a case study.
-
-For this, we're going to build up a command line program that lets you
-query world population data. The objective is simple: you give it a location
-and it will tell you the population. Despite the simplicity, there is a lot
-that can go wrong!
-
-The data we'll be using comes from the [Data Science
-Toolkit][11]. I've prepared some data from it for this exercise. You
-can either grab the [world population data][12] (41MB gzip compressed,
-145MB uncompressed) or just the [US population data][13] (2.2MB gzip
-compressed, 7.2MB uncompressed).
-
-Up until now, we've kept the code limited to Rust's standard library. For a real
-task like this though, we'll want to at least use something to parse CSV data,
-parse the program arguments and decode that stuff into Rust types automatically. For that, we'll use the
-[`csv`](https://crates.io/crates/csv),
-and [`rustc-serialize`](https://crates.io/crates/rustc-serialize) crates.
-
-## Initial setup
-
-We're not going to spend a lot of time on setting up a project with
-Cargo because it is already covered well in [the Cargo
-chapter](../book/hello-cargo.html) and [Cargo's documentation][14].
-
-To get started from scratch, run `cargo new --bin city-pop` and make sure your
-`Cargo.toml` looks something like this:
-
-```text
-[package]
-name = "city-pop"
-version = "0.1.0"
-authors = ["Andrew Gallant <jamslam@gmail.com>"]
-
-[[bin]]
-name = "city-pop"
-
-[dependencies]
-csv = "0.*"
-rustc-serialize = "0.*"
-getopts = "0.*"
-```
-
-You should already be able to run:
-
-```text
-cargo build --release
-./target/release/city-pop
-# Outputs: Hello, world!
-```
-
-## Argument parsing
-
-Let's get argument parsing out of the way. we won't go into too much
-detail on Getopts, but there is [some good documentation][15]
-describing it. The short story is that Getopts generates an argument
-parser and a help message from a vector of options (The fact that it
-is a vector is hidden behind a struct and a set of methods). Once the
-parsing is done, we can decode the program arguments into a Rust
-struct. From there, we can get information about the flags, for
-instance, wether they were passed in, and what arguments they
-had. Here's our program with the appropriate `extern crate`
-statements, and the basic argument setup for Getopts:
-
-```rust,ignore
-extern crate getopts;
-extern crate rustc_serialize;
-
-use getopts::Options;
-use std::env;
-
-fn print_usage(program: &str, opts: Options) {
-    println!("{}", opts.usage(&format!("Usage: {} [options] <data-path> <city>", program)));
-}
-
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
-
-    let mut opts = Options::new();
-    opts.optflag("h", "help", "Show this usage message.");
-
-    let matches = match opts.parse(&args[1..]) {
-        Ok(m)  => { m }
-	Err(e) => { panic!(e.to_string()) }
-    };
-    if matches.opt_present("h") {
-        print_usage(&program, opts);
-	return;
-    }
-    let data_path = args[1].clone();
-    let city = args[2].clone();
-
-	// Do stuff with information
-}
-```
-
-First, we get a vector of the arguments passed into our program. We
-then store the first one, knowing that it is our program's name. Once
-that's done, we set up our argument flags, in this case a simplistic
-help message flag. Once we have the argument flags set up, we use
-`Options.parse` to parse the argument vector (starting from index one,
-becouse index 0 is the program name). If this was successful, we
-assign matches to the parsed object, if not, we panic. Once past that,
-we test if the user passed in the help flag, and if so print the usage
-message. The option help messages are constructed by Getopts, so all
-we have to do to print the usage message is tell it what we want it to
-print for the program name and template. If the user has not passed in
-the help flag, we assign the proper variables to their corresponding
-arguments.
-
-## Writing the logic
-
-We're all different in how we write code, but error handling is
-usually the last thing we want to think about. This isn't very good
-practice for good design, but it can be useful for rapidly
-prototyping. In our case, because Rust forces us to be explicit about
-error handling, it will also make it obvious what parts of our program
-can cause errors. Why? Because Rust will make us call `unwrap`! This
-can give us a nice bird's eye view of how we need to approach error
-handling.
-
-In this case study, the logic is really simple. All we need to do is parse the
-CSV data given to us and print out a field in matching rows. Let's do it. (Make
-sure to add `extern crate csv;` to the top of your file.)
-
-```rust,ignore
-// This struct represents the data in each row of the CSV file.
-// Type based decoding absolves us of a lot of the nitty gritty error
-// handling, like parsing strings as integers or floats.
-#[derive(Debug, RustcDecodable)]
-struct Row {
-    country: String,
-    city: String,
-    accent_city: String,
-    region: String,
-
-    // Not every row has data for the population, latitude or longitude!
-    // So we express them as `Option` types, which admits the possibility of
-    // absence. The CSV parser will fill in the correct value for us.
-    population: Option<u64>,
-    latitude: Option<f64>,
-    longitude: Option<f64>,
-}
-
-fn print_usage(program: &str, opts: Options) {
-    println!("{}", opts.usage(&format!("Usage: {} [options] <data-path> <city>", program)));
-}
-
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
-
-    let mut opts = Options::new();
-    opts.optflag("h", "help", "Show this usage message.");
-
-    let matches = match opts.parse(&args[1..]) {
-        Ok(m)  => { m }
-		Err(e) => { panic!(e.to_string()) }
-    };
-
-    if matches.opt_present("h") {
-        print_usage(&program, opts);
-		return;
-	}
-
-	let data_file = args[1].clone();
-	let data_path = Path::new(&data_file);
-	let city = args[2].clone();
-
-	let file = fs::File::open(data_path).unwrap();
-	let mut rdr = csv::Reader::from_reader(file);
-
-	for row in rdr.decode::<Row>() {
-		let row = row.unwrap();
-
-		if row.city == city {
-			println!("{}, {}: {:?}",
-				row.city, row.country,
-				row.population.expect("population count"));
-		}
-	}
-}
-```
-
-Let's outline the errors. We can start with the obvious: the three places that
-`unwrap` is called:
-
-1. [`fs::File::open`](../std/fs/struct.File.html#method.open)
-   can return an
-   [`io::Error`](../std/io/struct.Error.html).
-2. [`csv::Reader::decode`](http://burntsushi.net/rustdoc/csv/struct.Reader.html#method.decode)
-   decodes one record at a time, and
-   [decoding a
-   record](http://burntsushi.net/rustdoc/csv/struct.DecodedRecords.html)
-   (look at the `Item` associated type on the `Iterator` impl)
-   can produce a
-   [`csv::Error`](http://burntsushi.net/rustdoc/csv/enum.Error.html).
-3. If `row.population` is `None`, then calling `expect` will panic.
-
-Are there any others? What if we can't find a matching city? Tools like `grep`
-will return an error code, so we probably should too. So we have logic errors
-specific to our problem, IO errors and CSV parsing errors. We're going to
-explore two different ways to approach handling these errors.
-
-I'd like to start with `Box<Error>`. Later, we'll see how defining our own
-error type can be useful.
-
-## Error handling with `Box<Error>`
-
-`Box<Error>` is nice because it *just works*. You don't need to define your own
-error types and you don't need any `From` implementations. The downside is that
-since `Box<Error>` is a trait object, it *erases the type*, which means the
-compiler can no longer reason about its underlying type.
-
-[Previously](#the-limits-of-combinators) we started refactoring our code by
-changing the type of our function from `T` to `Result<T, OurErrorType>`. In
-this case, `OurErrorType` is just `Box<Error>`. But what's `T`? And can we add
-a return type to `main`?
-
-The answer to the second question is no, we can't. That means we'll need to
-write a new function. But what is `T`? The simplest thing we can do is to
-return a list of matching `Row` values as a `Vec<Row>`. (Better code would
-return an iterator, but that is left as an exercise to the reader.)
-
-Let's refactor our code into its own function, but keep the calls to `unwrap`.
-Note that we opt to handle the possibility of a missing population count by
-simply ignoring that row.
-
-```rust,ignore
-struct Row {
-    // unchanged
-}
-
-struct PopulationCount {
-    city: String,
-    country: String,
-    // This is no longer an `Option` because values of this type are only
-    // constructed if they have a population count.
-    count: u64,
-}
-
-fn print_usage(program: &str, opts: Options) {
-    println!("{}", opts.usage(&format!("Usage: {} [options] <data-path> <city>", program)));
-}
-
-fn search<P: AsRef<Path>>(file_path: P, city: &str) -> Vec<PopulationCount> {
-    let mut found = vec![];
-    let file = fs::File::open(file_path).unwrap();
-    let mut rdr = csv::Reader::from_reader(file);
-    for row in rdr.decode::<Row>() {
-        let row = row.unwrap();
-        match row.population {
-            None => { } // skip it
-            Some(count) => if row.city == city {
-                found.push(PopulationCount {
-                    city: row.city,
-                    country: row.country,
-                    count: count,
-                });
-            },
-        }
-    }
-    found
-}
-
-fn main() {
-	let args: Vec<String> = env::args().collect();
-	let program = args[0].clone();
-
-	let mut opts = Options::new();
-	opts.optflag("h", "help", "Show this usage message.");
-
-	let matches = match opts.parse(&args[1..]) {
-		Ok(m)  => { m }
-		Err(e) => { panic!(e.to_string()) }
-	};
-	if matches.opt_present("h") {
-		print_usage(&program, opts);
-		return;
-	}
-
-	let data_file = args[1].clone();
-	let data_path = Path::new(&data_file);
-	let city = args[2].clone();
-	for pop in search(&data_path, &city) {
-		println!("{}, {}: {:?}", pop.city, pop.country, pop.count);
-	}
-}
-
-```
-
-While we got rid of one use of `expect` (which is a nicer variant of `unwrap`),
-we still should handle the absence of any search results.
-
-To convert this to proper error handling, we need to do the following:
-
-1. Change the return type of `search` to be `Result<Vec<PopulationCount>,
-   Box<Error>>`.
-2. Use the [`try!` macro](#code-try-def) so that errors are returned to the
-   caller instead of panicking the program.
-3. Handle the error in `main`.
-
-Let's try it:
-
-```rust,ignore
-fn search<P: AsRef<Path>>
-         (file_path: P, city: &str)
-         -> Result<Vec<PopulationCount>, Box<Error+Send+Sync>> {
-    let mut found = vec![];
-    let file = try!(fs::File::open(file_path));
-    let mut rdr = csv::Reader::from_reader(file);
-    for row in rdr.decode::<Row>() {
-        let row = try!(row);
-        match row.population {
-            None => { } // skip it
-            Some(count) => if row.city == city {
-                found.push(PopulationCount {
-                    city: row.city,
-                    country: row.country,
-                    count: count,
-                });
-            },
-        }
-    }
-    if found.is_empty() {
-        Err(From::from("No matching cities with a population were found."))
-    } else {
-        Ok(found)
-    }
-}
-```
-
-Instead of `x.unwrap()`, we now have `try!(x)`. Since our function returns a
-`Result<T, E>`, the `try!` macro will return early from the function if an
-error occurs.
-
-There is one big gotcha in this code: we used `Box<Error + Send + Sync>`
-instead of `Box<Error>`. We did this so we could convert a plain string to an
-error type. We need these extra bounds so that we can use the
-[corresponding `From`
-impls](../std/convert/trait.From.html):
-
-```rust,ignore
-// We are making use of this impl in the code above, since we call `From::from`
-// on a `&'static str`.
-impl<'a, 'b> From<&'b str> for Box<Error + Send + Sync + 'a>
-
-// But this is also useful when you need to allocate a new string for an
-// error message, usually with `format!`.
-impl From<String> for Box<Error + Send + Sync>
-```
-
-Now that we've seen how to do proper error handling with `Box<Error>`, let's
-try a different approach with our own custom error type. But first, let's take
-a quick break from error handling and add support for reading from `stdin`.
-
-## Reading from stdin
-
-In our program, we accept a single file for input and do one pass over the
-data. This means we probably should be able to accept input on stdin. But maybe
-we like the current format too—so let's have both!
-
-Adding support for stdin is actually quite easy. There are only two things we
-have to do:
-
-1. Tweak the program arguments so that a single parameter—the
-   city—can be accepted while the population data is read from stdin.
-2. Modify the program so that an option `-f` can take the file, if it
-    is not passed into stdin.
-3. Modify the `search` function to take an *optional* file path. When `None`,
-   it should know to read from stdin.
-
-First, here's the new usage:
-
-```rust,ignore
-fn print_usage(program: &str, opts: Options) {
-	println!("{}", opts.usage(&format!("Usage: {} [options] <city>", program)));
-}
-```
-The next part is going to be only a little harder:
-
-```rust,ignore
-...
-let mut opts = Options::new();
-opts.optopt("f", "file", "Choose an input file, instead of using STDIN.", "NAME");
-opts.optflag("h", "help", "Show this usage message.");
-...
-let file = matches.opt_str("f");
-let data_file = file.as_ref().map(Path::new);
-
-let city = if !matches.free.is_empty() {
-	matches.free[0].clone()
-} else {
-	print_usage(&program, opts);
-	return;
-};
-
-for pop in search(&data_file, &city) {
-	println!("{}, {}: {:?}", pop.city, pop.country, pop.count);
-}
-...
-```
-
-In this peice of code, we take `file` (which has the type
-`Option<String>`), and convert it to a type that `search` can use, in
-this case, `&Option<AsRef<Path>>`. Do do this, we take a reference of
-file, and map `Path::new` onto it. In this case, `as_ref()` converts
-the `Option<String>` into an `Option<&str>`, and from there, we can
-execute `Path::new` to the content of the optional, and return the
-optional of the new value. Once we have that, it is a simple matter of
-getting the `city` argument and executing `search`.
-
-Modifying `search` is slightly trickier. The `csv` crate can build a
-parser out of
-[any type that implements `io::Read`](http://burntsushi.net/rustdoc/csv/struct.Reader.html#method.from_reader).
-But how can we use the same code over both types? There's actually a
-couple ways we could go about this. One way is to write `search` such
-that it is generic on some type parameter `R` that satisfies
-`io::Read`. Another way is to just use trait objects:
-
-```rust,ignore
-fn search<P: AsRef<Path>>
-         (file_path: &Option<P>, city: &str)
-         -> Result<Vec<PopulationCount>, Box<Error+Send+Sync>> {
-    let mut found = vec![];
-    let input: Box<io::Read> = match *file_path {
-        None => Box::new(io::stdin()),
-        Some(ref file_path) => Box::new(try!(fs::File::open(file_path))),
-    };
-    let mut rdr = csv::Reader::from_reader(input);
-    // The rest remains unchanged!
-}
-```
-
-## Error handling with a custom type
-
-Previously, we learned how to
-[compose errors using a custom error type](#composing-custom-error-types).
-We did this by defining our error type as an `enum` and implementing `Error`
-and `From`.
-
-Since we have three distinct errors (IO, CSV parsing and not found), let's
-define an `enum` with three variants:
-
-```rust,ignore
-#[derive(Debug)]
-enum CliError {
-    Io(io::Error),
-    Csv(csv::Error),
-    NotFound,
-}
-```
-
-And now for impls on `Display` and `Error`:
-
-```rust,ignore
-impl fmt::Display for CliError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            CliError::Io(ref err) => err.fmt(f),
-            CliError::Csv(ref err) => err.fmt(f),
-            CliError::NotFound => write!(f, "No matching cities with a \
-                                             population were found."),
-        }
-    }
-}
-
-impl Error for CliError {
-    fn description(&self) -> &str {
-        match *self {
-            CliError::Io(ref err) => err.description(),
-            CliError::Csv(ref err) => err.description(),
-            CliError::NotFound => "not found",
-        }
-    }
-}
-```
-
-Before we can use our `CliError` type in our `search` function, we need to
-provide a couple `From` impls. How do we know which impls to provide? Well,
-we'll need to convert from both `io::Error` and `csv::Error` to `CliError`.
-Those are the only external errors, so we'll only need two `From` impls for
-now:
-
-```rust,ignore
-impl From<io::Error> for CliError {
-    fn from(err: io::Error) -> CliError {
-        CliError::Io(err)
-    }
-}
-
-impl From<csv::Error> for CliError {
-    fn from(err: csv::Error) -> CliError {
-        CliError::Csv(err)
-    }
-}
-```
-
-The `From` impls are important because of how
-[`try!` is defined](#code-try-def). In particular, if an error occurs,
-`From::from` is called on the error, which in this case, will convert it to our
-own error type `CliError`.
-
-With the `From` impls done, we only need to make two small tweaks to our
-`search` function: the return type and the “not found” error. Here it is in
-full:
-
-```rust,ignore
-fn search<P: AsRef<Path>>
-         (file_path: &Option<P>, city: &str)
-         -> Result<Vec<PopulationCount>, CliError> {
-    let mut found = vec![];
-    let input: Box<io::Read> = match *file_path {
-        None => Box::new(io::stdin()),
-        Some(ref file_path) => Box::new(try!(fs::File::open(file_path))),
-    };
-    let mut rdr = csv::Reader::from_reader(input);
-    for row in rdr.decode::<Row>() {
-        let row = try!(row);
-        match row.population {
-            None => { } // skip it
-            Some(count) => if row.city == city {
-                found.push(PopulationCount {
-                    city: row.city,
-                    country: row.country,
-                    count: count,
-                });
-            },
-        }
-    }
-    if found.is_empty() {
-        Err(CliError::NotFound)
-    } else {
-        Ok(found)
-    }
-}
-```
-
-No other changes are necessary.
-
-## Adding functionality
-
-Writing generic code is great, because generalizing stuff is cool, and
-it can then be useful later. But sometimes, the juice isn't worth the
-squeeze. Look at what we just did in the previous step:
-
-1. Defined a new error type.
-2. Added impls for `Error`, `Display` and two for `From`.
-
-The big downside here is that our program didn't improve a whole lot.
-There is quite a bit of overhead to representing errors with `enum`s,
-especially in short programs like this.
-
-*One* useful aspect of using a custom error type like we've done here is that
-the `main` function can now choose to handle errors differently. Previously,
-with `Box<Error>`, it didn't have much of a choice: just print the message.
-We're still doing that here, but what if we wanted to, say, add a `--quiet`
-flag? The `--quiet` flag should silence any verbose output.
-
-Right now, if the program doesn't find a match, it will output a message saying
-so. This can be a little clumsy, especially if you intend for the program to
-be used in shell scripts.
-
-So let's start by adding the flags. Like before, we need to tweak the usage
-string and add a flag to the Option variable. Once were done that, Getopts does the rest:
-
-```rust,ignore
-...
-let mut opts = Options::new();
-opts.optopt("f", "file", "Choose an input file, instead of using STDIN.", "NAME");
-opts.optflag("h", "help", "Show this usage message.");
-opts.optflag("q", "quiet", "Silences errors and warnings.");
-...
-```
-
-Now we just need to implement our “quiet” functionality. This requires us to
-tweak the case analysis in `main`:
-
-```rust,ignore
-match search(&args.arg_data_path, &args.arg_city) {
-    Err(CliError::NotFound) if args.flag_quiet => process::exit(1),
-    Err(err) => fatal!("{}", err),
-    Ok(pops) => for pop in pops {
-        println!("{}, {}: {:?}", pop.city, pop.country, pop.count);
-    }
-}
-```
-
-Certainly, we don't want to be quiet if there was an IO error or if the data
-failed to parse. Therefore, we use case analysis to check if the error type is
-`NotFound` *and* if `--quiet` has been enabled. If the search failed, we still
-quit with an exit code (following `grep`'s convention).
-
-If we had stuck with `Box<Error>`, then it would be pretty tricky to implement
-the `--quiet` functionality.
-
-This pretty much sums up our case study. From here, you should be ready to go
-out into the world and write your own programs and libraries with proper error
-handling.
-
-# The Short Story
-
-Since this chapter is long, it is useful to have a quick summary for error
-handling in Rust. These are some good “rules of thumb." They are emphatically
-*not* commandments. There are probably good reasons to break every one of these
-heuristics!
-
-* If you're writing short example code that would be overburdened by error
-  handling, it's probably just fine to use `unwrap` (whether that's
-  [`Result::unwrap`](../std/result/enum.Result.html#method.unwrap),
-  [`Option::unwrap`](../std/option/enum.Option.html#method.unwrap)
-  or preferably
-  [`Option::expect`](../std/option/enum.Option.html#method.expect)).
-  Consumers of your code should know to use proper error handling. (If they
-  don't, send them here!)
-* If you're writing a quick 'n' dirty program, don't feel ashamed if you use
-  `unwrap`. Be warned: if it winds up in someone else's hands, don't be
-  surprised if they are agitated by poor error messages!
-* If you're writing a quick 'n' dirty program and feel ashamed about panicking
-  anyway, then using either a `String` or a `Box<Error + Send + Sync>` for your
-  error type (the `Box<Error + Send + Sync>` type is because of the
-  [available `From` impls](../std/convert/trait.From.html)).
-* Otherwise, in a program, define your own error types with appropriate
-  [`From`](../std/convert/trait.From.html)
-  and
-  [`Error`](../std/error/trait.Error.html)
-  impls to make the [`try!`](../std/macro.try!.html)
-  macro more ergnomic.
-* If you're writing a library and your code can produce errors, define your own
-  error type and implement the
-  [`std::error::Error`](../std/error/trait.Error.html)
-  trait. Where appropriate, implement
-  [`From`](../std/convert/trait.From.html) to make both
-  your library code and the caller's code easier to write. (Because of Rust's
-  coherence rules, callers will not be able to impl `From` on your error type,
-  so your library should do it.)
-* Learn the combinators defined on
-  [`Option`](../std/option/enum.Option.html)
-  and
-  [`Result`](../std/result/enum.Result.html).
-  Using them exclusively can be a bit tiring at times, but I've personally
-  found a healthy mix of `try!` and combinators to be quite appealing.
-  `and_then`, `map` and `unwrap_or` are my favorites.
-
-[1]: ../book/patterns.html
-[2]: ../std/option/enum.Option.html#method.map
-[3]: ../std/option/enum.Option.html#method.unwrap_or
-[4]: ../std/option/enum.Option.html#method.unwrap_or_else
-[5]: ../std/option/enum.Option.html
-[6]: ../std/result/
-[7]: ../std/result/enum.Result.html#method.unwrap
-[8]: ../std/fmt/trait.Debug.html
-[9]: ../std/primitive.str.html#method.parse
-[10]: ../book/associated-types.html
+Кроме того, может быть полезным реализовать `From` для ваших типов ошибок. Это
+позволит вам (как автору библиотеки) и вашим пользователям
+[совмещать более детальные ошибки](#composing-custom-error-types). Например,
+[`csv::Error`](http://burntsushi.net/rustdoc/csv/enum.Error.html) реализует
+`From` для `io::Error` и `byteorder::Error`.
+
+Наконец, на свое усмотрение, вы также можете определить
+[псевдоним типа `Result`](#the-result-type-alias-idiom), особенно, если в вашей
+библиотеке определен только один тип ошибки. Такой подход используется в
+стандартной библиотеке для [`io::Result`](http://doc.rust-lang.org/std/io/type.Result.html) и
+[`fmt::Result`](http://doc.rust-lang.org/std/fmt/type.Result.html).
+
+<a name="the-short-story"></a>
+
+# Заключение
+
+Поскольку это довольно длинная глава, не будет лишним составить короткий
+конспект по обработке ошибок в Rust. Ниже будут приведены некоторые практические
+рекомендации. Это совсем *не* заповеди. Наверняка существуют веские
+причины для того, чтобы нарушить любое из этих правил.
+
+* Если вы пишете короткий пример кода, который может быть перегружен обработкой
+ошибок, это, вероятно, отличная возможность использовать `unwrap` (будь-то
+[`Result::unwrap`](http://doc.rust-lang.org/std/result/enum.Result.html#method.unwrap),
+[`Option::unwrap`](http://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap) или
+[`Option::expect`](http://doc.rust-lang.org/std/option/enum.Option.html#method.expect)).
+Те, для кого предназначен пример, должны осознавать, что необходимо
+реализовать надлежащую обработку ошибок. (Если нет, отправляйте их сюда!)
+* Если вы пишете одноразовую программу, также не зазорно использовать `unwrap`.
+Но будьте внимательны: если ваш код попадет в чужие руки, не удивляйтесь, если
+кто-то будет расстроен из-за скудных сообщений об ошибках!
+* Если вы пишете одноразовый код, но вам все-равно стыдно из-за использования
+`unwrap`, воспользуйтесь либо `String` в качестве типа ошибки, либо
+`Box<Error + Send + Sync>` (из-за
+[доступных реализаций `From`](http://doc.rust-lang.org/std/convert/trait.From.html).)
+* В остальных случаях, определяйте свои собственные типы ошибок с
+соответствующими реализациями [`From`](http://doc.rust-lang.org/std/convert/trait.From.html) и
+[`Error`](http://doc.rust-lang.org/std/error/trait.Error.html), делая использование
+[`try!`](http://doc.rust-lang.org/std/macro.try!.html) более удобным.
+* Если вы пишете библиотеку и ваш код может выдавать ошибки, определите ваш
+собственный тип ошибки и реализуйте типаж
+[`std::error::Error`](http://doc.rust-lang.org/std/error/trait.Error.html). Там, где это уместно,
+реализуйте [`From`](http://doc.rust-lang.org/std/convert/trait.From.html), чтобы вам и вашим
+пользователям было легче с ними работать. (Из-за правил когерентности в Rust,
+пользователи вашей библиотеки не смогут реализовать `From` для ваших ошибок,
+поэтому это должна сделать ваша библиотека.)
+* Изучите комбинаторы, определенные для
+[`Option`](http://doc.rust-lang.org/std/option/enum.Option.html) и
+[`Result`](http://doc.rust-lang.org/std/result/enum.Result.html). Писать код, пользуясь только ними
+может быть немного утомительно, но я лично нашел для себя хороший баланс
+между использованием `try!` и комбинаторами (`and_then`, `map` и `unwrap_or`
+— мои любимые).
+
+[1]: patterns.html
+[2]: http://doc.rust-lang.org/std/option/enum.Option.html#method.map
+[3]: http://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or
+[4]: http://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else
+[5]: http://doc.rust-lang.org/std/option/enum.Option.html
+[6]: http://doc.rust-lang.org/std/result/
+[7]: http://doc.rust-lang.org/std/result/enum.Result.html#method.unwrap
+[8]: http://doc.rust-lang.org/std/fmt/trait.Debug.html
+[9]: http://doc.rust-lang.org/std/primitive.str.html#method.parse
+[10]: associated-types.html
 [11]: https://github.com/petewarden/dstkdata
 [12]: http://burntsushi.net/stuff/worldcitiespop.csv.gz
 [13]: http://burntsushi.net/stuff/uscitiespop.csv.gz

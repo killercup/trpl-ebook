@@ -1,11 +1,11 @@
-% Operators and Overloading
+% Перегрузка операций
 
-Rust allows for a limited form of operator overloading. There are certain
-operators that are able to be overloaded. To support a particular operator
-between types, there’s a specific trait that you can implement, which then
-overloads the operator.
+Rust позволяет ограниченную форму перегрузки операций. Есть определенные
+операции, которые могут быть перегружены. Есть специальные типажи, которые вы
+можете реализовать для поддержки конкретной операции между типами. В результате
+чего перегружается операция.
 
-For example, the `+` operator can be overloaded with the `Add` trait:
+Например, операция `+` может быть перегружена с помощью типажа `Add`:
 
 ```rust
 use std::ops::Add;
@@ -34,17 +34,17 @@ fn main() {
 }
 ```
 
-In `main`, we can use `+` on our two `Point`s, since we’ve implemented
-`Add<Output=Point>` for `Point`.
+В `main` мы можем использовать операцию `+` для двух `Point`, так как мы
+реализовали типаж `Add<Output=Point>` для `Point`.
 
-There are a number of operators that can be overloaded this way, and all of
-their associated traits live in the [`std::ops`][stdops] module. Check out its
-documentation for the full list.
+Есть целый ряд операций, которые могут быть перегружены таким образом, и все
+связанные с этим типажи расположены в модуле [`std::ops`][stdops]. Проверьте эту
+часть документации для получения полного списка.
 
-[stdops]: ../std/ops/index.html
+[stdops]: http://doc.rust-lang.org/std/ops/index.html
 
-Implementing these traits follows a pattern. Let’s look at [`Add`][add] in more
-detail:
+Реализация этих типажей следует паттерну. Давайте посмотрим на типаж
+[`Add`][add] более детально:
 
 ```rust
 # mod foo {
@@ -56,11 +56,12 @@ pub trait Add<RHS = Self> {
 # }
 ```
 
-[add]: ../std/ops/trait.Add.html
+[add]: http://doc.rust-lang.org/std/ops/trait.Add.html
 
-There’s three types in total involved here: the type you `impl Add` for, `RHS`,
-which defaults to `Self`, and `Output`. For an expression `let z = x + y`, `x`
-is the `Self` type, `y` is the RHS, and `z` is the `Self::Output` type.
+В общей сложности здесь присутствуют три типа: тип `impl Add`, который мы
+реализуем, тип `RHS`, который по умолчанию равен `Self` и тип `Output`. Для
+выражения `let z = x + y`: `x` — это тип `Self`, `y` — это тип `RHS`, а `z` -
+это тип `Self::Output`.
 
 ```rust
 # struct Point;
@@ -75,17 +76,18 @@ impl Add<i32> for Point {
 }
 ```
 
-will let you do this:
+позволит вам сделать следующее:
 
 ```rust,ignore
 let p: Point = // ...
 let x: f64 = p + 2i32;
 ```
 
-# Using operator traits in generic structs
+# Использование типажей операций в обобщённых структурах
 
-Now that we know how operator traits are defined, we can define our `HasArea`
-trait and `Square` struct from the [traits chapter][traits] more generically:
+Теперь, когда мы знаем, как реализованы типажи операций, мы можем реализовать
+наш типаж `HasArea` и структуру `Square` из [главы о типажах][traits] более
+общим образом:
 
 [traits]: traits.html
 
@@ -116,20 +118,21 @@ fn main() {
         side: 12.0f64,
     };
 
-    println!("Area of s: {}", s.area());
+    println!("Площадь s: {}", s.area());
 }
 ```
 
-For `HasArea` and `Square`, we just declare a type parameter `T` and replace
-`f64` with it. The `impl` needs more involved modifications:
+Мы просто объявляем тип-параметр `T` и используем его вместо `f64` в определении
+`HasArea` и `Square`. В реализации нужно сделать более хитрые изменения:
 
 ```ignore
 impl<T> HasArea<T> for Square<T>
         where T: Mul<Output=T> + Copy { ... }
 ```
 
-The `area` method requires that we can multiply the sides, so we declare that
-type `T` must implement `std::ops::Mul`. Like `Add`, mentioned above, `Mul`
-itself takes an `Output` parameter: since we know that numbers don't change
-type when multiplied, we also set it to `T`. `T` must also support copying, so
-Rust doesn't try to move `self.side` into the return value.
+Чтобы реализовать `area`, мы должны мочь умножить операнды друг на друга,
+поэтому мы объявляем `T` как реализующий `std::ops::Mul`. Как и `Add`, `Mul`
+принимает параметр `Output`: т.к. мы знаем, что числа не меняют своего типа,
+когда их умножают, `Output` также объявлен как `T`. `T` также должен
+поддерживать копирование, чтобы Rust не пытался переместить `self.side` в
+возвращаемое значение.

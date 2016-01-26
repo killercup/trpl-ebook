@@ -1,38 +1,40 @@
-% `const` and `static`
+% `const` и `static`
 
-Rust has a way of defining constants with the `const` keyword:
+В Rust можно определить постоянную с помощью ключевого слова `const`:
 
 ```rust
 const N: i32 = 5;
 ```
 
-Unlike [`let`][let] bindings, you must annotate the type of a `const`.
+В отличие от обычных имён, объявляемых с помощью [`let`][let], тип постоянной
+надо указывать всегда.
 
 [let]: variable-bindings.html
 
-Constants live for the entire lifetime of a program. More specifically,
-constants in Rust have no fixed address in memory. This is because they’re
-effectively inlined to each place that they’re used. References to the same
-constant are not necessarily guaranteed to refer to the same memory address for
-this reason.
+Постоянные живут в течение всего времени работы программы. А именно, у них
+вообще нет определённого адреса в памяти. Это потому, что они встраиваются
+(inline) в каждое место, где есть их использование. По этой причине ссылки на
+одну и ту же постоянную не обязаны указывать на один и тот же адрес в памяти.
 
 # `static`
 
-Rust provides a ‘global variable’ sort of facility in static items. They’re
-similar to constants, but static items aren’t inlined upon use. This means that
-there is only one instance for each value, and it’s at a fixed location in
-memory.
+В Rust также можно объявить что-то вроде «глобальной переменной», используя
+статические значения. Они похожи на постоянные, но статические значения
+не встраиваются в место их использования. Это значит, что каждое значение
+существует в единственном экземпляре, и у него есть определённый адрес.
 
-Here’s an example:
+Вот пример:
 
 ```rust
 static N: i32 = 5;
 ```
 
-Unlike [`let`][let] bindings, you must annotate the type of a `static`.
+Так же, как и в случае с постоянными, тип статического значения надо указывать
+всегда.
 
-Statics live for the entire lifetime of a program, and therefore any
-reference stored in a constant has a [`'static` lifetime][lifetimes]:
+Статические значения живут в течение всего времени работы программы, и любая
+ссылка на постоянную имеет [статическое время жизни][lifetimes] (`static`
+lifetime):
 
 ```rust
 static NAME: &'static str = "Steve";
@@ -40,17 +42,20 @@ static NAME: &'static str = "Steve";
 
 [lifetimes]: lifetimes.html
 
-## Mutability
+## Изменяемость
 
-You can introduce mutability with the `mut` keyword:
+Вы можете сделать статическое значение изменяемым с помощью ключевого слова
+`mut`:
 
 ```rust
 static mut N: i32 = 5;
 ```
 
-Because this is mutable, one thread could be updating `N` while another is
-reading it, causing memory unsafety. As such both accessing and mutating a
-`static mut` is [`unsafe`][unsafe], and so must be done in an `unsafe` block:
+Поскольку `N` изменяемо, один поток может изменить его во время того, как другой
+читает его значение. Это ситуация «гонки» по данным, и она считается
+небезопасным поведением в Rust. Поэтому и чтение, и изменение статического
+изменяемого значения (`static mut`) является [небезопасным][unsafe] (unsafe), и
+обе эти операции должны выполняться в небезопасных блоках (`unsafe` block):
 
 ```rust
 # static mut N: i32 = 5;
@@ -64,20 +69,22 @@ unsafe {
 
 [unsafe]: unsafe.html
 
-Furthermore, any type stored in a `static` must be `Sync`, and may not have
-a [`Drop`][drop] implementation.
+Более того, любой тип, хранимый в статической переменной, должен быть ограничен
+`Sync` и не может иметь реализации [`Drop`][drop].
 
 [drop]: drop.html
 
-# Initializing
+# Инициализация
 
-Both `const` and `static` have requirements for giving them a value. They may
-only be given a value that’s a constant expression. In other words, you cannot
-use the result of a function call or anything similarly complex or at runtime.
+И постоянные, и статические значения имеют определённые требования к тому, что
+можно хранить в них. Они могут быть проинициализированы только выражением,
+значение которого постоянно. Другими словами, вы не можете использовать вызов
+функции или что-то, вычисляемое во время исполнения.
 
-# Which construct should I use?
+# Какую конструкцию стоит использовать?
 
-Almost always, if you can choose between the two, choose `const`. It’s pretty
-rare that you actually want a memory location associated with your constant,
-and using a const allows for optimizations like constant propagation not only
-in your crate but downstream crates.
+Почти всегда стоит предпочитать постоянные. Ситуация, когда вам нужно реальное
+место в памяти и соответствующий ему адрес довольно редка. А использование
+постоянных позволяет компилятору провести оптимизации вроде распространения
+постоянных (constant propagation) не только в вашем контейнере, но и в тех,
+которые зависят от него.

@@ -1,13 +1,13 @@
-% Casting Between Types
+% Приведение типов
 
-Rust, with its focus on safety, provides two different ways of casting
-different types between each other. The first, `as`, is for safe casts.
-In contrast, `transmute` allows for arbitrary casting, and is one of the
-most dangerous features of Rust!
+Rust, со своим акцентом на безопасность, обеспечивает два различных способа
+преобразования различных типов между собой. Первый — `as`, для безопасного
+приведения. Второй — `transmute`, в отличие от первого, позволяет произвольное
+приведение типов и является одной из самых опасных возможностей Rust!
 
 # `as`
 
-The `as` keyword does basic casting:
+Ключевое слово `as` выполняет обычное приведение типов:
 
 ```rust
 let x: i32 = 5;
@@ -15,7 +15,7 @@ let x: i32 = 5;
 let y = x as i64;
 ```
 
-It only allows certain kinds of casting, however:
+Оно допускает только определенные виды приведения типов:
 
 ```rust,ignore
 let a = [0u8, 0u8, 0u8, 0u8];
@@ -23,7 +23,7 @@ let a = [0u8, 0u8, 0u8, 0u8];
 let b = a as u32; // four eights makes 32
 ```
 
-This errors with:
+Это приведет к ошибке:
 
 ```text
 error: non-scalar cast: `[u8; 4]` as `u32`
@@ -31,23 +31,24 @@ let b = a as u32; // four eights makes 32
         ^~~~~~~~
 ```
 
-It’s a ‘non-scalar cast’ because we have multiple values here: the four
-elements of the array. These kinds of casts are very dangerous, because they
-make assumptions about the way that multiple underlying structures are
-implemented. For this, we need something more dangerous.
+Это «нескалярное преобразование», потому что у нас здесь преобразуются
+множественные значения: четыре элемента массива. Такие виды преобразований очень
+опасны, потому что они делают предположения о том, как реализованы множественные
+нижележащие структуры. Поэтому нам нужно что-то более опасное.
 
 # `transmute`
 
-The `transmute` function is provided by a [compiler intrinsic][intrinsics], and
-what it does is very simple, but very scary. It tells Rust to treat a value of
-one type as though it were another type. It does this regardless of the
-typechecking system, and just completely trusts you.
+Функция `transmute` предоставляется [внутренними средствами компилятора]
+[intrinsics], и то, что она делает, является очень простым, но в то же время
+очень опасным. Она сообщает Rust, чтобы он воспринимал значение одного типа, как
+будто это значение другого типа. Это делается независимо от системы проверки
+типов, и поэтому полностью на ваш страх и риск.
 
 [intrinsics]: intrinsics.html
 
-In our previous example, we know that an array of four `u8`s represents a `u32`
-properly, and so we want to do the cast. Using `transmute` instead of `as`,
-Rust lets us:
+В предыдущем примере, мы знаем, что массив из четырех `u8` отображается в массив
+`u32` должным образом, и поэтому мы хотим выполнить приведение. Если вместо `as`
+использовать `transmute`, то Rust позволит это сделать:
 
 ```rust
 use std::mem;
@@ -59,15 +60,17 @@ unsafe {
 }
 ```
 
-We have to wrap the operation in an `unsafe` block for this to compile
-successfully. Technically, only the `mem::transmute` call itself needs to be in
-the block, but it's nice in this case to enclose everything related, so you
-know where to look. In this case, the details about `a` are also important, and
-so they're in the block. You'll see code in either style, sometimes the context
-is too far away, and wrapping all of the code in `unsafe` isn't a great idea.
+Для того чтобы компиляция прошла успешно, мы должны обернуть эту операцию в
+`unsafe` блок. Технически, только вызов `mem::transmute` должен быть выполнен в
+небезопасном блоке, но в данном случае хорошо было бы поместить в этот блок все
+необходимое, связаное с этим вызовом, чтобы было удобнее искать. В данном
+примере связаной необходимой переменной является `a`, и поэтому она находится в
+блоке. Код может быть в любом стиле, иногда контекст расположен слишком далеко,
+и тогда упаковка всего кода в `unsafe` не будет такой уж хорошей идеей.
 
-While `transmute` does very little checking, it will at least make sure that
-the types are the same size. This errors:
+Хотя при использовании `transmute` и выполняется очень мало проверок, но как
+минимум будет проверяться, что типы имеют одинаковый размер. Нижеприведенный код
+завершится ошибкой:
 
 ```rust,ignore
 use std::mem;
@@ -79,11 +82,11 @@ unsafe {
 }
 ```
 
-with:
+со следующим описанием:
 
 ```text
 error: transmute called on types with different sizes: [u8; 4] (32 bits) to u64
 (64 bits)
 ```
 
-Other than that, you're on your own!
+Все, кроме этой одной проверки, на ваш страх и риск!

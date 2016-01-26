@@ -1,27 +1,31 @@
-% The Stack and the Heap
+% Стек и куча
 
-As a systems language, Rust operates at a low level. If you’re coming from a
-high-level language, there are some aspects of systems programming that you may
-not be familiar with. The most important one is how memory works, with a stack
-and a heap. If you’re familiar with how C-like languages use stack allocation,
-this chapter will be a refresher. If you’re not, you’ll learn about this more
-general concept, but with a Rust-y focus.
+Как любой системный язык программирования, Rust работает на низком уровне. Если
+вы пришли из языка высокого уровня, то вам могут быть незнакомы некоторые
+аспекты системного программирования. Наиболее важными из них являются те,
+которые касаются работы с памятью в стеке и в куче. Если вы уже знакомы с тем,
+как в C-подобных языках используется выделение памяти в стеке, то эта глава
+освежит ваши знания. Если же вы еще не знакомы с этим, то в общих чертах узнаете
+об этом понятии, но с акцентом на Rust.
 
-# Memory management
+# Управление памятью
 
-These two terms are about memory management. The stack and the heap are
-abstractions that help you determine when to allocate and deallocate memory.
+Эти два термина касаются управления памятью. Стек и куча — это абстракции,
+которые помогают вам определить, когда требуется выделение и освобождение
+памяти.
 
-Here’s a high-level comparison:
+Вот высокоуровневое сравнение.
 
-The stack is very fast, and is where memory is allocated in Rust by default.
-But the allocation is local to a function call, and is limited in size. The
-heap, on the other hand, is slower, and is explicitly allocated by your
-program. But it’s effectively unlimited in size, and is globally accessible.
+Стек работает очень быстро; в Rust память
+выделяется в стеке по умолчанию. Выделение памяти в стеке является локальным по
+отношению к вызову функции, и имеет ограниченный размер. Куча, с другой стороны,
+работает медленнее, а выделение памяти в куче осуществляется в программе
+явно. Но такая память имеет теоретически неограниченный размер, и доступна
+глобально.
 
-# The Stack
+# Стек
 
-Let’s talk about this Rust program:
+Давайте поговорим о следующей программе на Rust:
 
 ```rust
 fn main() {
@@ -29,30 +33,33 @@ fn main() {
 }
 ```
 
-This program has one variable binding, `x`. This memory needs to be allocated
-from somewhere. Rust ‘stack allocates’ by default, which means that basic
-values ‘go on the stack’. What does that mean?
+Эта программа имеет одно связанное имя, `x`. Память для него необходимо
+где-то выделить. Rust по умолчанию «выделяет память в стеке», что означает, что
+переменные «помещаются в стеке». Что это значит?
 
-Well, when a function gets called, some memory gets allocated for all of its
-local variables and some other information. This is called a ‘stack frame’, and
-for the purpose of this tutorial, we’re going to ignore the extra information
-and just consider the local variables we’re allocating. So in this case, when
-`main()` is run, we’ll allocate a single 32-bit integer for our stack frame.
-This is automatically handled for you, as you can see; we didn’t have to write
-any special Rust code or anything.
+Когда функция вызывается, то выделяется некоторый объем памяти для всех её
+локальных переменных и некоторой дополнительной информации. Это называется
+«стековый кадр» (stack frame). В этом руководстве мы будем игнорировать эту
+дополнительную информацию, и будем рассматривать лишь локальные переменные,
+которые мы определяем. Таким образом, в этом случае, когда выполняется
+`main()`, мы выделяем одно 32-битное целое число в нашем кадре стека. Как вы
+можете видеть, это происходит автоматически — мы не должны писать какой-либо
+специальный код на Rust для этого.
 
-When the function is over, its stack frame gets deallocated. This happens
-automatically, we didn’t have to do anything special here.
+Когда функция завершается, её стековый кадр освобождается. Это происходит
+автоматически — для этого нам не надо предпринимать никаких действий.
 
-That’s all there is for this simple program. The key thing to understand here
-is that stack allocation is very, very fast. Since we know all the local
-variables we have ahead of time, we can grab the memory all at once. And since
-we’ll throw them all away at the same time as well, we can get rid of it very
-fast too.
+Вот и все, что касается этой простой программы. Главное, что здесь нужно
+понять — это что выделение в стеке очень, очень быстро. Поскольку все локальные
+переменные известны нам заранее, мы можем выделить память для них всех сразу. И
+так как они, как правило, одновременно выходят из области видимости, мы можем
+очень быстро освободить выделенную память.
 
-The downside is that we can’t keep values around if we need them for longer
-than a single function. We also haven’t talked about what the word, ‘stack’,
-means. To do that, we need a slightly more complicated example:
+Недостатком является то, что мы не можем хранить необходимые значения дольше,
+чем в рамках одной функции.
+
+А ещё мы не говорили о том, что же означает название «стек». Для этого мы должны
+привести немного более сложный пример:
 
 ```rust
 fn foo() {
@@ -67,57 +74,59 @@ fn main() {
 }
 ```
 
-This program has three variables total: two in `foo()`, one in `main()`. Just
-as before, when `main()` is called, a single integer is allocated for its stack
-frame. But before we can show what happens when `foo()` is called, we need to
-visualize what’s going on with memory. Your operating system presents a view of
-memory to your program that’s pretty simple: a huge list of addresses, from 0
-to a large number, representing how much RAM your computer has. For example, if
-you have a gigabyte of RAM, your addresses go from `0` to `1,073,741,823`. That
-number comes from 2<sup>30</sup>, the number of bytes in a gigabyte.
+Эта программа имеет в общей сложности три переменные: две в `foo()` и одну в
+`main()`. Так же как и раньше, когда вызывается `main()`, в её стековом кадре
+выделяется одно целое число. Но, прежде чем мы сможем показать, что происходит,
+когда вызывается `foo()`, мы должны визуализировать то, что происходит с
+памятью. Ваша операционная система представляет отображение памяти для вашей
+программы. Это довольно просто: огромный список адресов, от 0 до большого числа,
+представляющего количество оперативной памяти у вашего компьютера. Например,
+если у вас есть гигабайт оперативной памяти, то ваши адреса будут от `0` до
+`1 073 741 823`. Это число равно 2<sup>30</sup>, количеству байтов в
+гигабайте.
 
-This memory is kind of like a giant array: addresses start at zero and go
-up to the final number. So here’s a diagram of our first stack frame:
+Эта память вроде гигантского массива: адреса начинаются с нуля и продолжаются до
+конечного числа. Так вот схема нашего первого кадра стека:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 0     | x   | 42       |
 
-We’ve got `x` located at address `0`, with the value `42`.
+У нас есть переменная `x`, расположенная по адресу `0`, имеющая значение `42`.
 
-When `foo()` is called, a new stack frame is allocated:
+Когда вызывается `foo()`, выделяется новый стековый кадр:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 2       | z    | 100   |
-| 1       | y    | 5     |
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 2     | z   | 100      |
+| 1     | y   | 5        |
+| 0     | x   | 42       |
 
-Because `0` was taken by the first frame, `1` and `2` are used for `foo()`’s
-stack frame. It grows upward, the more functions we call.
+Поскольку `0` было задействовано в первом кадре, для кадра `foo()` используются
+`1` и `2`. При дальнейших вызовах функций стек будет расти вверх.
 
+Здесь необходимо принять к сведению некоторые важные замечания. Адреса 0, 1 и 2
+приведены исключительно в иллюстративных целях, и не имеют никакого отношения к
+фактическим адресам, которые компьютер будет использовать. В частности, набор
+адресов в действительности включает выравнивающие разделители, состоящие из
+некоторого числа байтов, которые отделяют каждый из адресов. Размер этого
+разделителя может даже превышать размер хранящегося значения.
 
-There’s some important things we have to take note of here. The numbers 0, 1,
-and 2 are all solely for illustrative purposes, and bear no relationship to the
-actual numbers the computer will actually use. In particular, the series of
-addresses are in reality going to be separated by some number of bytes that
-separate each address, and that separation may even exceed the size of the
-value being stored.
+После того, как `foo()` завершается, её кадр будет освобожден:
 
-After `foo()` is over, its frame is deallocated:
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 0     | x   | 42       |
 
-| Address | Name | Value |
-|---------|------|-------|
-| 0       | x    | 42    |
+А потом, после `main()`, даже это последнее значение уходит. Легко!
 
-And then, after `main()`, even this last value goes away. Easy!
+Это называется «стек» (по-русски, стопка), потому что он работает как стопка
+тарелок: первая тарелка, которую вы положили, будет последней тарелкой,
+которую вы возьмете обратно. По этой причине стек иногда называют очередью
+«последним пришел, первым вышел». Последнее значение, которое вы положили в
+стек, будет первым, которое вы получите из него.
 
-It’s called a ‘stack’ because it works like a stack of dinner plates: the first
-plate you put down is the last plate to pick back up. Stacks are sometimes
-called ‘last in, first out queues’ for this reason, as the last value you put
-on the stack is the first one you retrieve from it.
-
-Let’s try a three-deep example:
+Давайте попробуем трёх-уровневый пример:
 
 ```rust
 fn bar() {
@@ -139,60 +148,64 @@ fn main() {
 }
 ```
 
-Okay, first, we call `main()`:
+Сначала вызывается `main()`:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 0     | x   | 42       |
 
-Next up, `main()` calls `foo()`:
+Затем из `main()` вызывается `foo()`:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 3       | c    | 1     |
-| 2       | b    | 100   |
-| 1       | a    | 5     |
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 3     | c   | 1        |
+| 2     | b   | 100      |
+| 1     | a   | 5        |
+| 0     | x   | 42       |
 
-And then `foo()` calls `bar()`:
+И затем из `foo()` вызывается `bar()`:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 4       | i    | 6     |
-| 3       | c    | 1     |
-| 2       | b    | 100   |
-| 1       | a    | 5     |
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 4     | i   | 6        |
+| 3     | c   | 1        |
+| 2     | b   | 100      |
+| 1     | a   | 5        |
+| 0     | x   | 42       |
 
-Whew! Our stack is growing tall.
+Вот что мы имели ввиду раньше, говоря, что наш стек растет вверх.
 
-After `bar()` is over, its frame is deallocated, leaving just `foo()` and
-`main()`:
+После того, как `bar()` завершается, её кадр будет освобожден, оставляя только
+`foo()` и `main()`:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 3       | c    | 1     |
-| 2       | b    | 100   |
-| 1       | a    | 5     |
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 3     | c   | 1        |
+| 2     | b   | 100      |
+| 1     | a   | 5        |
+| 0     | x   | 42       |
 
-And then `foo()` ends, leaving just `main()`:
+А затем завершается `foo()`, оставляя только `main()`:
 
-| Address | Name | Value |
-|---------|------|-------|
-| 0       | x    | 42    |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 0     | x   | 42       |
 
-And then we’re done. Getting the hang of it? It’s like piling up dishes: you
-add to the top, you take away from the top.
+И вот мы закончили. Уловили суть? Это как стопка тарелок: вы кладете наверх, и
+берёте сверху.
 
-# The Heap
+# Куча
 
-Now, this works pretty well, but not everything can work like this. Sometimes,
-you need to pass some memory between different functions, or keep it alive for
-longer than a single function’s execution. For this, we can use the heap.
+Такой способ выделения памяти работает очень хорошо, но он может быть
+использован не всегда. Иногда вам необходимо передать некоторую память между
+различными функциями или сохранить её валидность после окончания выполнения
+функции. Для этого мы можем использовать кучу.
 
-In Rust, you can allocate memory on the heap with the [`Box<T>` type][box].
-Here’s an example:
+В Rust, вы можете выделить память в куче с помощью упаковки, т.е.
+[типа `Box<T>`][box]. (Примечание переводчика: мы называем `Box<T>` упаковкой,
+потому что `T` как бы «упакован» в `Box`: упаковка знает размер того, что лежит
+внутри. Эта информация закодирована в типе `T`, поэтому во время исполнения, для
+размерных типов, это просто указатель.) Вот пример:
 
 ```rust
 fn main() {
@@ -201,48 +214,47 @@ fn main() {
 }
 ```
 
-[box]: ../std/boxed/index.html
+[box]: http://doc.rust-lang.org/std/boxed/index.html
 
-Here’s what happens in memory when `main()` is called:
+Вот что происходит с памятью, когда вызывается `main()`:
 
-| Address | Name | Value  |
-|---------|------|--------|
-| 1       | y    | 42     |
-| 0       | x    | ?????? |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 1     | y   | 42       |
+| 0     | x   | ??????   |
 
-We allocate space for two variables on the stack. `y` is `42`, as it always has
-been, but what about `x`? Well, `x` is a `Box<i32>`, and boxes allocate memory
-on the heap. The actual value of the box is a structure which has a pointer to
-‘the heap’. When we start executing the function, and `Box::new()` is called,
-it allocates some memory for the heap, and puts `5` there. The memory now looks
-like this:
+Мы выделяем место для двух переменных в стеке. `y` представляет собой `42`,
+тут всё как обычно. Но что насчёт `x`? Наш `x` представляет собой `Box<i32>`,
+а упаковка выделяет память в куче. Фактическое значение упаковки — структура,
+которая хранит указатель на «кучу». Когда начинает выполняться функция,
+осуществляется вызов `Box::new()`, который выделяет некоторый объем памяти в
+куче, и кладет туда `5`. Теперь память выглядит следующим образом:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 5                      |
-| ...                  | ...  | ...                    |
-| 1                    | y    | 42                     |
-| 0                    | x    | → (2<sup>30</sup>) - 1 |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 5                      |
+| ...                  | ... | ...                    |
+| 1                    | y   | 42                     |
+| 0                    | x   | → (2<sup>30</sup>) - 1 |
 
-We have (2<sup>30</sup>) - 1 in our hypothetical computer with 1GB of RAM. And since
-our stack grows from zero, the easiest place to allocate memory is from the
-other end. So our first value is at the highest place in memory. And the value
-of the struct at `x` has a [raw pointer][rawpointer] to the place we’ve
-allocated on the heap, so the value of `x` is (2<sup>30</sup>) - 1, the memory
-location we’ve asked for.
+В нашем гипотетическом компьютере c 1Гб оперативной памяти имеется
+2<sup>30</sup> адресов. А так как наш стек растет от нуля, то проще всего
+выделить память с другого конца. Таким образом, наше первое значение находится
+на самом высоком месте в памяти. Поскольку структура `x` хранит [сырой
+указатель (raw pointer)][rawpointer] на адрес, который мы выделили в куче, то
+значение `x` равно (2<sup>30</sup>) - 1 — это то самое местоположение в памяти.
 
 [rawpointer]: raw-pointers.html
 
-We haven’t really talked too much about what it actually means to allocate and
-deallocate memory in these contexts. Getting into very deep detail is out of
-the scope of this tutorial, but what’s important to point out here is that
-the heap isn’t just a stack that grows from the opposite end. We’ll have an
-example of this later in the book, but because the heap can be allocated and
-freed in any order, it can end up with ‘holes’. Here’s a diagram of the memory
-layout of a program which has been running for a while now:
+Мы не слишком много говорили о том, что на самом деле означает «выделить» и
+«освободить память» в этом контексте. Чрезмерное углубление в детали по этому
+вопросу выходит за рамки данного руководства, но важно отметить, что куча — это
+не просто стек, который растет с противоположного конца. Как мы увидим в
+дальнейших примерах в этой книге, память из кучи может быть выделена и
+освобождена в любом порядке, что в конечном итоге может привести к «дыркам». Вот
+схема размещения памяти программы, проработавшей в течение некоторого времени:
 
-
-| Address              | Name | Value                  |
+| Адрес                | Имя  | Значение               |
 |----------------------|------|------------------------|
 | (2<sup>30</sup>) - 1 |      | 5                      |
 | (2<sup>30</sup>) - 2 |      |                        |
@@ -254,40 +266,40 @@ layout of a program which has been running for a while now:
 | 1                    | y    | 42                     |
 | 0                    | x    | → (2<sup>30</sup>) - 1 |
 
-In this case, we’ve allocated four things on the heap, but deallocated two of
-them. There’s a gap between (2<sup>30</sup>) - 1 and (2<sup>30</sup>) - 4 which isn’t
-currently being used. The specific details of how and why this happens depends
-on what kind of strategy you use to manage the heap. Different programs can use
-different ‘memory allocators’, which are libraries that manage this for you.
-Rust programs use [jemalloc][jemalloc] for this purpose.
+В этом примере мы выделили четыре элемента в куче, но освободили лишь два из
+них. Отсюда разрыв между (2<sup>30</sup>) - 1 и (2<sup>30</sup>) - 4, который в
+настоящее время не используется. Конкретные детали того, как и почему это
+происходит, зависят от того, какую стратегию вы используете для управления
+кучей. Различные программы могут использовать различные «распределители памяти»,
+которые представляют собой библиотеки, которые управляют памятью за вас.
+Программы на Rust используют для этого [jemalloc][jemalloc].
 
 [jemalloc]: http://www.canonware.com/jemalloc/
 
-Anyway, back to our example. Since this memory is on the heap, it can stay
-alive longer than the function which allocates the box. In this case, however,
-it doesn’t.[^moving] When the function is over, we need to free the stack frame
-for `main()`. `Box<T>`, though, has a trick up its sleeve: [Drop][drop]. The
-implementation of `Drop` for `Box` deallocates the memory that was allocated
-when it was created. Great! So when `x` goes away, it first frees the memory
-allocated on the heap:
+Ладно, вернемся к нашему примеру. Так как эта память расположена в куче, то она
+может оставаться валидной дольше, чем функция, которая выделяет упаковку. В
+данном случае, однако, это не так.[^moving] Когда функция завершается, мы должны
+освободить кадр стека для `main()`. Хотя у `Box<T>` для этого есть свой трюк:
+[Drop][drop]. Реализация `Drop` для `Box` освобождает память, которая была
+выделена при создании. Отлично! Поэтому, когда `x` уходит, сначала освобождается
+память, выделенная в куче:
 
-| Address | Name | Value  |
-|---------|------|--------|
-| 1       | y    | 42     |
-| 0       | x    | ?????? |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 1     | y   | 42       |
+| 0     | x   | ??????   |
 
 [drop]: drop.html
-[^moving]: We can make the memory live longer by transferring ownership,
-           sometimes called ‘moving out of the box’. More complex examples will
-           be covered later.
+[moving]: Мы можем продлить время жизни памяти путем передачи права
+          собственности, что иногда называют «перемещение из упаковки» («moving
+          out of the box»). Более сложные примеры будут рассмотрены позже.
 
+А потом кадр стека уходит, освобождая всю нашу память.
 
-And then the stack frame goes away, freeing all of our memory.
+# Аргументы и заимствование
 
-# Arguments and borrowing
-
-We’ve got some basic examples with the stack and the heap going, but what about
-function arguments and borrowing? Here’s a small Rust program:
+У нас есть некоторые простые примеры со стеком и кучей, но что насчёт аргументов
+функции и заимствования? Вот небольшая программа на Rust:
 
 ```rust
 fn foo(i: &i32) {
@@ -302,37 +314,40 @@ fn main() {
 }
 ```
 
-When we enter `main()`, memory looks like this:
+Когда мы входим в `main()`, память выглядит следующим образом:
 
-| Address | Name | Value  |
-|---------|------|--------|
-| 1       | y    | → 0    |
-| 0       | x    | 5      |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 1     | y   | → 0      |
+| 0     | x   | 5        |
 
-`x` is a plain old `5`, and `y` is a reference to `x`. So its value is the
-memory location that `x` lives at, which in this case is `0`.
+Значением `x` является `5`, а `y` представляет собой ссылку на `x`. То есть, ее
+значением является адрес памяти, по которому расположен `x`. В данном случае это
+`0`.
 
-What about when we call `foo()`, passing `y` as an argument?
+А что насчёт случая, когда мы вызываем `foo()`, передавая `y` в качестве
+аргумента?
 
-| Address | Name | Value  |
-|---------|------|--------|
-| 3       | z    | 42     |
-| 2       | i    | → 0    |
-| 1       | y    | → 0    |
-| 0       | x    | 5      |
+| Адрес | Имя | Значение |
+|-------|-----|----------|
+| 3     | z   | 42       |
+| 2     | i   | → 0      |
+| 1     | y   | → 0      |
+| 0     | x   | 5        |
 
-Stack frames aren’t just for local bindings, they’re for arguments too. So in
-this case, we need to have both `i`, our argument, and `z`, our local variable
-binding. `i` is a copy of the argument, `y`. Since `y`’s value is `0`, so is
-`i`’s.
+Кадры стека используются не только для локальных имён, но также и для
+аргументов. Таким образом, в этом случае, наш кадр должен содержать как `i`, наш
+аргумент, так и `z`, наше локальное имя. `i` — это копия аргумента `y`.
+Соответственно, значением `i`, как и значением `y`, является `0`.
 
-This is one reason why borrowing a variable doesn’t deallocate any memory: the
-value of a reference is just a pointer to a memory location. If we got rid of
-the underlying memory, things wouldn’t work very well.
+Это одна из причин, почему заимствование переменной не освобождает какую-либо
+память: значением ссылки является просто указатель на область памяти. Если мы
+освободим находящуюся по этому указателю память, то это может привести к ошибкам
+в дальнейшей работе.
 
-# A complex example
+# Сложный пример
 
-Okay, let’s go through this complex program step-by-step:
+Хорошо, давайте рассмотрим следующую, более сложную программу шаг за шагом:
 
 ```rust
 fn foo(x: &i32) {
@@ -364,207 +379,210 @@ fn main() {
 }
 ```
 
-First, we call `main()`:
+Сначала мы вызываем `main()`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| ...                  | ...  | ...                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| ...                  | ... | ...                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-We allocate memory for `j`, `i`, and `h`. `i` is on the heap, and so has a
-value pointing there.
+Мы выделяем память для `j`, `i`, и `h`. `i` выделена в куче и поэтому содержит
+указатель на значение в куче.
 
-Next, at the end of `main()`, `foo()` gets called:
+Далее, в конце вызова `main()`, вызывается `foo()`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| ...                  | ...  | ...                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| ...                  | ... | ...                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-Space gets allocated for `x`, `y`, and `z`. The argument `x` has the same value
-as `j`, since that’s what we passed it in. It’s a pointer to the `0` address,
-since `j` points at `h`.
+Пространство выделяется для `x`, `y` и `z`. Аргумент `x` имеет такое же
+значение, как и `j`, так как мы передали `j` в качестве аргумента. Это указатель
+на адрес `0`, так как `j` указывает на `h`.
 
-Next, `foo()` calls `baz()`, passing `z`:
+Далее, `foo()` вызывает `baz()`, передавая `z`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| ...                  | ...  | ...                    |
-| 7                    | g    | 100                    |
-| 6                    | f    | → 4                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| ...                  | ... | ...                    |
+| 7                    | g   | 100                    |
+| 6                    | f   | → 4                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-We’ve allocated memory for `f` and `g`. `baz()` is very short, so when it’s
-over, we get rid of its stack frame:
+Мы выделили память для `f` и `g`. `baz()` очень короткая, и когда она
+завершается, мы избавляемся от её кадра стека:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| ...                  | ...  | ...                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| ...                  | ... | ...                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-Next, `foo()` calls `bar()` with `x` and `z`:
+Далее `foo()` вызывает `bar()` с аргументами `x` и `z`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| (2<sup>30</sup>) - 2 |      | 5                      |
-| ...                  | ...  | ...                    |
-| 10                   | e    | → 9                    |
-| 9                    | d    | → (2<sup>30</sup>) - 2 |
-| 8                    | c    | 5                      |
-| 7                    | b    | → 4                    |
-| 6                    | a    | → 0                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| (2<sup>30</sup>) - 2 |     | 5                      |
+| ...                  | ... | ...                    |
+| 10                   | e   | → 9                    |
+| 9                    | d   | → (2<sup>30</sup>) - 2 |
+| 8                    | c   | 5                      |
+| 7                    | b   | → 4                    |
+| 6                    | a   | → 0                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-We end up allocating another value on the heap, and so we have to subtract one
-from (2<sup>30</sup>) - 1. It’s easier to just write that than `1,073,741,822`. In any
-case, we set up the variables as usual.
+Тут мы выделяем другое значение в куче, и поэтому мы вычитаем единицу из
+(2<sup>30</sup>) - 1. Это выражение написать легче, чем `1 073 741 822`.
+В любом случае, переменные создаются, как обычно.
 
-At the end of `bar()`, it calls `baz()`:
+В конце `bar()` вызывает `baz()`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| (2<sup>30</sup>) - 2 |      | 5                      |
-| ...                  | ...  | ...                    |
-| 12                   | g    | 100                    |
-| 11                   | f    | → 9                    |
-| 10                   | e    | → 9                    |
-| 9                    | d    | → (2<sup>30</sup>) - 2 |
-| 8                    | c    | 5                      |
-| 7                    | b    | → 4                    |
-| 6                    | a    | → 0                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| (2<sup>30</sup>) - 2 |     | 5                      |
+| ...                  | ... | ...                    |
+| 12                   | g   | 100                    |
+| 11                   | f   | → 9                    |
+| 10                   | e   | → 9                    |
+| 9                    | d   | → (2<sup>30</sup>) - 2 |
+| 8                    | c   | 5                      |
+| 7                    | b   | → 4                    |
+| 6                    | a   | → 0                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-With this, we’re at our deepest point! Whew! Congrats for following along this
-far.
+Сейчас мы на наибольшей глубине! Поздравляем с достижением данной точки.
 
-After `baz()` is over, we get rid of `f` and `g`:
+После завершения `baz()`, мы избавляемся от `f` и `g`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| (2<sup>30</sup>) - 2 |      | 5                      |
-| ...                  | ...  | ...                    |
-| 10                   | e    | → 9                    |
-| 9                    | d    | → (2<sup>30</sup>) - 2 |
-| 8                    | c    | 5                      |
-| 7                    | b    | → 4                    |
-| 6                    | a    | → 0                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| (2<sup>30</sup>) - 2 |     | 5                      |
+| ...                  | ... | ...                    |
+| 10                   | e   | → 9                    |
+| 9                    | d   | → (2<sup>30</sup>) - 2 |
+| 8                    | c   | 5                      |
+| 7                    | b   | → 4                    |
+| 6                    | a   | → 0                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-Next, we return from `bar()`. `d` in this case is a `Box<T>`, so it also frees
-what it points to: (2<sup>30</sup>) - 2.
+Далее мы выполняем возврат из `bar()`. В этом случае `d` представляет собой
+`Box<T>`, поэтому он также освобождает и то, на что он указывает:
+(2<sup>30</sup>) - 2.
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| ...                  | ...  | ...                    |
-| 5                    | z    | → 4                    |
-| 4                    | y    | 10                     |
-| 3                    | x    | → 0                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| ...                  | ... | ...                    |
+| 5                    | z   | → 4                    |
+| 4                    | y   | 10                     |
+| 3                    | x   | → 0                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-And after that, `foo()` returns:
+И после этого происходит возврат из `foo()`:
 
-| Address              | Name | Value                  |
-|----------------------|------|------------------------|
-| (2<sup>30</sup>) - 1 |      | 20                     |
-| ...                  | ...  | ...                    |
-| 2                    | j    | → 0                    |
-| 1                    | i    | → (2<sup>30</sup>) - 1 |
-| 0                    | h    | 3                      |
+| Адрес                | Имя | Значение               |
+|----------------------|-----|------------------------|
+| (2<sup>30</sup>) - 1 |     | 20                     |
+| ...                  | ... | ...                    |
+| 2                    | j   | → 0                    |
+| 1                    | i   | → (2<sup>30</sup>) - 1 |
+| 0                    | h   | 3                      |
 
-And then, finally, `main()`, which cleans the rest up. When `i` is `Drop`ped,
-it will clean up the last of the heap too.
+И вот, наконец, `main()`, которая очищает все остальное. Когда освобождается `i`
+(`Drop`), будет также очищен и конец кучи.
 
-# What do other languages do?
+# А что делают другие языки?
 
-Most languages with a garbage collector heap-allocate by default. This means
-that every value is boxed. There are a number of reasons why this is done, but
-they’re out of scope for this tutorial. There are some possible optimizations
-that don’t make it true 100% of the time, too. Rather than relying on the stack
-and `Drop` to clean up memory, the garbage collector deals with the heap
-instead.
+Большинство языков со сборщиком мусора по умолчанию выделяет память из кучи. Это
+означает, что каждое значение будет упаковано. Есть ряд причин, почему делается
+именно так, но они выходят за рамки данного руководства. Есть несколько
+возможных оптимизаций, которые, правда, не достигают своей цели во всех случаях.
+Вместо того чтобы полагаться на стек и `Drop` в вопросах очистки памяти, сборщик
+мусора работает с кучей.
 
-# Which to use?
+# Что использовать?
 
-So if the stack is faster and easier to manage, why do we need the heap? A big
-reason is that Stack-allocation alone means you only have LIFO semantics for
-reclaiming storage. Heap-allocation is strictly more general, allowing storage
-to be taken from and returned to the pool in arbitrary order, but at a
-complexity cost.
+Но, если стек быстрее и проще в управлении, зачем тогда нужна куча? Весомая
+причина заключается в том, что память в стеке может выделяться только по
+принципу «первым пришёл — последним вышел». Таким образом, место из-под кадра
+стека предыдущего вызова функции будет переиспользовано под следующий вызов.
+Выделение в куче — более общая техника. Она позволяет выделение и освобождение
+памяти в любом порядке. Однако, это достигается ценой увеличения сложности
+реализации механизма выделения памяти.
 
-Generally, you should prefer stack allocation, and so, Rust stack-allocates by
-default. The LIFO model of the stack is simpler, at a fundamental level. This
-has two big impacts: runtime efficiency and semantic impact.
+В общем случае, следует предпочитать выделение в стеке, и поэтому, Rust
+использует выделение в стеке по умолчанию. LIFO модель стека («последним
+пришёл — первым вышел») фундаментально проще. Это значит, что программа быстрее
+исполняется, и проще по смыслу.
 
-## Runtime Efficiency
+## Эффективность во время выполнения
 
-Managing the memory for the stack is trivial: The machine just
-increments or decrements a single value, the so-called “stack pointer”.
-Managing memory for the heap is non-trivial: heap-allocated memory is freed at
-arbitrary points, and each block of heap-allocated memory can be of arbitrary
-size, the memory manager must generally work much harder to identify memory for
-reuse.
+Управление памятью для стека тривиально: машина просто увеличивает или
+уменьшает одно значение, так называемый «указатель стека» (stack pointer).
+Управление памятью для кучи сложнее: память, выделенная в куче, освобождается в
+произвольные моменты, а каждая область выделенной в куче памяти может быть
+произвольного размера. Распределителю памяти, как правило, требуется приложить
+гораздо больше усилий для определения областей, которые можно использовать
+заново.
 
-If you’d like to dive into this topic in greater detail, [this paper][wilson]
-is a great introduction.
+Если вы хотите изучить эту тему более подробно, то [эта статья][wilson] будет
+отличным введением.
 
-[wilson]: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.143.4688
+[wilson]: http://www.cs.northwestern.edu/~pdinda/icsclass/doc/dsa.pdf
 
-## Semantic impact
+## Простота программы
 
-Stack-allocation impacts the Rust language itself, and thus the developer’s
-mental model. The LIFO semantics is what drives how the Rust language handles
-automatic memory management. Even the deallocation of a uniquely-owned
-heap-allocated box can be driven by the stack-based LIFO semantics, as
-discussed throughout this chapter. The flexibility (i.e. expressiveness) of non
-LIFO-semantics means that in general the compiler cannot automatically infer at
-compile-time where memory should be freed; it has to rely on dynamic protocols,
-potentially from outside the language itself, to drive deallocation (reference
-counting, as used by `Rc<T>` and `Arc<T>`, is one example of this).
+Выделение памяти в стеке воздействует как на сам язык Rust, так и на модель
+мышления разработчиков. Стековая семантика — ключевое понятие Rust. Мы получаем
+автоматическое управление памятью без усложнения среды исполнения. Именно этот
+механизм позволяет освободить память в куче, как только её владелец вышел из
+области видимости — по сути, как только схлопнулся стек кадра, на котором он
+жил. К сожалению, в некоторых ситуациях стека недостаточно. Если нужна большая
+гибкость во владении памятью, можно воспользоваться счётчиками ссылок `Rc<T>` и
+`Arc<T>`.
 
-When taken to the extreme, the increased expressive power of heap allocation
-comes at the cost of either significant runtime support (e.g. in the form of a
-garbage collector) or significant programmer effort (in the form of explicit
-memory management calls that require verification not provided by the Rust
-compiler).
+Желание более удобно пользоваться памятью в куче может доходить до крайности. С
+одной стороны, можно реализовать сборщик мусора — но это сильно увеличивает
+сложность среды исполнения. С другой стороны, полностью ручное управление
+памятью с явным вызовом процедуры освобождения часто приводит к ошибкам,
+предотвратить которые компилятор Rust не в силах.

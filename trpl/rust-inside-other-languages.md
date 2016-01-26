@@ -1,60 +1,65 @@
-% Rust Inside Other Languages
+% Вызов кода на Rust из других языков
 
-For our third project, we’re going to choose something that shows off one of
-Rust’s greatest strengths: a lack of a substantial runtime.
+Для нашего третьего проекта мы собираемся выбрать что-то, что подчеркнёт одну из
+самых сильных сторон в Rust: фактическое отсутствие среды исполнения.
 
-As organizations grow, they increasingly rely on a multitude of programming
-languages. Different programming languages have different strengths and
-weaknesses, and a polyglot stack lets you use a particular language where
-its strengths make sense and a different one where it’s weak.
+По мере роста организации, программисты все больше полагаются на множество
+языков программирования. У каждого языка программирования есть свои сильные и
+слабые стороны, а знание нескольких языков позволяет использовать определенный
+язык там, где проявляется его сильные стороны, и использовать другой язык там,
+где первый не очень хорош.
 
-A very common area where many programming languages are weak is in runtime
-performance of programs. Often, using a language that is slower, but offers
-greater programmer productivity, is a worthwhile trade-off. To help mitigate
-this, they provide a way to write some of your system in C and then call
-that C code as though it were written in the higher-level language. This is
-called a ‘foreign function interface’, often shortened to ‘FFI’.
+Существует несколько областей, где многие языки программирования слабы в плане
+производительности выполнения программ. Часто компромисс заключается в том,
+чтобы использовать более медленный язык, который взамен способствует повышению
+производительности программиста. Чтобы решить эту проблему, часть кода системы
+можно написать на C, а затем вызвать этот код, написанный на C, как если бы он
+был написан на языке высокого уровня. Это называется «интерфейс внешних функций»
+(foreign function interface), часто сокращается до FFI.
 
-Rust has support for FFI in both directions: it can call into C code easily,
-but crucially, it can also be called _into_ as easily as C. Combined with
-Rust’s lack of a garbage collector and low runtime requirements, this makes
-Rust a great candidate to embed inside of other languages when you need
-that extra oomph.
+Rust включает поддержку FFI в обоих направлениях: он легко может вызвать C код,
+и он так же легко, как и C код, может быть вызван _извне_. Rust сочетает в себе
+отсутствие сборщика мусора и низкие требования к среде исполнения, что делает
+Rust отличным кандидатом на роль вызываемого из других языков, когда нужны
+некоторые дополнительные возможности.
 
-There is a whole [chapter devoted to FFI][ffi] and its specifics elsewhere in
-the book, but in this chapter, we’ll examine this particular use-case of FFI,
-with examples in Ruby, Python, and JavaScript.
+В этой книге есть целая [глава, посвящённая FFI][ffi] и его специфике, а в этой
+главе мы рассмотрим именно конкретный частный случай FFI, с тремя примерами, на
+Ruby, Python и JavaScript.
 
 [ffi]: ffi.html
 
-# The problem
+# Проблема
 
-There are many different projects we could choose here, but we’re going to
-pick an example where Rust has a clear advantage over many other languages:
-numeric computing and threading.
+Есть много различных проектов, которые мы могли бы выбрать, но мы хотим
+подобрать такой пример, который продемонстрирует явное преимущество Rust над
+многими другими языками: сложные вычисления и многопоточность.
 
-Many languages, for the sake of consistency, place numbers on the heap, rather
-than on the stack. Especially in languages that focus on object-oriented
-programming and use garbage collection, heap allocation is the default. Sometimes
-optimizations can stack allocate particular numbers, but rather than relying
-on an optimizer to do its job, we may want to ensure that we’re always using
-primitive number types rather than some sort of object type.
+Во многих языках числа размещаются в куче, а не в стеке. Это обеспечивает
+целостность поведения языка при работе с числами и с другими объектами. Особенно
+в языках, которые сосредотачиваются на объектно-ориентированном программировании
+и использовании сборщика мусора, по умолчанию память выделяется из кучи. Иногда,
+при оптимизации, для конкретных чисел память может выделяться в стеке, но вместо
+того, чтобы полагаться на работу оптимизации, мы можем захотеть убедиться в том,
+что мы используем примитивные типы чисел, а не какой-либо тип объекта.
 
-Second, many languages have a ‘global interpreter lock’ (GIL), which limits
-concurrency in many situations. This is done in the name of safety, which is
-a positive effect, but it limits the amount of work that can be done at the
-same time, which is a big negative.
+Во-вторых, многие языки имеют «глобальную блокировку интерпретатора» (global
+interpreter lock), которая ограничивает параллелизм во многих ситуациях. Это
+делается во имя безопасности, что оказывает положительный эффект, но это также и
+ограничивает объем работ, который может быть выполнен одновременно, что, в свою
+очередь, оказывает большой отрицательный эффект.
 
-To emphasize these two aspects, we’re going to create a little project that
-uses these two aspects heavily. Since the focus of the example is to embed
-Rust into other languages, rather than the problem itself, we’ll just use a
-toy example:
+Чтобы подчеркнуть эти два аспекта, мы собираемся создать небольшой проект,
+который в значительной степени их использует. Поскольку внимание в этом примере
+сфокусировано на встраивание Rust в другие языки, а не самой проблеме, мы будем
+использовать игрушечный пример:
 
-> Start ten threads. Inside each thread, count from one to five million. After
-> all ten threads are finished, print out ‘done!’.
+> Запустить десять потоков. Внутри каждого потока считать от одного до пяти
+> миллионов. После того как все десять потоков завершатся, напечатать
+> "сделано!".
 
-I chose five million based on my particular computer. Here’s an example of this
-code in Ruby:
+Мы выбрали пять миллионов руководствуясь тем, сколько времени занимает эта
+работа на современном компьютере. Вот пример этого кода на Ruby:
 
 ```ruby
 threads = []
@@ -66,40 +71,37 @@ threads = []
     5_000_000.times do
       count += 1
     end
-
-    count
   end
 end
 
-threads.each do |t|
-  puts "Thread finished with count=#{t.value}"
-end
-puts "done!"
+threads.each { |t| t.join }
+puts "сделано!"
 ```
 
-Try running this example, and choose a number that runs for a few seconds.
-Depending on your computer’s hardware, you may have to increase or decrease the
-number.
+Попробуйте запустить этот пример, и подберите число, которое обеспечит работу в
+течение нескольких секунд. В зависимости от аппаратного обеспечения компьютера,
+возможно, придется увеличить или уменьшить это число.
 
-On my system, running this program takes `2.156` seconds. And, if I use some
-sort of process monitoring tool, like `top`, I can see that it only uses one
-core on my machine. That’s the GIL kicking in.
+На выбранной нами системе эта программа работает `2.156` секунд. И если мы
+воспользуемся какой-нибудь утилитой для мониторинга процессов (например, `top`),
+то увидим, что она использует только одно ядро. Это GIL делает свое дело.
 
-While it’s true that this is a synthetic program, one can imagine many problems
-that are similar to this in the real world. For our purposes, spinning up a few
-busy threads represents some sort of parallel, expensive computation.
+Хотя это и игрушечная программа, на ее примере можно продемонстрировать много
+проблем, аналогичных этой, характерных для реального мира. Для наших целей,
+долго крутящиеся занятые потоки представляют собой параллельные, требующие
+больших затрат, вычисления.
 
-# A Rust library
+# Библиотека на Rust
 
-Let’s rewrite this problem in Rust. First, let’s make a new project with
-Cargo:
+Давайте перепишем эту задачу на Rust. Во-первых, давайте сделаем новый проект с
+помощью Cargo:
 
 ```bash
 $ cargo new embed
 $ cd embed
 ```
 
-This program is fairly easy to write in Rust:
+Эту программу легко переписать на Rust:
 
 ```rust
 use std::thread;
@@ -111,45 +113,45 @@ fn process() {
             for _ in (0..5_000_000) {
                 x += 1
             }
-            x
+        x
         })
     }).collect();
 
     for h in handles {
         println!("Thread finished with count={}",
-	    h.join().map_err(|_| "Could not join a thread!").unwrap());
+        h.join().map_err(|_| "Could not join a thread!").unwrap());
     }
     println!("done!");
-}
 ```
 
-Some of this should look familiar from previous examples. We spin up ten
-threads, collecting them into a `handles` vector. Inside of each thread, we
-loop five million times, and add one to `x` each time. Finally, we join on
-each thread.
+Мы уже знакомы с частью этого кода из предыдущих примеров. Мы создаем десять
+потоков, собирая их в вектор `handles`. Внутри каждого потока мы осуществляем
+пять миллионов повторений в цикле, и прибавляем к `x` единицу каждый раз.
+Наконец, мы воссоединяем все потоки.
 
-Right now, however, this is a Rust library, and it doesn’t expose anything
-that’s callable from C. If we tried to hook this up to another language right
-now, it wouldn’t work. We only need to make two small changes to fix this,
-though. The first is to modify the beginning of our code:
+Сейчас, однако, это просто библиотека Rust, которая не включает все необходимое
+для успешного вызова из другого языка. Если мы попытаемся подключить её к
+другому языку в том виде, в котором она сейчас, то это не будет работать. Нам
+нужно сделать два небольших изменения, чтобы исправить это. Первое, что мы
+должны сделать, это изменить начало нашего кода:
 
 ```rust,ignore
 #[no_mangle]
 pub extern fn process() {
 ```
 
-We have to add a new attribute, `no_mangle`. When you create a Rust library, it
-changes the name of the function in the compiled output. The reasons for this
-are outside the scope of this tutorial, but in order for other languages to
-know how to call the function, we can’t do that. This attribute turns
-that behavior off.
+Мы добавили новый атрибут, `no_mangle`. В процессе создания библиотеки Rust, в
+выходном скомпилированном файле происходит изменение имени функции. Причины
+этого выходят за рамки данного руководства, но для того, чтобы и другие языки
+знали, как вызвать функцию, мы должны не делать этого. Указанный атрибут
+выключает такое поведение.
 
-The other change is the `pub extern`. The `pub` means that this function should
-be callable from outside of this module, and the `extern` says that it should
-be able to be called from C. That’s it! Not a whole lot of change.
+Другим изменением, которое мы добавили, является `pub extern`. `pub` означает,
+что эта функция может быть вызвана за пределами этого модуля, а `extern`
+говорит, что её возможно вызвать из С. Вот и все! Не так и много изменений.
 
-The second thing we need to do is to change a setting in our `Cargo.toml`. Add
-this at the bottom:
+Второе, что мы должны сделать, это изменить настройки в `Cargo.toml`. Добавьте
+это в конец файла:
 
 ```toml
 [lib]
@@ -157,34 +159,37 @@ name = "embed"
 crate-type = ["dylib"]
 ```
 
-This tells Rust that we want to compile our library into a standard dynamic
-library. By default, Rust compiles an ‘rlib’, a Rust-specific format.
+Это говорит Rust, что мы хотим скомпилировать нашу библиотеку в виде стандартной
+динамической библиотеки. По умолчанию, Rust компилирует в rlib, Rust-
+специфичный формат.
 
-Let’s build the project now:
+Давайте теперь соберем проект:
 
 ```bash
 $ cargo build --release
    Compiling embed v0.1.0 (file:///home/steve/src/embed)
 ```
 
-We’ve chosen `cargo build --release`, which builds with optimizations on. We
-want this to be as fast as possible! You can find the output of the library in
-`target/release`:
+Мы ввели команду `cargo build --release`, которая выполняет сборку с включенной
+оптимизацией. Мы хотим, чтобы код был как можно более быстрым! Вы можете найти
+собранную библиотеку в `target/release`:
 
 ```bash
 $ ls target/release/
 build  deps  examples  libembed.so  native
 ```
 
-That `libembed.so` is our ‘shared object’ library. We can use this file
-just like any shared object library written in C! As an aside, this may be
-`embed.dll` or `libembed.dylib`, depending on the platform.
+Файл `libembed.so` — и есть наша динамическая библиотека (shared object). Мы
+можем использовать этот файл также как и любую другую динамическую библиотеку,
+написанную на C! Попутно следует отметить, это может быть `embed.dll` или
+`libembed.dylib`, в зависимости от платформы.
 
-Now that we’ve got our Rust library built, let’s use it from our Ruby.
+Теперь, когда мы получили нашу собранную библиотеку Rust, давайте используем её
+из нашего кода на Ruby.
 
 # Ruby
 
-Open up an `embed.rb` file inside of our project, and do this:
+Откройте файл `embed.rb` внутри нашего проекта, и сделайте следующее:
 
 ```ruby
 require 'ffi'
@@ -197,10 +202,10 @@ end
 
 Hello.process
 
-puts 'done!'
+puts 'сделано!'
 ```
 
-Before we can run this, we need to install the `ffi` gem:
+Прежде чем мы сможем запустить этот код, нам нужно установить пакет `ffi`:
 
 ```bash
 $ gem install ffi # this may need sudo
@@ -213,35 +218,23 @@ Done installing documentation for ffi after 0 seconds
 1 gem installed
 ```
 
-And finally, we can try running it:
+И, наконец, мы можем попробовать запустить его:
 
 ```bash
 $ ruby embed.rb
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-Thread finished with count=5000000
-done!
-done!
+сделано!
 $
 ```
 
-Whoa, that was fast! On my system, this took `0.086` seconds, rather than
-the two seconds the pure Ruby version took. Let’s break down this Ruby
-code:
+Ничего себе, это было быстро! На моей системе это заняло `0.086` секунд, а не
+две секунды как это было на чистом Ruby. Давайте разберем этот Ruby код:
 
 ```ruby
 require 'ffi'
 ```
 
-We first need to require the `ffi` gem. This lets us interface with our
-Rust library like a C library.
+Первый делом, нам надо объявить пакет `ffi`. Он предоставляет нам интерфейс для
+использования нашей библиотеки на Rust, как библиотеку на C.
 
 ```ruby
 module Hello
@@ -249,44 +242,46 @@ module Hello
   ffi_lib 'target/release/libembed.so'
 ```
 
-The `Hello` module is used to attach the native functions from the shared
-library. Inside, we `extend` the necessary `FFI::Library` module and then call
-`ffi_lib` to load up our shared object library. We just pass it the path that
-our library is stored, which, as we saw before, is
+Автор пакета `ffi` рекомендует использовать модуль, чтобы ограничить область
+действия функции, которую мы импортировали из разделяемой библиотеки. Внутри мы
+указали `extend`, чтобы воспользоваться необходимым модулем `FFI::Library`, а
+затем вызвали `ffi_lib`, чтобы подгрузить нашу библиотеку. Мы просто передаем
+путь к библиотеке, который мы уже видели раньше, это
 `target/release/libembed.so`.
 
 ```ruby
 attach_function :process, [], :void
 ```
 
-The `attach_function` method is provided by the FFI gem. It’s what
-connects our `process()` function in Rust to a Ruby function of the
-same name. Since `process()` takes no arguments, the second parameter
-is an empty array, and since it returns nothing, we pass `:void` as
-the final argument.
+Метод `attach_function` предоставляется пакетом `FFI`. Здесь соединяются наша
+функция `process()`, написанная на Rust, и одноименная функция на Ruby. Так как
+`process()` не принимает аргументов, второй параметр является пустым массивом, и
+поскольку функция ничего не возвращает, мы передаем `:void` в качестве
+завершающего аргумента.
 
 ```ruby
 Hello.process
 ```
 
-This is the actual call into Rust. The combination of our `module`
-and the call to `attach_function` sets this all up. It looks like
-a Ruby function but is actually Rust!
+Здесь мы совершаем вызов нашей Rust функции. Сочетание нашего `module` и вызова
+к `attach_function` завершает подготовку. Это выглядит как функция Ruby, но на
+самом деле это Rust!
 
 ```ruby
-puts 'done!'
+puts 'сделано!'
 ```
 
-Finally, as per our project’s requirements, we print out `done!`.
+Наконец, в соответствие с нашими требованиями к проекту, мы пишем `сделано!` по
+окончанию работы программы.
 
-That’s it! As we’ve seen, bridging between the two languages is really easy,
-and buys us a lot of performance.
+Вот и все! Как мы увидели, совместить два языка очень просто, и взамен мы
+получили большую производительность.
 
-Next, let’s try Python!
+Теперь давайте попробуем на Python!
 
 # Python
 
-Create an `embed.py` file in this directory, and put this in it:
+Создайте файл `embed.py` в этой директории и поместите в него следующее:
 
 ```python
 from ctypes import cdll
@@ -295,26 +290,26 @@ lib = cdll.LoadLibrary("target/release/libembed.so")
 
 lib.process()
 
-print("done!")
+print("сделано!")
 ```
 
-Even easier! We use `cdll` from the `ctypes` module. A quick call
-to `LoadLibrary` later, and we can call `process()`.
+Довольно просто! Мы импортируем `cdll` из модуля `ctypes`. Затем вызваем
+`LoadLibrary`. И теперь мы можем вызвать `process()`.
 
-On my system, this takes `0.017` seconds. Speedy!
+На моей системе это заняло `0.017` секунд. Быстро!
 
 # Node.js
 
-Node isn’t a language, but it’s currently the dominant implementation of
-server-side JavaScript.
+Node — это не язык, но, в настоящее время, это доминирующая реализация
+исполнения JavaScript на сервере.
 
-In order to do FFI with Node, we first need to install the library:
+Для того, чтобы сделать FFI в Node, нам сначала надо установить библиотеку:
 
 ```bash
 $ npm install ffi
 ```
 
-After that installs, we can use it:
+После установки, мы можем ей воспользоваться:
 
 ```javascript
 var ffi = require('ffi');
@@ -325,20 +320,19 @@ var lib = ffi.Library('target/release/libembed', {
 
 lib.process();
 
-console.log("done!");
+console.log("сделано!");
 ```
 
-It looks more like the Ruby example than the Python example. We use
-the `ffi` module to get access to `ffi.Library()`, which loads up
-our shared object. We need to annotate the return type and argument
-types of the function, which are `void` for return and an empty
-array to signify no arguments. From there, we just call it and
-print the result.
+Пример больше похож на Ruby, чем на Python. Мы используем модуль `ffi`, чтобы
+получить доступ к `ffi.Library()`, который загружает нашу библиотеку. Нам нужно
+указать тип возвращаемого значения и типы аргументов функции: `void` для
+возвращаемого значения и пустой массив для указания отсутствия аргументов. После
+этого мы просто вызываем функцию и печатаем результат.
 
-On my system, this takes a quick `0.092` seconds.
+На моей системе это заняло `0.092` секунды.
 
-# Conclusion
+# Заключение
 
-As you can see, the basics of doing this are _very_ easy. Of course,
-there's a lot more that we could do here. Check out the [FFI][ffi]
-chapter for more details.
+Как вы можете видеть, основы, рассмотренные здесь, являются _очень_ простыми.
+Конечно, мы могли бы сделать куда больше того, что мы здесь показали. Посмотрите
+главу [FFI][ffi] для более подробной информации.

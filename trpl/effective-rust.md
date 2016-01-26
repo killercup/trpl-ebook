@@ -1,8 +1,9 @@
-% Effective Rust
+% Эффективное использование Rust
 
-So you’ve learned how to write some Rust code. But there’s a difference between
-writing *any* Rust code and writing *good* Rust code.
+Итак, вы узнали, как писать код на Rust. Но есть разница между написанием
+*какого-то* кода на Rust и написанием *хорошего* кода на Rust.
 
-This section consists of relatively independent tutorials which show you how to
-take your Rust to the next level. Common patterns and standard library features
-will be introduced. Read these sections in any order of your choosing.
+Этот раздел состоит из относительно самостоятельных уроков, которые показывают,
+как повысить уровень вашего кода на Rust. В нем представлены общие шаблоны и
+стандартные функции библиотеки. Главы в этом разделе могут быть прочитаны в
+любом порядке по вашему выбору.

@@ -1,8 +1,8 @@
-% Iterators
+% Итераторы
 
-Let's talk about loops.
+Давайте поговорим о циклах.
 
-Remember Rust's `for` loop? Here's an example:
+Помните цикл `for` в Rust? Вот пример:
 
 ```rust
 for x in 0..10 {
@@ -10,11 +10,12 @@ for x in 0..10 {
 }
 ```
 
-Now that you know more Rust, we can talk in detail about how this works.
-Ranges (the `0..10`) are 'iterators'. An iterator is something that we can
-call the `.next()` method on repeatedly, and it gives us a sequence of things.
+Теперь, когда вы знаете о Rust немного больше, мы можем детально обсудить, как
+же это работает. Диапазоны (`0..10`) являются «итераторами». Итератор — это
+сущность, для которой мы можем неоднократно вызвать метод `.next()`, в
+результате чего мы получим последовательность элементов.
 
-Like this:
+Как представлено ниже:
 
 ```rust
 let mut range = 0..10;
@@ -29,25 +30,27 @@ loop {
 }
 ```
 
-We make a mutable binding to the range, which is our iterator. We then `loop`,
-with an inner `match`. This `match` is used on the result of `range.next()`,
-which gives us a reference to the next value of the iterator. `next` returns an
-`Option<i32>`, in this case, which will be `Some(i32)` when we have a value and
-`None` once we run out. If we get `Some(i32)`, we print it out, and if we get
-`None`, we `break` out of the loop.
+Мы связываем с диапазоном изменяемое имя, которая и является нашим итератором.
+Затем мы используем цикл `loop` с внутренней конструкцией `match`. Здесь `match`
+применяется к результату `range.next()`, который выдает нам ссылку на следующее
+значение итератора. В данном случае `next` возвращает `Option<i32>`, который
+представляет собой `Some(i32)` когда у нас есть значение и `None` когда перебор
+элементов закончен. Если мы получаем `Some(i32)`, то печатаем его, а если
+`None`, то прекращаем выполнение цикла оператором `break`.
 
-This code sample is basically the same as our `for` loop version. The `for`
-loop is just a handy way to write this `loop`/`match`/`break` construct.
+Этот пример, по большому счету, делает то же самое, что и пример с циклом `for`.
+Цикл `for` — просто удобный способ записи конструкции `loop`/`match`/`break`.
 
-`for` loops aren't the only thing that uses iterators, however. Writing your
-own iterator involves implementing the `Iterator` trait. While doing that is
-outside of the scope of this guide, Rust provides a number of useful iterators
-to accomplish various tasks. Before we talk about those, we should talk about a
-Rust anti-pattern. And that's using ranges like this.
+Однако, цикл `for` не является единственной конструкцией, которая использует
+итераторы. Написание своего собственного итератора заключается в реализации
+типажа `Iterator`. Хотя эта тема и выходит за рамки данного руководства, Rust
+предоставляет ряд полезных итераторов для выполнения различных задач. Прежде чем
+мы поговорим о них, мы должны рассказать о плохой практике в Rust, связанной с
+использованием диапазонов. Она продемонстрирована в примере ниже.
 
-Yes, we just talked about how ranges are cool. But ranges are also very
-primitive. For example, if you needed to iterate over the contents of a vector,
-you may be tempted to write this:
+Вот, только что мы говорили о том, какие диапазоны крутые. Но диапазоны также и
+очень примитивны. Например, если вам нужно перебрать содержимое вектора, у вас
+может возникнуть желание написать так:
 
 ```rust
 let nums = vec![1, 2, 3];
@@ -57,8 +60,8 @@ for i in 0..nums.len() {
 }
 ```
 
-This is strictly worse than using an actual iterator. You can iterate over vectors
-directly, so write this:
+Это намного хуже, чем если бы мы использовали итератор непосредственно. Вы
+можете пройти по элементам векторов напрямую, как показано ниже:
 
 ```rust
 let nums = vec![1, 2, 3];
@@ -68,19 +71,20 @@ for num in &nums {
 }
 ```
 
-There are two reasons for this. First, this more directly expresses what we
-mean. We iterate through the entire vector, rather than iterating through
-indexes, and then indexing the vector. Second, this version is more efficient:
-the first version will have extra bounds checking because it used indexing,
-`nums[i]`. But since we yield a reference to each element of the vector in turn
-with the iterator, there's no bounds checking in the second example. This is
-very common with iterators: we can ignore unnecessary bounds checks, but still
-know that we're safe.
+Есть две причины предпочесть прямое использование итератора. Во-первых, это
+яснее выражает наше намерение. Мы обходим элементы вектора, а не индексы с
+последующей индексацией вектора. Во-вторых, эта версия является более
+эффективной: первая версия будет выполнять дополнительные проверки границ,
+потому что используется индексация, `nums[i]`. Во втором примере нет никаких
+проверок границ, поскольку мы получаем ссылки на каждый элемент вектора, одну за
+одной, по мере итерирования. Это очень распространенный прием работы с
+итераторами: мы можем игнорировать ненужные проверки границ, но все еще быть
+уверенными, что мы в безопасности.
 
-There's another detail here that's not 100% clear because of how `println!`
-works. `num` is actually of type `&i32`. That is, it's a reference to an `i32`,
-not an `i32` itself. `println!` handles the dereferencing for us, so we don't
-see it. This code works fine too:
+Остается неясной еще одна деталь работы `println!`. На самом деле `num` имеет
+тип `&i32`. То есть, это ссылка на `i32`, а не сам `i32`. `println!` выполняет
+разыменование переменной за нас, поэтому мы не видим его в исходном коде. Этот
+код также прекрасно работает:
 
 ```rust
 let nums = vec![1, 2, 3];
@@ -90,149 +94,153 @@ for num in &nums {
 }
 ```
 
-Now we're explicitly dereferencing `num`. Why does `&nums` give us
-references?  Firstly, because we explicitly asked it to with
-`&`. Secondly, if it gave us the data itself, we would have to be its
-owner, which would involve making a copy of the data and giving us the
-copy. With references, we're just borrowing a reference to the data,
-and so it's just passing a reference, without needing to do the move.
+Здесь мы явно разыменовываем `num`. Почему `&nums` выдает нам ссылки? Во-первых,
+потому что мы явно попросили его об этом с помощью `&`. Во-вторых, если он будет
+выдавать нам сами данные, то мы должны быть их владельцем, что подразумевает
+создание копии данных и выдачу этой копии нам. Со ссылками же мы просто
+заимствуем ссылку на данные, и поэтому будет выдана просто ссылка, без
+необходимости перемещать данные.
 
-So, now that we've established that ranges are often not what you want, let's
-talk about what you do want instead.
+Теперь, когда мы установили, что зачастую диапазоны — это не то, что нужно,
+давайте поговорим о том, что же можно использовать вместо диапазонов.
 
-There are three broad classes of things that are relevant here: iterators,
-*iterator adapters*, and *consumers*. Here's some definitions:
+Есть три основных класса объектов, которые имеют отношение к данному вопросу:
+*итераторы*, *адаптеры итераторов* и *потребители*. Вот некоторые определения:
 
-* *iterators* give you a sequence of values.
-* *iterator adapters* operate on an iterator, producing a new iterator with a
-  different output sequence.
-* *consumers* operate on an iterator, producing some final set of values.
+* *итераторы* выдают последовательность значений;
+* *адаптеры итераторов* применяются к итератору и выдают новый итератор с другой
+  выходной последовательностью;
+* *потребители* применяются к итератору, выдающему некоторый конечный набор
+  значений.
 
-Let's talk about consumers first, since you've already seen an iterator, ranges.
+Давайте сначала поговорим о потребителях, так как итераторы вы уже видели — это
+диапазоны.
 
-## Consumers
+## Потребители
 
-A *consumer* operates on an iterator, returning some kind of value or values.
-The most common consumer is `collect()`. This code doesn't quite compile,
-but it shows the intention:
+*Потребитель* применяется к итератору, возвращая какое-то значение или значения.
+Наиболее распространенным потребителем является `collect()`. Этот код не
+компилируется, но он показывает идею:
 
 ```rust,ignore
 let one_to_one_hundred = (1..101).collect();
 ```
 
-As you can see, we call `collect()` on our iterator. `collect()` takes
-as many values as the iterator will give it, and returns a collection
-of the results. So why won't this compile? Rust can't determine what
-type of things you want to collect, and so you need to let it know.
-Here's the version that does compile:
+Как вы можете видеть, мы вызываем `collect()` для нашего итератора. `collect()`
+принимает столько значений, сколько выдаст итератор, и возвращает коллекцию
+результатов. Так почему же этот код не компилируется? Rust не может определить,
+в какую коллекцию (например, вектор, список, и т.д.) вы хотите собрать элементы,
+и поэтому тип необходимо указать явно. Вот версия, которая компилируется:
 
 ```rust
 let one_to_one_hundred = (1..101).collect::<Vec<i32>>();
 ```
 
-If you remember, the `::<>` syntax allows us to give a type hint,
-and so we tell it that we want a vector of integers. You don't always
-need to use the whole type, though. Using a `_` will let you provide
-a partial hint:
+Если помните, синтаксис `::<>` позволяет задать подсказку типа. Поэтому в
+приведенном примере мы указали, что хотим вектор целых чисел. Хотя не всегда
+бывает нужно задавать весь тип целиком. Использование символа `_` позволит вам
+задать частичную подсказку типа:
 
 ```rust
 let one_to_one_hundred = (1..101).collect::<Vec<_>>();
 ```
 
-This says "Collect into a `Vec<T>`, please, but infer what the `T` is for me."
-`_` is sometimes called a "type placeholder" for this reason.
+Эта запись говорит компилятору Rust: «Пожалуйста, собери элементы в `Vec<T>`, а
+вывод типа `T` сделай самостоятельно». По этой причине символ `_` иногда
+называют «заполнителем типа».
 
-`collect()` is the most common consumer, but there are others too. `find()`
-is one:
+`collect()` является наиболее распространенным из потребителей, но есть и
+другие. Например `find()`:
 
 ```rust
 let greater_than_forty_two = (0..100)
                              .find(|x| *x > 42);
 
 match greater_than_forty_two {
-    Some(_) => println!("We got some numbers!"),
-    None => println!("No numbers found :("),
+    Some(_) => println!("У нас есть несколько чисел!"),
+    None => println!("Числа не найдены :("),
 }
 ```
 
-`find` takes a closure, and works on a reference to each element of an
-iterator. This closure returns `true` if the element is the element we're
-looking for, and `false` otherwise. Because we might not find a matching
-element, `find` returns an `Option` rather than the element itself.
+`find` принимает замыкание, которое обрабатывает ссылку на каждый элемент
+итератора. Замыкание возвращает `true`, если элемент является искомым элементом,
+и `false` в противном случае. Так как нам не всегда удается найти
+соответствующий элемент, `find` возвращает `Option`, а не сам элемент.
 
-Another important consumer is `fold`. Here's what it looks like:
+Еще один важный потребитель — `fold`. Вот как он выглядит:
 
 ```rust
 let sum = (1..4).fold(0, |sum, x| sum + x);
 ```
 
-`fold()` is a consumer that looks like this:
-`fold(base, |accumulator, element| ...)`. It takes two arguments: the first
-is an element called the *base*. The second is a closure that itself takes two
-arguments: the first is called the *accumulator*, and the second is an
-*element*. Upon each iteration, the closure is called, and the result is the
-value of the accumulator on the next iteration. On the first iteration, the
-base is the value of the accumulator.
+`fold()` — это потребитель, который схематично можно представить в виде:
+`fold(base, |accumulator, element| ...)`. Он принимает два аргумента: первый -
+это элемент, называемый *базой*; второй — это замыкание, которое, в свою очередь,
+само принимает два аргумента: первый называется *аккумулятор*, а второй -
+*элемент*. На каждой итерации вызывается замыкание, результат выполнения
+которого становится значением аккумулятора на следующей итерации. На первой
+итерации значение аккумулятора равно базе.
 
-Okay, that's a bit confusing. Let's examine the values of all of these things
-in this iterator:
+Это немного запутанно. Давайте рассмотрим значения всех элементов итератора:
 
-| base | accumulator | element | closure result |
-|------|-------------|---------|----------------|
-| 0    | 0           | 1       | 1              |
-| 0    | 1           | 2       | 3              |
-| 0    | 3           | 3       | 6              |
+| база | аккумулятор | элемент | результат замыкания |
+|------|-------------|---------|---------------------|
+| 0    | 0           | 1       | 1                   |
+| 0    | 1           | 2       | 3                   |
+| 0    | 3           | 3       | 6                   |
 
-We called `fold()` with these arguments:
+Мы вызвали `fold()` с этими аргументами:
 
 ```rust
 # (1..4)
 .fold(0, |sum, x| sum + x);
 ```
 
-So, `0` is our base, `sum` is our accumulator, and `x` is our element.  On the
-first iteration, we set `sum` to `0`, and `x` is the first element of `nums`,
-`1`. We then add `sum` and `x`, which gives us `0 + 1 = 1`. On the second
-iteration, that value becomes our accumulator, `sum`, and the element is
-the second element of the array, `2`. `1 + 2 = 3`, and so that becomes
-the value of the accumulator for the last iteration. On that iteration,
-`x` is the last element, `3`, and `3 + 3 = 6`, which is our final
-result for our sum. `1 + 2 + 3 = 6`, and that's the result we got.
+Таким образом, `0` — это база, `sum` — это аккумулятор, а `x` — это элемент. На
+первой итерации мы устанавливаем `sum` равной `0`, а `x` становится первым
+элементом `nums`, `1`. Затем мы прибавляем `x` к `sum`, что дает нам `0 + 1 =
+1`. На второй итерации это значение становится значением аккумулятора, `sum`, а
+элемент становится вторым элементом массива, `2`. `1 + 2 = 3`, результат этого
+выражения становится значением аккумулятора на последней итерации. На этой
+итерации, `x` становится последним элементом, `3`, а значение выражения `3 + 3 =
+6` является конечным значением нашей суммы. `1 + 2 + 3 = 6` — это результат,
+который мы получили.
 
-Whew. `fold` can be a bit strange the first few times you see it, but once it
-clicks, you can use it all over the place. Any time you have a list of things,
-and you want a single result, `fold` is appropriate.
+Вот так. `fold` может показаться немного странным, если вы используете его
+впервые, но когда вы освоите его, то будете использовать его повсеместно. `fold`
+подходит для случаев, когда у вас есть список элементов, а вам нужно получить
+один единственный результат.
 
-Consumers are important due to one additional property of iterators we haven't
-talked about yet: laziness. Let's talk some more about iterators, and you'll
-see why consumers matter.
+Потребители имеют очень большое значение в связи с одним свойством итераторов, о
+котором мы еще не говорили: ленивость. Давайте ещё немного поговорим об
+итераторах, и вы поймете, почему потребители так важны.
 
-## Iterators
+## Итераторы
 
-As we've said before, an iterator is something that we can call the
-`.next()` method on repeatedly, and it gives us a sequence of things.
-Because you need to call the method, this means that iterators
-can be *lazy* and not generate all of the values upfront. This code,
-for example, does not actually generate the numbers `1-99`, instead
-creating a value that merely represents the sequence:
+Как мы уже говорили ранее, итератор являются сущностью, для которой мы можем
+неоднократно вызвать метод `.next()`, в результате чего мы получим
+последовательность элементов. Для получения каждого следующего элемента нужно
+вызвать метод, а это означает, что итераторы *ленивы* — они не обязаны
+создавать все значения заранее. Например, этот код на самом деле не генерирует
+номера `1-99`, а просто создает значение, представляющее эту последовательность:
 
 ```rust
 let nums = 1..100;
 ```
 
-Since we didn't do anything with the range, it didn't generate the sequence.
-Let's add the consumer:
+В этом примере мы никак не использовали диапазон, поэтому он и не создавал
+последовательность. Давайте добавим потребителя:
 
 ```rust
 let nums = (1..100).collect::<Vec<i32>>();
 ```
 
-Now, `collect()` will require that the range gives it some numbers, and so
-it will do the work of generating the sequence.
+Теперь `collect()` потребует, чтобы диапазон выдавал ему какие-нибудь числа,
+поэтому он сгенерирует последовательность.
 
-Ranges are one of two basic iterators that you'll see. The other is `iter()`.
-`iter()` can turn a vector into a simple iterator that gives you each element
-in turn:
+Диапазоны — это один из двух основных типов итераторов. Другой часто
+используемый итератор — `iter()`. `iter()` может преобразовать вектор в простой
+итератор, который выдает вам каждый элемент по очереди:
 
 ```rust
 let nums = vec![1, 2, 3];
@@ -242,25 +250,26 @@ for num in nums.iter() {
 }
 ```
 
-These two basic iterators should serve you well. There are some more
-advanced iterators, including ones that are infinite.
+Эти два основных итератора хорошо послужат вам. Есть и более продвинутые
+итераторы, в том числе и те, которые генерируют бесконечную последовательность.
 
-That's enough about iterators. Iterator adapters are the last concept
-we need to talk about with regards to iterators. Let's get to it!
+Вот и все, что касается итераторов. Последнее понятие в этой теме, о котором мы
+хотели бы рассказать — адаптеры итераторов. Давайте перейдем к нему!
 
-## Iterator adapters
+## Адаптеры итераторов
 
-*Iterator adapters* take an iterator and modify it somehow, producing
-a new iterator. The simplest one is called `map`:
+*Адаптеры итераторов* получают итератор и изменяют его каким-то образом, выдавая
+новый итератор. Простейший из них называется `map`:
 
 ```rust,ignore
 (1..100).map(|x| x + 1);
 ```
 
-`map` is called upon another iterator, and produces a new iterator where each
-element reference has the closure it's been given as an argument called on it.
-So this would give us the numbers from `2-100`. Well, almost! If you
-compile the example, you'll get a warning:
+`map` вызывается для итератора, и создает новый итератор, каждый элемент
+которого получается в результате вызова замыкания, в качестве аргумента которому
+передается ссылка на исходный элемент. Так что этот код выдаст нам числа
+`2-100`. Ну, почти! Если вы скомпилируете пример, этот код выдаст
+предупреждение:
 
 ```text
 warning: unused result which must be used: iterator adaptors are lazy and
@@ -269,40 +278,42 @@ warning: unused result which must be used: iterator adaptors are lazy and
  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-Laziness strikes again! That closure will never execute. This example
-doesn't print any numbers:
+Причина этого — ленивость итераторов! То замыкание никогда не будет выполнено.
+Пример ниже не напечатает ни одного значения:
 
 ```rust,ignore
 (1..100).map(|x| println!("{}", x));
 ```
 
-If you are trying to execute a closure on an iterator for its side effects,
-just use `for` instead.
+Если вы пытаетесь выполнить замыкание ради побочных эффектов (вроде печати), то
+вместо этого просто используйте `for`.
 
-There are tons of interesting iterator adapters. `take(n)` will return an
-iterator over the next `n` elements of the original iterator. Note that this
-has no side effect on the original iterator. Let's try it out with our infinite
-iterator from before:
+Есть масса интересных адаптеров итераторов. `take(n)` вернет итератор,
+представляющий следующие `n` элементов исходного итератора. Обратите внимание,
+что это не оказывает никакого влияния на оригинальный итератор. Давайте
+попробуем применить его для бесконечных итераторов, которые мы упоминали раньше:
 
 ```rust
-for i in (1..).take(5) {
+# #![feature(step_by)]
+for i in (1..).step_by(5).take(5) {
     println!("{}", i);
 }
 ```
 
-This will print
+Этот код напечатает
 
 ```text
 1
-2
-3
-4
-5
+6
+11
+16
+21
 ```
 
-`filter()` is an adapter that takes a closure as an argument. This closure
-returns `true` or `false`. The new iterator `filter()` produces
-only the elements that that closure returns `true` for:
+`filter()` представляет собой адаптер, который принимает замыкание в качестве
+аргумента. Это замыкание возвращает `true` или `false`. Новый итератор,
+полученный применением `filter()`, будет выдавать только те элементы, для
+которых замыкание возвращает `true`:
 
 ```rust
 for i in (1..100).filter(|&x| x % 2 == 0) {
@@ -310,14 +321,13 @@ for i in (1..100).filter(|&x| x % 2 == 0) {
 }
 ```
 
-This will print all of the even numbers between one and a hundred.
-(Note that because `filter` doesn't consume the elements that are
-being iterated over, it is passed a reference to each element, and
-thus the filter predicate uses the `&x` pattern to extract the integer
-itself.)
+Этот пример будет печатать все четные числа от одного до ста. (Обратите
+внимание, что мы используем образец `&x`, чтобы извлечь само целое число. Это
+необходимо, поскольку `filter` не потребляет элементы, которые выдаются во время
+итерации, а лишь выдаёт ссылку.)
 
-You can chain all three things together: start with an iterator, adapt it
-a few times, and then consume the result. Check it out:
+Вы можете соединить все три понятия вместе: начать с итератора, адаптировать его
+несколько раз, а затем потребить результат. Например:
 
 ```rust
 (1..)
@@ -327,11 +337,13 @@ a few times, and then consume the result. Check it out:
     .collect::<Vec<i32>>();
 ```
 
-This will give you a vector containing `6`, `12`, `18`, `24`, and `30`.
+Этот код выдаст вектор, содержащий `6`, `12`, `18`, `24`, `30`.
 
-This is just a small taste of what iterators, iterator adapters, and consumers
-can help you with. There are a number of really useful iterators, and you can
-write your own as well. Iterators provide a safe, efficient way to manipulate
-all kinds of lists. They're a little unusual at first, but if you play with
-them, you'll get hooked. For a full list of the different iterators and
-consumers, check out the [iterator module documentation](../std/iter/index.html).
+Это просто небольшой обзор того, как итераторы, адаптеры итераторов и
+потребители могут помочь вам. Уже написано множество действительно полезных
+итераторов, и вы также можете написать свой собственный итератор. Итераторы
+обеспечивают безопасный и эффективный способ работы со всеми видами списков.
+Сперва работать с ними немного непривычно, но чем больше вы с ними
+сталкиваетесь, тем больше они вас цепляют. Для получения полного списка
+различных итераторов, адаптеров и потребителей смотрите
+[документацию модуля iter](http://doc.rust-lang.org/std/iter/index.html).

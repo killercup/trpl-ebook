@@ -1,13 +1,14 @@
-% Primitive Types
+% Простые типы
 
-The Rust language has a number of types that are considered ‘primitive’. This
-means that they’re built-in to the language. Rust is structured in such a way
-that the standard library also provides a number of useful types built on top
-of these ones, as well, but these are the most primitive.
+Язык Rust имеет несколько типов, которые считаются «простыми» («примитивными»).
+Это означает, что они встроены в язык. Rust структурирован таким образом, что
+стандартная библиотека также предоставляет ряд полезных типов, построенных на
+базе этих простых типов, но это самые простые.
 
-# Booleans
+# Логический тип (`bool`)
 
-Rust has a built in boolean type, named `bool`. It has two values, `true` and `false`:
+Rust имеет встроенный логический тип, называемый `bool`. Он может принимать два
+значения, `true` и `false`:
 
 ```rust
 let x = true;
@@ -15,210 +16,222 @@ let x = true;
 let y: bool = false;
 ```
 
-A common use of booleans is in [`if` conditionals][if].
+Логические типы часто используются в [конструкции `if`][if].
 
 [if]: if.html
 
-You can find more documentation for `bool`s [in the standard library
-documentation][bool].
+Вы можете найти больше информации о логических типах (`bool`) в [документации к
+стандартной библиотеке (англ.)][bool].
 
-[bool]: ../std/primitive.bool.html
+[bool]: http://doc.rust-lang.org/std/primitive.bool.html
 
-# `char`
+# Символы (`char`)
 
-The `char` type represents a single Unicode scalar value. You can create `char`s
-with a single tick: (`'`)
+Тип `char` представляет собой одиночное скалярное значение Unicode. Вы можете
+создать `char` с помощью одинарных кавычек: (`'`)
 
 ```rust
 let x = 'x';
 let two_hearts = '💕';
 ```
 
-Unlike some other languages, this means that Rust’s `char` is not a single byte,
-but four.
+Это означает, что в отличие от некоторых других языков, `char` в Rust
+представлен не одним байтом, а четырьмя.
 
-You can find more documentation for `char`s [in the standard library
-documentation][char].
+Вы можете найти больше информации о символах (`char`) в [документации к
+стандартной библиотеке (англ.)][char].
 
-[char]: ../std/primitive.char.html
+[char]: http://doc.rust-lang.org/std/primitive.char.html
 
-# Numeric types
+<a name="numeric-types"></a>
+# Числовые типы
 
-Rust has a variety of numeric types in a few categories: signed and unsigned,
-fixed and variable, floating-point and integer.
+Rust имеет целый ряд числовых типов, разделённых на несколько категорий:
+знаковые и беззнаковые, фиксированного и переменного размера, числа с плавающей
+точкой и целые числа.
 
-These types consist of two parts: the category, and the size. For example,
-`u16` is an unsigned type with sixteen bits of size. More bits lets you have
-bigger numbers.
+Эти типы состоят из двух частей: категория и размер. Например, `u16`
+представляет собой тип без знака с размером в шестнадцать бит. Чем большим
+количеством бит представлен тип, тем большее число мы можем задать.
 
-If a number literal has nothing to cause its type to be inferred, it defaults:
+Если для числового литерала не указан тип, то он будет выведен по умолчанию:
 
 ```rust
-let x = 42; // x has type i32
+let x = 42; // x имеет тип i32
 
-let y = 1.0; // y has type f64
+let y = 1.0; // y имеет тип f64
 ```
 
-Here’s a list of the different numeric types, with links to their documentation
-in the standard library:
+Ниже представлен список различных числовых типов, со ссылками на их документацию
+в стандартной библиотеке:
 
-* [i8](../std/primitive.i8.html)
-* [i16](../std/primitive.i16.html)
-* [i32](../std/primitive.i32.html)
-* [i64](../std/primitive.i64.html)
-* [u8](../std/primitive.u8.html)
-* [u16](../std/primitive.u16.html)
-* [u32](../std/primitive.u32.html)
-* [u64](../std/primitive.u64.html)
-* [isize](../std/primitive.isize.html)
-* [usize](../std/primitive.usize.html)
-* [f32](../std/primitive.f32.html)
-* [f64](../std/primitive.f64.html)
+* [i8](http://doc.rust-lang.org/std/primitive.i8.html)
+* [i16](http://doc.rust-lang.org/std/primitive.i16.html)
+* [i32](http://doc.rust-lang.org/std/primitive.i32.html)
+* [i64](http://doc.rust-lang.org/std/primitive.i64.html)
+* [u8](http://doc.rust-lang.org/std/primitive.u8.html)
+* [u16](http://doc.rust-lang.org/std/primitive.u16.html)
+* [u32](http://doc.rust-lang.org/std/primitive.u32.html)
+* [u64](http://doc.rust-lang.org/std/primitive.u64.html)
+* [isize](http://doc.rust-lang.org/std/primitive.isize.html)
+* [usize](http://doc.rust-lang.org/std/primitive.usize.html)
+* [f32](http://doc.rust-lang.org/std/primitive.f32.html)
+* [f64](http://doc.rust-lang.org/std/primitive.f64.html)
 
-Let’s go over them by category:
+Давайте пройдёмся по их категориям.
 
-## Signed and Unsigned
+## Знаковые и беззнаковые
 
-Integer types come in two varieties: signed and unsigned. To understand the
-difference, let’s consider a number with four bits of size. A signed, four-bit
-number would let you store numbers from `-8` to `+7`. Signed numbers use
-“two’s complement representation”. An unsigned four bit number, since it does
-not need to store negatives, can store values from `0` to `+15`.
+Целые типы бывают двух видов: знаковые и беззнаковые. Чтобы понять разницу,
+давайте рассмотрим число с размером в четыре бита. Знаковые четырёхбитные числа,
+позволяют хранить значения от `-8` до `+7`. Знаковые числа используют
+представление «дополнение до двух» (дополнительный код). Беззнаковые
+четырёхбитные числа, ввиду того что не нужно хранить отрицательные значения,
+позволяют хранить значения от `0` до `+15`.
 
-Unsigned types use a `u` for their category, and signed types use `i`. The `i`
-is for ‘integer’. So `u8` is an eight-bit unsigned number, and `i8` is an
-eight-bit signed number.
+Беззнаковые типы используют `u` для своей категории, а знаковые типы используют
+`i`. `i` означает «integer». Так, `u8` представляет собой число без знака с
+размером восемь бит, а `i8` представляет собой число со знаком с размером восемь
+бит.
 
-## Fixed size types
+## Типы фиксированного размера
 
-Fixed size types have a specific number of bits in their representation. Valid
-bit sizes are `8`, `16`, `32`, and `64`. So, `u32` is an unsigned, 32-bit integer,
-and `i64` is a signed, 64-bit integer.
+Типы с фиксированным размером соответственно имеют фиксированное количество бит
+в своём представлении. Допустимыми размерами являются `8`, `16`, `32`, `64`.
+Таким образом, `u32` представляет собой целое число без знака с размером 32
+бита, а `i64` — целое число со знаком с размером 64 бита.
 
-## Variable sized types
+## Типы переменного размера
 
-Rust also provides types whose size depends on the size of a pointer of the
-underlying machine. These types have ‘size’ as the category, and come in signed
-and unsigned varieties. This makes for two types: `isize` and `usize`.
+Rust также предоставляет типы, размер которых зависит от размера указателя на
+целевой машине. Эти типы имеют «size» в названии в качестве признака размера, и
+могут быть знаковыми или беззнаковыми. Таким образом, существует два типа:
+`isize` и `usize`.
 
-## Floating-point types
+## С плавающей точкой
 
-Rust also has two floating point types: `f32` and `f64`. These correspond to
-IEEE-754 single and double precision numbers.
+В Rust также есть два типа с плавающей точкой: `f32` и `f64`. Они соответствуют
+IEEE-754 числам с плавающей точкой одинарной и двойной точности соответственно.
 
-# Arrays
+# Массивы
 
-Like many programming languages, Rust has list types to represent a sequence of
-things. The most basic is the *array*, a fixed-size list of elements of the
-same type. By default, arrays are immutable.
+В Rust, как и во многих других языках программирования, есть
+типы-последовательности, для представления последовательностей неких вещей.
+Самый простой из них — это *массив*, то есть последовательность элементов одного
+и того же типа, имеющая фиксированный размер. Массивы неизменяемы по умолчанию.
 
 ```rust
 let a = [1, 2, 3]; // a: [i32; 3]
 let mut m = [1, 2, 3]; // m: [i32; 3]
 ```
 
-Arrays have type `[T; N]`. We’ll talk about this `T` notation [in the generics
-section][generics]. The `N` is a compile-time constant, for the length of the
-array.
+Массивы имеют тип `[T; N]`. О значении `T` мы поговорим позже, когда будем
+рассматривать [обобщённое программирование][generics]. `N` — это константа
+времени компиляции, представляющая собой длину массива.
 
-There’s a shorthand for initializing each element of an array to the same
-value. In this example, each element of `a` will be initialized to `0`:
+Для инициализации всех элементов массива одним и тем же значением есть
+специальный синтаксис. В этом примере каждый элемент `a` будет инициализирован
+значением `0`:
 
 ```rust
 let a = [0; 20]; // a: [i32; 20]
 ```
 
-You can get the number of elements in an array `a` with `a.len()`:
+Вы можете получить число элементов массива `a` с помощью метода `a.len()`:
 
 ```rust
 let a = [1, 2, 3];
 
-println!("a has {} elements", a.len());
+println!("Число элементов в a: {}", a.len());
 ```
 
-You can access a particular element of an array with *subscript notation*:
+Вы можете получить определённый элемент массива с помощью *индекса*:
 
 ```rust
 let names = ["Graydon", "Brian", "Niko"]; // names: [&str; 3]
 
-println!("The second name is: {}", names[1]);
+println!("Второе имя: {}", names[1]);
 ```
 
-Subscripts start at zero, like in most programming languages, so the first name
-is `names[0]` and the second name is `names[1]`. The above example prints
-`The second name is: Brian`. If you try to use a subscript that is not in the
-array, you will get an error: array access is bounds-checked at run-time. Such
-errant access is the source of many bugs in other systems programming
-languages.
+Индексы нумеруются с нуля, как и в большинстве языков программирования, поэтому
+мы получаем первое имя с помощью `names[0]`, а второе — с помощью `names[1]`.
+Пример выше печатает `Второе имя: Brian`. Если вы попытаетесь использовать
+индекс, который не входит в массив, вы получите ошибку: при доступе к массивам
+происходит проверка границ во время исполнения программы. Такая ошибочная
+попытка доступа — источник многих проблем в других языках системного
+программирования.
 
-You can find more documentation for `array`s [in the standard library
-documentation][array].
+Вы можете найти больше информации о массивах (`array`) в
+[документации к стандартной библиотеке (англ.)][array].
 
-[array]: ../std/primitive.array.html
+[array]: http://doc.rust-lang.org/std/primitive.array.html
 
-# Slices
+<a name="slices"></a>
+# Срезы
 
-A ‘slice’ is a reference to (or “view” into) another data structure. They are
-useful for allowing safe, efficient access to a portion of an array without
-copying. For example, you might want to reference just one line of a file read
-into memory. By nature, a slice is not created directly, but from an existing
-variable. Slices have a length, can be mutable or not, and in many ways behave
-like arrays:
+*Срез* — это ссылка на (или «проекция» в) другую структуру данных. Они полезны,
+когда нужно обеспечить безопасный, эффективный доступ к части массива без
+копирования. Например, возможно вам нужно сослаться на единственную строку
+файла, считанного в память. Из-за своей ссылочной природы, срезы создаются не
+напрямую, а из существующих значений. У срезов есть длина, они могут быть
+изменяемы или нет, и во многих случаях они ведут себя как массивы:
 
 ```rust
 let a = [0, 1, 2, 3, 4];
-let middle = &a[1..4]; // A slice of a: just the elements 1, 2, and 3
-let complete = &a[..]; // A slice containing all of the elements in a
+let middle = &a[1..4]; // Срез `a`: только элементы 1, 2, и 3
+let complete = &a[..]; // Срез, содержащий все элементы массива `a`
 ```
 
-Slices have type `&[T]`. We’ll talk about that `T` when we cover
-[generics][generics].
+Срезы имеют тип `&[T]`. О значении `T` мы поговорим позже, когда будем
+рассматривать [обобщённое программирование][generics].
 
 [generics]: generics.html
 
-You can find more documentation for slices [in the standard library
-documentation][slice].
+Вы можете найти больше информации о срезах (`slice`) в [документации к
+стандартной библиотеке (англ.)][slice].
 
-[slice]: ../std/primitive.slice.html
+[slice]: http://doc.rust-lang.org/std/primitive.slice.html
 
 # `str`
 
-Rust’s `str` type is the most primitive string type. As an [unsized type][dst],
-it’s not very useful by itself, but becomes useful when placed behind a reference,
-like [`&str`][strings]. As such, we’ll just leave it at that.
+Тип `str` в Rust является наиболее простым типом строк. Это
+[безразмерный тип][dst], поэтому сам по себе он не очень полезен, но он
+становится полезным при использовании ссылки, [`&str`][strings]. Пока просто
+остановимся на этом.
 
 [dst]: unsized-types.html
 [strings]: strings.html
 
-You can find more documentation for `str` [in the standard library
-documentation][str].
+Вы можете найти больше информации о строках (`str`) в [документации к
+стандартной библиотеке (англ.)][str].
 
-[str]: ../std/primitive.str.html
+[str]: http://doc.rust-lang.org/std/primitive.str.html
 
-# Tuples
+<a name="tuples"></a>
+# Кортежи
 
-A tuple is an ordered list of fixed size. Like this:
-
-```rust
-let x = (1, "hello");
-```
-
-The parentheses and commas form this two-length tuple. Here’s the same code, but
-with the type annotated:
+Кортеж — это последовательность фиксированного размера. Вроде такой:
 
 ```rust
-let x: (i32, &str) = (1, "hello");
+let x = (1, "привет");
 ```
 
-As you can see, the type of a tuple looks just like the tuple, but with each
-position having a type name rather than the value. Careful readers will also
-note that tuples are heterogeneous: we have an `i32` and a `&str` in this tuple.
-In systems programming languages, strings are a bit more complex than in other
-languages. For now, just read `&str` as a *string slice*, and we’ll learn more
-soon.
+Этот кортеж из двух элементов создан с помощью скобок и запятой между
+элементами. Вот тот же код, но с аннотациями типов:
 
-You can assign one tuple into another, if they have the same contained types
-and [arity]. Tuples have the same arity when they have the same length.
+```rust
+let x: (i32, &str) = (1, "привет");
+```
+
+Как вы можете видеть, тип кортежа выглядит как сам кортеж, но места элементов
+занимают типы. Внимательные читатели также отметят, что кортежи гетерогенны: в
+этом кортеже одновременно хранятся значения типов `i32` и `&str`. В языках
+системного программирования строки немного более сложны, чем в других языках.
+Пока вы можете читать `&str` как *срез строки*. Мы вскоре узнаем об этом больше.
+
+Можно присваивать один кортеж другому, если они содержат значения одинаковых
+типов и имеют одинаковую [арность][arity]. Арность кортежей одинакова, когда их
+длина совпадает.
 
 [arity]: glossary.html#arity
 
@@ -229,36 +242,40 @@ let y = (2, 3); // y: (i32, i32)
 x = y;
 ```
 
-You can access the fields in a tuple through a *destructuring let*. Here’s
-an example:
+Стоит отметить и ещё один момент, касающийся длины кортежей: кортеж нулевой
+длины (`()`; пустой кортеж) часто называют «единичным значением».
+Соответственно, тип такого значения — «единичный тип».
+
+Доступ к полям кортежа можно получить с помощью *деконструирующего let*. Вот
+пример:
 
 ```rust
 let (x, y, z) = (1, 2, 3);
 
-println!("x is {}", x);
+println!("x это {}", x);
 ```
 
-Remember [before][let] when I said the left-hand side of a `let` statement was more
-powerful than just assigning a binding? Here we are. We can put a pattern on
-the left-hand side of the `let`, and if it matches up to the right-hand side,
-we can assign multiple bindings at once. In this case, `let` “destructures”
-or “breaks up” the tuple, and assigns the bits to three bindings.
+Помните, мы [говорили][let], что левая часть оператора `let` может больше, чем
+просто присваивать имена? Мы имели ввиду то, что приведено выше. Мы можем
+написать слева от `let` шаблон, и, если он совпадает со значением справа,
+произойдёт присваивание имён сразу нескольким значениям. В данном случае, `let`
+«деконструирует» или «разбивает» кортеж, и присваивает его части трём именам.
 
 [let]: variable-bindings.html
 
-This pattern is very powerful, and we’ll see it repeated more later.
+Это очень удобный шаблон программирования, и мы ещё не раз увидим его.
 
-You can disambiguate a single-element tuple from a value in parentheses with a
-comma:
+Вы можете устранить неоднозначность трактовки для кортежа, состоящего из одного
+элемента, и значения в скобках с помощью запятой:
 
 ```rust
-(0,); // single-element tuple
-(0); // zero in parentheses
+(0,); // одноэлементный кортеж
+(0); // ноль в круглых скобках
 ```
 
-## Tuple Indexing
+## Индексация кортежей
 
-You can also access fields of a tuple with indexing syntax:
+Вы также можете получить доступ к полям кортежа с помощью индексации:
 
 
 ```rust
@@ -271,17 +288,17 @@ let z = tuple.2;
 println!("x is {}", x);
 ```
 
-Like array indexing, it starts at zero, but unlike array indexing, it uses a
-`.`, rather than `[]`s.
+Как и в случае индексации массивов, индексы начинаются с нуля, но здесь, в
+отличие от массивов, используется `.`, а не `[]`.
 
-You can find more documentation for tuples [in the standard library
-documentation][tuple].
+Вы можете найти больше информации о кортежах (`tuple`) в [документации к
+стандартной библиотеке (англ.)][tuple].
 
-[tuple]: ../std/primitive.tuple.html
+[tuple]: http://doc.rust-lang.org/std/primitive.tuple.html
 
-# Functions
+# Функции
 
-Functions also have a type! They look like this:
+Функции тоже имеют тип! Это выглядит следующим образом:
 
 ```rust
 fn foo(x: i32) -> i32 { x }
@@ -289,5 +306,5 @@ fn foo(x: i32) -> i32 { x }
 let x: fn(i32) -> i32 = foo;
 ```
 
-In this case, `x` is a ‘function pointer’ to a function that takes an `i32` and
-returns an `i32`.
+В данном примере `x` — это «указатель на функцию», которая принимает в качестве
+аргумента `i32` и возвращает `i32`.

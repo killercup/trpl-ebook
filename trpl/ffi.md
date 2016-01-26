@@ -1,17 +1,18 @@
-% Foreign Function Interface
+% Интерфейс внешних функций (foreign function interface)
 
-# Introduction
+# Введение
 
-This guide will use the [snappy](https://github.com/google/snappy)
-compression/decompression library as an introduction to writing bindings for
-foreign code. Rust is currently unable to call directly into a C++ library, but
-snappy includes a C interface (documented in
+В данном руководстве в качестве примера мы будем использовать
+[snappy](https://github.com/google/snappy), библиотеку для сжатия/распаковки
+данных. Мы реализуем Rust-интерфейс к этой библиотеке через вызов внешних
+функций. Rust в настоящее время не в состоянии делать вызовы напрямую в
+библиотеки C++, но snappy включает в себя интерфейс C (документирован в
 [`snappy-c.h`](https://github.com/google/snappy/blob/master/snappy-c.h)).
 
-The following is a minimal example of calling a foreign function which will
-compile if snappy is installed:
+Ниже приведен минимальный пример вызова внешней функции, который будет
+скомпилирован при условии, что библиотека snappy установлена:
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 use libc::size_t;
@@ -23,29 +24,32 @@ extern {
 
 fn main() {
     let x = unsafe { snappy_max_compressed_length(100) };
-    println!("max compressed length of a 100 byte buffer: {}", x);
+    println!("максимальный размер сжатого буфера длиной 100 байт: {}", x);
 }
 ```
 
-The `extern` block is a list of function signatures in a foreign library, in
-this case with the platform's C ABI. The `#[link(...)]` attribute is used to
-instruct the linker to link against the snappy library so the symbols are
-resolved.
+Блок `extern` содержит список сигнатур функций из внешней библиотеки, в данном
+случае для C ABI (application binary interface; двоичный интерфейс приложений)
+данной платформы. Чтобы указать, что программу нужно компоновать с библиотекой
+snappy, используется атрибут `#[link(...)]`. Благодаря этому, символы будут
+успешно разрешены.
 
-Foreign functions are assumed to be unsafe so calls to them need to be wrapped
-with `unsafe {}` as a promise to the compiler that everything contained within
-truly is safe. C libraries often expose interfaces that aren't thread-safe, and
-almost any function that takes a pointer argument isn't valid for all possible
-inputs since the pointer could be dangling, and raw pointers fall outside of
-Rust's safe memory model.
+Предполагается, что внешние функции могут быть небезопасными, поэтому их вызовы
+должны быть обёрнуты в блок `unsafe {}` как обещание компилятору, что все внутри
+этого блока в действительности безопасно. Библиотеки C часто предоставляют
+интерфейсы, которые не являются потоко-безопасными. И почти любая функция,
+которая принимает в качестве аргумента указатель, не может принимать любое
+входное значений, поскольку указатель может быть висячим; сырые указатели
+выходят за пределы безопасной модели памяти в Rust.
 
-When declaring the argument types to a foreign function, the Rust compiler can
-not check if the declaration is correct, so specifying it correctly is part of
-keeping the binding correct at runtime.
+При объявлении типов аргументов для внешней функции, компилятор Rust не может
+проверить, является ли данное объявление корректным. Поэтому важно правильно
+указать тип привязываемой функции — иначе ошибка обнаружится только во время
+исполнения.
 
-The `extern` block can be extended to cover the entire snappy API:
+Блок `extern` может быть распространён на весь API snappy:
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 use libc::{c_int, size_t};
@@ -70,18 +74,22 @@ extern {
 # fn main() {}
 ```
 
-# Creating a safe interface
+# Создание безопасного интерфейса
 
-The raw C API needs to be wrapped to provide memory safety and make use of higher-level concepts
-like vectors. A library can choose to expose only the safe, high-level interface and hide the unsafe
-internal details.
+Сырой C API (application programming interface; интерфейс программирования
+приложений) необходимо обернуть, чтобы обеспечить безопасность памяти. Тогда мы
+сможем использовать концепции более высокого уровня, такие как векторы.
+Библиотека может выборочно открывать только безопасный, высокоуровневый
+интерфейс и скрывать небезопасные внутренние детали.
 
-Wrapping the functions which expect buffers involves using the `slice::raw` module to manipulate Rust
-vectors as pointers to memory. Rust's vectors are guaranteed to be a contiguous block of memory. The
-length is number of elements currently contained, and the capacity is the total size in elements of
-the allocated memory. The length is less than or equal to the capacity.
+Оборачивание функций, которые принимают в качестве входных параметров буферы,
+включает в себя использование модуля `slice::raw` для управления векторами Rust
+как указателями на память. Векторы Rust представляют собой гарантированно
+непрерывный блок памяти. Длина — это количество элементов, которое в настоящее
+время содержится в векторе, а ёмкость — общее количество выделенной памяти в
+элементах. Длина меньше или равна ёмкости.
 
-```rust,rust
+```rust
 # #![feature(libc)]
 # extern crate libc;
 # use libc::{c_int, size_t};
@@ -94,17 +102,19 @@ pub fn validate_compressed_buffer(src: &[u8]) -> bool {
 }
 ```
 
-The `validate_compressed_buffer` wrapper above makes use of an `unsafe` block, but it makes the
-guarantee that calling it is safe for all inputs by leaving off `unsafe` from the function
-signature.
+Обёртка `validate_compressed_buffer` использует блок `unsafe`, но это
+гарантирует, что её вызов будет безопасен для всех входных данных, поскольку
+модификатор `unsafe` отсутствует в сигнатуре функции. Т.е. небезопасность скрыта
+внутри функции и не видна вызывающему.
 
-The `snappy_compress` and `snappy_uncompress` functions are more complex, since a buffer has to be
-allocated to hold the output too.
+Функции `snappy_compress` и `snappy_uncompress` являются более сложными, так как
+должен быть выделен буфер для хранения выходных данных.
 
-The `snappy_max_compressed_length` function can be used to allocate a vector with the maximum
-required capacity to hold the compressed output. The vector can then be passed to the
-`snappy_compress` function as an output parameter. An output parameter is also passed to retrieve
-the true length after compression for setting the length.
+Функция `snappy_max_compressed_length` может быть использована для выделения
+вектора максимальной ёмкости, требуемой для хранения сжатых выходных данных.
+Затем этот вектор может быть передан в функцию `snappy_compress` в качестве
+выходного параметра. Ещё один параметр передается, чтобы получить настоящую
+длину после сжатия и установить соответствующую длину вектора.
 
 ```rust
 # #![feature(libc)]
@@ -130,8 +140,9 @@ pub fn compress(src: &[u8]) -> Vec<u8> {
 }
 ```
 
-Decompression is similar, because snappy stores the uncompressed size as part of the compression
-format and `snappy_uncompressed_length` will retrieve the exact buffer size required.
+Распаковка аналогична, потому что snappy хранит размер несжатых данных как часть
+формата сжатия, и `snappy_uncompressed_length` будет возвращать точный размер
+необходимого буфера.
 
 ```rust
 # #![feature(libc)]
@@ -166,35 +177,39 @@ pub fn uncompress(src: &[u8]) -> Option<Vec<u8>> {
 }
 ```
 
-For reference, the examples used here are also available as a [library on
-GitHub](https://github.com/thestinger/rust-snappy).
+Для справки, примеры, используемые здесь, также доступны в библиотеке на
+[GitHub](https://github.com/thestinger/rust-snappy).
 
-# Destructors
+# Деструкторы
 
-Foreign libraries often hand off ownership of resources to the calling code.
-When this occurs, we must use Rust's destructors to provide safety and guarantee
-the release of these resources (especially in the case of panic).
+Внешние библиотеки часто передают владение ресурсами в вызывающий код. Когда это
+происходит, мы должны использовать деструкторы Rust, чтобы обеспечить
+безопасность и гарантировать освобождение этих ресурсов (особенно в случае
+паники).
 
-For more about destructors, see the [Drop trait](../std/ops/trait.Drop.html).
+Чтобы получить более подробную информацию о деструкторах, смотрите
+[типаж Drop](http://doc.rust-lang.org/std/ops/trait.Drop.html).
 
-# Callbacks from C code to Rust functions
+# Обратные вызовы функций Rust кодом на C (Callbacks from C code to Rust
+# functions)
 
-Some external libraries require the usage of callbacks to report back their
-current state or intermediate data to the caller.
-It is possible to pass functions defined in Rust to an external library.
-The requirement for this is that the callback function is marked as `extern`
-with the correct calling convention to make it callable from C code.
+Некоторые внешние библиотеки требуют использование обратных вызовов для передачи
+вызывающей стороне отчета о своем текущем состоянии или промежуточных данных. Во
+внешнюю библиотеку можно передавать функции, которые были определены в Rust. При
+создании функции обратного вызова, которую можно вызывать из C кода, необходимо
+указать для нее спецификатор `extern`, за котороым следует подходящее соглашение
+о вызове.
 
-The callback function can then be sent through a registration call
-to the C library and afterwards be invoked from there.
+Затем функция обратного вызова может быть передана в библиотеку C через
+регистрационный вызов, и уже затем может быть вызвана оттуда.
 
-A basic example is:
+Простой пример:
 
-Rust code:
+Код на Rust:
 
-```rust,no_run
+```no_run
 extern fn callback(a: i32) {
-    println!("I'm called from C with value {0}", a);
+    println!("Меня вызывают из C со значением {0}", a);
 }
 
 #[link(name = "extlib")]
@@ -206,12 +221,12 @@ extern {
 fn main() {
     unsafe {
         register_callback(callback);
-        trigger_callback(); // Triggers the callback
+        trigger_callback(); // Активация функции обратного вызова
     }
 }
 ```
 
-C code:
+Код на C:
 
 ```c
 typedef void (*rust_callback)(int32_t);
@@ -223,39 +238,40 @@ int32_t register_callback(rust_callback callback) {
 }
 
 void trigger_callback() {
-  cb(7); // Will call callback(7) in Rust
+  cb(7); // Вызовет callback(7) в Rust
 }
 ```
 
-In this example Rust's `main()` will call `trigger_callback()` in C,
-which would, in turn, call back to `callback()` in Rust.
+В этом примере функция `main()` в Rust вызовет функцию `trigger_callback()` в C,
+которая, в свою очередь, выполнит обратный вызов функции `callback()` в Rust.
 
 
-## Targeting callbacks to Rust objects
+## Обратные вызовы, адресованные объектам Rust (Targeting callbacks to Rust
+## objects)
 
-The former example showed how a global function can be called from C code.
-However it is often desired that the callback is targeted to a special
-Rust object. This could be the object that represents the wrapper for the
-respective C object.
+Предыдущий пример показал, как глобальная функция может быть вызвана из C кода.
+Однако зачастую желательно, чтобы обратный вызов был адресован конкретному
+объекту в Rust. Это может быть объект, который представляет собой обертку для
+соответствующего объекта C.
 
-This can be achieved by passing an raw pointer to the object down to the
-C library. The C library can then include the pointer to the Rust object in
-the notification. This will allow the callback to unsafely access the
-referenced Rust object.
+Такое поведение может быть достигнуто путем передачи небезопасного указателя на
+объект в библиотеку C. После чего библиотека C сможет передавать указатель на
+объект Rust при обратном вызове. Это позволит получить небезопасный доступ к
+объекту Rust, на которой сослались в обратном вызове.
 
-Rust code:
+Код на Rust:
 
-```rust,no_run
+```no_run
 #[repr(C)]
 struct RustObject {
     a: i32,
-    // other members
+    // другие поля
 }
 
 extern "C" fn callback(target: *mut RustObject, a: i32) {
-    println!("I'm called from C with value {0}", a);
+    println!("Меня вызывают из C со значением {0}", a);
     unsafe {
-        // Update the value in RustObject with the value received from the callback
+        // Меняем значение в RustObject на значение, полученное через функцию обратного вызова
         (*target).a = a;
     }
 }
@@ -268,7 +284,7 @@ extern {
 }
 
 fn main() {
-    // Create the object that will be referenced in the callback
+    // Создаём объект, на который будем ссылаться в функции обратного вызова
     let mut rust_object = Box::new(RustObject { a: 5 });
 
     unsafe {
@@ -278,7 +294,7 @@ fn main() {
 }
 ```
 
-C code:
+Код на C:
 
 ```c
 typedef void (*rust_callback)(void*, int32_t);
@@ -292,104 +308,108 @@ int32_t register_callback(void* callback_target, rust_callback callback) {
 }
 
 void trigger_callback() {
-  cb(cb_target, 7); // Will call callback(&rustObject, 7) in Rust
+  cb(cb_target, 7); // Вызовет callback(&rustObject, 7) в Rust
 }
 ```
 
-## Asynchronous callbacks
+## Асинхронные обратные вызовы
 
-In the previously given examples the callbacks are invoked as a direct reaction
-to a function call to the external C library.
-The control over the current thread is switched from Rust to C to Rust for the
-execution of the callback, but in the end the callback is executed on the
-same thread that called the function which triggered the callback.
+В приведённых примерах обратные вызовы выполняются как непосредственная реакция
+на вызов функции внешней библиотеки на C. Для выполнения обратного вызова поток
+исполнения переключался из Rust в C, а затем снова в Rust, но, в конце концов,
+обратный вызов выполнялся в том же потоке, из которого была вызвана функция,
+инициировавшая обратный вызов.
 
-Things get more complicated when the external library spawns its own threads
-and invokes callbacks from there.
-In these cases access to Rust data structures inside the callbacks is
-especially unsafe and proper synchronization mechanisms must be used.
-Besides classical synchronization mechanisms like mutexes, one possibility in
-Rust is to use channels (in `std::sync::mpsc`) to forward data from the C
-thread that invoked the callback into a Rust thread.
+Более сложная ситуация — это когда внешняя библиотека порождает свои собственные
+потоки и осуществляет обратные вызовы из них. В этих случаях доступ к структурам
+данных Rust из обратных вызовов особенно опасен, и поэтому нужно использовать
+соответствующие механизмы синхронизации. Помимо классических механизмов
+синхронизации, таких как мьютексы, в Rust есть еще одна возможность:
+использовать каналы (`std::sync::mpsc::channel`), чтобы направить данные из
+потока C, который выполнял обратный вызов, в поток Rust.
 
-If an asynchronous callback targets a special object in the Rust address space
-it is also absolutely necessary that no more callbacks are performed by the
-C library after the respective Rust object gets destroyed.
-This can be achieved by unregistering the callback in the object's
-destructor and designing the library in a way that guarantees that no
-callback will be performed after deregistration.
+Если асинхронный обратный вызов адресован конкретному объекту в адресном
+пространстве Rust, то необходимо, чтобы обратные вызовы не выполнялись
+библиотекой C после уничтожения этого объекта Rust. Для этого следует,
+во-первых, проектировать библиотеку таким образом, чтобы отмена регистрации
+обратного вызова гарантировала, что он больше не будет выполняться. Во-вторых,
+нужно отменить регистрацию обратного вызова в деструкторе объекта Rust, которому
+адресован обратный вызов.
 
-# Linking
+# Компоновка
 
-The `link` attribute on `extern` blocks provides the basic building block for
-instructing rustc how it will link to native libraries. There are two accepted
-forms of the link attribute today:
+Атрибут `link` для блоков `extern` предоставляет `rustc` основные инструкции
+относительно того, как он должен компоновать нативные библиотеки. На данный
+момент есть две общепринятых формы записи атрибута `link`:
 
 * `#[link(name = "foo")]`
 * `#[link(name = "foo", kind = "bar")]`
 
-In both of these cases, `foo` is the name of the native library that we're
-linking to, and in the second case `bar` is the type of native library that the
-compiler is linking to. There are currently three known types of native
-libraries:
+В обоих этих случаях `foo` — это имя нативной библиотеки, с которой мы
+компонуемся. Во втором случае `bar` — это тип нативной библиотеки, с которой
+происходит компоновка. В настоящее время `rustc` известны три типа нативных
+библиотек:
 
-* Dynamic - `#[link(name = "readline")]`
-* Static - `#[link(name = "my_build_dependency", kind = "static")]`
-* Frameworks - `#[link(name = "CoreFoundation", kind = "framework")]`
+* Динамические — `#[link(name = "readline")]`
+* Статические — `#[link(name = "my_build_dependency", kind = "static")]`
+* Фреймворки — `#[link(name = "CoreFoundation", kind = "framework")]`
 
-Note that frameworks are only available on OSX targets.
+Обратите внимание, что фреймворки доступны только для OSX.
 
-The different `kind` values are meant to differentiate how the native library
-participates in linkage. From a linkage perspective, the Rust compiler creates
-two flavors of artifacts: partial (rlib/staticlib) and final (dylib/binary).
-Native dynamic library and framework dependencies are propagated to the final
-artifact boundary, while static library dependencies are not propagated at
-all, because the static libraries are integrated directly into the subsequent
-artifact.
+Различные значения `kind` нужны, чтобы определить, как компоновать нативную
+библиотеку. С точки зрения компоновки, компилятор Rust создает две разновидности
+артефактов: промежуточный (rlib/статическая библиотека) и конечный (динамическая
+библиотека/исполняемый файл). (Прим. переводчика: rlib — это формат статической
+библиотеки с метаданными в формате Rust) Зависимости от нативных динамических
+библиотек и фреймворков распространяются дальше, пока не дойдут до конечного
+артефакта, а от статических библиотек — нет.
 
-A few examples of how this model can be used are:
+Вот несколько примеров того, как эта модель может быть использована:
 
-* A native build dependency. Sometimes some C/C++ glue is needed when writing
-  some Rust code, but distribution of the C/C++ code in a library format is just
-  a burden. In this case, the code will be archived into `libfoo.a` and then the
-  Rust crate would declare a dependency via `#[link(name = "foo", kind =
-  "static")]`.
+* Нативная зависимость при сборке. Иногда написанный на Rust код необходимо
+  состыковать с некоторым кодом на C/C++, но распространение C/C++ кода в формате
+  библиотеки вызывает дополнительные трудности. В этом случае, код будут
+  упакован в `libfoo.a`, а затем контейнер Rust должен будет объявить
+  зависимость с помощью `#[link(name = "foo", kind = "static")]`.
 
-  Regardless of the flavor of output for the crate, the native static library
-  will be included in the output, meaning that distribution of the native static
-  library is not necessary.
+  Независимо от типа результата (промежуточный или конечный) контейнера,
+  нативная статическая библиотека будет включена в него на выходе, поэтому нет
+  необходимости в распространении этой нативной статической библиотеки отдельно.
 
-* A normal dynamic dependency. Common system libraries (like `readline`) are
-  available on a large number of systems, and often a static copy of these
-  libraries cannot be found. When this dependency is included in a Rust crate,
-  partial targets (like rlibs) will not link to the library, but when the rlib
-  is included in a final target (like a binary), the native library will be
-  linked in.
+* Обычная динамическая зависимость. Общие системные библиотеки (такие, как
+  `readline`) доступны на большом количестве систем, и статическую копию этих
+  библиотек часто сложно найти. Когда такая зависимость включена в контейнер
+  Rust, промежуточные артефакты (например, rlib'ы) не будут компоноваться с
+  библиотекой, но когда rlib включается в состав конечного артефакта (например,
+  исполняемый файл), нативная библиотека будет прикомпонована.
 
-On OSX, frameworks behave with the same semantics as a dynamic library.
+На OSX, фреймворки ведут себя так же, как и динамические библиотеки.
 
-# Unsafe blocks
+# Небезопасные блоки
 
-Some operations, like dereferencing raw pointers or calling functions that have been marked
-unsafe are only allowed inside unsafe blocks. Unsafe blocks isolate unsafety and are a promise to
-the compiler that the unsafety does not leak out of the block.
+Некоторые операции, такие как разыменование небезопасных указателей или вызов
+функций, которые были отмечены как небезопасные, разрешено использовать только
+внутри небезопасных блоков. Небезопасные блоки изолируют опасные ситуации и дают
+гарантии компилятору, что опасности не вытекут за пределы блока.
 
-Unsafe functions, on the other hand, advertise it to the world. An unsafe function is written like
-this:
+Небезопасные функции же, наоборот, показывают свою опасность всем. Небезопасная
+функция записывается в виде:
 
 ```rust
 unsafe fn kaboom(ptr: *const i32) -> i32 { *ptr }
 ```
 
-This function can only be called from an `unsafe` block or another `unsafe` function.
+Эта функция может быть вызвана только из блока `unsafe` или из другой `unsafe`
+функции.
 
-# Accessing foreign globals
+# Доступ к внешним глобальным переменным
 
-Foreign APIs often export a global variable which could do something like track
-global state. In order to access these variables, you declare them in `extern`
-blocks with the `static` keyword:
+Внешние API довольно часто экспортируют глобальные переменные, которые могут
+быть использованы, например, для отслеживания глобального состояния. Для того,
+чтобы получить доступ к этим переменным, нужно объявить их в блоке `extern`,
+используя ключевое слово `static`:
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 
@@ -404,11 +424,12 @@ fn main() {
 }
 ```
 
-Alternatively, you may need to alter global state provided by a foreign
-interface. To do this, statics can be declared with `mut` so we can mutate
-them.
+Кроме того, возможно, вам потребуется изменить глобальное состояние,
+предоставленное внешним интерфейсом. Для этого при объявлении статических
+переменных может быть добавлен модификатор `mut`, чтобы была возможность
+изменять их.
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 
@@ -432,14 +453,18 @@ fn main() {
 }
 ```
 
-Note that all interaction with a `static mut` is unsafe, both reading and
-writing. Dealing with global mutable state requires a great deal of care.
+Обратите внимание, что любое взаимодействие с `static mut` небезопасно — как
+чтение, так и запись. Работа с изменяемым глобальным состоянием требует
+значительно большей осторожности.
 
-# Foreign calling conventions
+<a name="foreign-calling-conventions"></a>
+# Соглашение о вызове внешних функций
 
-Most foreign code exposes a C ABI, and Rust uses the platform's C calling convention by default when
-calling foreign functions. Some foreign functions, most notably the Windows API, use other calling
-conventions. Rust provides a way to tell the compiler which convention to use:
+Большинство внешнего кода предоставляет C ABI. И Rust при вызове внешних функций
+по умолчанию использует соглашение о вызове C для данной платформы. Но некоторые
+внешние функции, в первую очередь Windows API, используют другое соглашение о
+вызове. Rust обеспечивает способ указать компилятору, какое именно соглашение
+использовать:
 
 ```rust
 # #![feature(libc)]
@@ -454,8 +479,8 @@ extern "stdcall" {
 # fn main() { }
 ```
 
-This applies to the entire `extern` block. The list of supported ABI constraints
-are:
+Это указание относится ко всему блоку `extern`. Вот список поддерживаемых
+ограничений для ABI:
 
 * `stdcall`
 * `aapcs`
@@ -467,58 +492,65 @@ are:
 * `C`
 * `win64`
 
-Most of the abis in this list are self-explanatory, but the `system` abi may
-seem a little odd. This constraint selects whatever the appropriate ABI is for
-interoperating with the target's libraries. For example, on win32 with a x86
-architecture, this means that the abi used would be `stdcall`. On x86_64,
-however, windows uses the `C` calling convention, so `C` would be used. This
-means that in our previous example, we could have used `extern "system" { ... }`
-to define a block for all windows systems, not just x86 ones.
+Большинство ABI в этом списке не требуют пояснений, но ABI `system` может
+показаться немного странным. Он выбирает такое ABI, которое подходит для
+взаимодействия с нативными библиотеками данной платформы. Например, на платформе
+win32 с архитектурой x86, это означает, что будет использован ABI `stdcall`.
+Однако, на windows x86_64 используется соглашение о вызове `C`, поэтому в этом
+случае будет использован `C` ABI. Это означает, что в нашем предыдущем примере
+мы могли бы использовать `extern "system" { ... }`, чтобы определить блок для
+всех windows систем, а не только для x86.
 
-# Interoperability with foreign code
+# Взаимодействие с внешним кодом
 
-Rust guarantees that the layout of a `struct` is compatible with the platform's
-representation in C only if the `#[repr(C)]` attribute is applied to it.
-`#[repr(C, packed)]` can be used to lay out struct members without padding.
-`#[repr(C)]` can also be applied to an enum.
+Rust гарантирует, что размещение полей `struct` совместимо с представлением в C
+только в том случае, если к ней применяется атрибут `#[repr(C)]`. Атрибут
+`#[repr(C, packed)]` может быть использован для размещения полей структуры без
+выравнивания. Атрибут `#[repr(C)]` также может быть применен и к перечислениям.
 
-Rust's owned boxes (`Box<T>`) use non-nullable pointers as handles which point
-to the contained object. However, they should not be manually created because
-they are managed by internal allocators. References can safely be assumed to be
-non-nullable pointers directly to the type.  However, breaking the borrow
-checking or mutability rules is not guaranteed to be safe, so prefer using raw
-pointers (`*`) if that's needed because the compiler can't make as many
-assumptions about them.
+Владеющие упаковки в Rust (`Box<T>`) используют указатели, не допускающие
+нулевое значение (non-nullable), как дескрипторы содержащихся в них объектов.
+Тем не менее, эти дескрипторы не должны создаваться вручную, так как они
+управляются внутренними средствами выделения памяти. Ссылки можно без риска
+считать ненулевыми указателями непосредствено на тип. Однако нарушение правил
+проверки заимствования или изменяемости может быть небезопасным. Но компилятор
+не может сделать так много предположений о сырых указателях. Например, он не
+полагается на настоящую неизменяемость данных под неизменяемым сырым указателем.
+Поэтому используйте сырые указатели (`*`), если вам необходимо намеренно
+нарушить правила (но так, что при этом всё работает). Это нужно, чтобы
+компилятор «случайно» не предположил относительно ссылок чего-то, что мы
+собираемся нарушать (возможно, нам нужны несколько указателей с правом
+изменения, что не допускается обычными ссылками).
 
-Vectors and strings share the same basic memory layout, and utilities are
-available in the `vec` and `str` modules for working with C APIs. However,
-strings are not terminated with `\0`. If you need a NUL-terminated string for
-interoperability with C, you should use the `CString` type in the `std::ffi`
-module.
+Векторы и строки совместно используют одну и ту же базовую cхему размещения
+памяти и утилиты, доступные в модулях `vec` и `str`, для работы с C API. Однако,
+строки не завершаются нулевым байтом, `\0`. Если вам нужна строка, завершающаяся
+нулевым байтом, для совместимости с C, вы должны использовать тип `CString` из
+модуля `std::ffi`.
 
-The [`libc` crate on crates.io][libc] includes type aliases and function
-definitions for the C standard library in the `libc` module, and Rust links
-against `libc` and `libm` by default.
+Стандартная библиотека включает в себя псевдонимы типов и определения функций
+для стандартной библиотеки C в модуле `libc`, и Rust компонует `libc` и `libm`
+по умолчанию.
 
-[libc]: https://crates.io/crates/libc
+# Оптимизация указателей, допускающих нулевое значение
+# (The nullable pointer optimization)
 
-# The "nullable pointer optimization"
+Некоторые типы по определению не могут быть `null`. Это ссылки (`&T`, `&mut T`),
+упаковки (`Box<T>`), указатели на функции (`extern "abi" fn()`). При
+взаимодействии же с С часто используются указатели, которые могут быть `null`.
+Как особый случай — обобщенный `enum`, который содержит ровно два варианта, один
+из которых не содержит данных, а другой содержит одно поле. Такое использование
+перечисления имеет право на «оптимизацию указателя, допускающего нулевое
+значение». Когда создан экземпляр такого перечисления с одним из не-обнуляемых
+типов, то он представляет собой ненулевой указатель для варианта, содержащего
+данные, и нулевой — для варианта без данных. Таким образом, `Option<extern "C"
+fn(c_int) -> c_int>` — это представление указателя на функцию, допускающего
+нулевое значение, и совместимого с C ABI.
 
-Certain types are defined to not be `null`. This includes references (`&T`,
-`&mut T`), boxes (`Box<T>`), and function pointers (`extern "abi" fn()`).
-When interfacing with C, pointers that might be null are often used.
-As a special case, a generic `enum` that contains exactly two variants, one of
-which contains no data and the other containing a single field, is eligible
-for the "nullable pointer optimization". When such an enum is instantiated
-with one of the non-nullable types, it is represented as a single pointer,
-and the non-data variant is represented as the null pointer. So
-`Option<extern "C" fn(c_int) -> c_int>` is how one represents a nullable
-function pointer using the C ABI.
+# Вызов кода на Rust из кода на C
 
-# Calling Rust code from C
-
-You may wish to compile Rust code in a way so that it can be called from C. This is
-fairly easy, but requires a few things:
+Вы можете скомпилировать код на Rust таким образом, чтобы он мог быть вызван из
+кода на C. Это довольно легко, но требует нескольких вещей:
 
 ```rust
 #[no_mangle]
@@ -528,85 +560,8 @@ pub extern fn hello_rust() -> *const u8 {
 # fn main() {}
 ```
 
-The `extern` makes this function adhere to the C calling convention, as
-discussed above in "[Foreign Calling
-Conventions](ffi.html#foreign-calling-conventions)". The `no_mangle`
-attribute turns off Rust's name mangling, so that it is easier to link to.
-
-# FFI and panics
-
-It’s important to be mindful of `panic!`s when working with FFI. A `panic!`
-across an FFI boundary is undefined behavior. If you’re writing code that may
-panic, you should run it in another thread, so that the panic doesn’t bubble up
-to C:
-
-```rust
-use std::thread;
-
-#[no_mangle]
-pub extern fn oh_no() -> i32 {
-    let h = thread::spawn(|| {
-        panic!("Oops!");
-    });
-
-    match h.join() {
-        Ok(_) => 1,
-        Err(_) => 0,
-    }
-}
-# fn main() {}
-```
-
-# Representing opaque structs
-
-Sometimes, a C library wants to provide a pointer to something, but not let you
-know the internal details of the thing it wants. The simplest way is to use a
-`void *` argument:
-
-```c
-void foo(void *arg);
-void bar(void *arg);
-```
-
-We can represent this in Rust with the `c_void` type:
-
-```rust
-# #![feature(libc)]
-extern crate libc;
-
-extern "C" {
-    pub fn foo(arg: *mut libc::c_void);
-    pub fn bar(arg: *mut libc::c_void);
-}
-# fn main() {}
-```
-
-This is a perfectly valid way of handling the situation. However, we can do a bit
-better. To solve this, some C libraries will instead create a `struct`, where
-the details and memory layout of the struct are private. This gives some amount
-of type safety. These structures are called ‘opaque’. Here’s an example, in C:
-
-```c
-struct Foo; /* Foo is a structure, but its contents are not part of the public interface */
-struct Bar;
-void foo(struct Foo *arg);
-void bar(struct Bar *arg);
-```
-
-To do this in Rust, let’s create our own opaque types with `enum`:
-
-```rust
-pub enum Foo {}
-pub enum Bar {}
-
-extern "C" {
-    pub fn foo(arg: *mut Foo);
-    pub fn bar(arg: *mut Bar);
-}
-# fn main() {}
-```
-
-By using an `enum` with no variants, we create an opaque type that we can’t
-instantiate, as it has no variants. But because our `Foo` and `Bar` types are
-different, we’ll get type safety between the two of them, so we cannot
-accidentally pass a pointer to `Foo` to `bar()`.
+`extern` указывает, что эта функцию придерживается соглашения о вызове C, как
+описано выше в разделе
+«[Соглашение о вызове внешних функций](ffi.html#foreign-calling-conventions)».
+Атрибут `no_mangle` выключает изменение имён, применяемое в Rust, чтобы было
+легче компоноваться с этим кодом.

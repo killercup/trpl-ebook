@@ -1,24 +1,25 @@
-% Documentation
+% Документация
 
-Documentation is an important part of any software project, and it's
-first-class in Rust. Let's talk about the tooling Rust gives you to
-document your project.
+Документация является важной частью любого программного проекта, и в Rust ей
+уделяется не меньше внимания, чем самому коду. Давайте поговорим об инструментах
+Rust, предназначенных для создания документации к проекту.
 
-## About `rustdoc`
+## О `rustdoc`
 
-The Rust distribution includes a tool, `rustdoc`, that generates documentation.
-`rustdoc` is also used by Cargo through `cargo doc`.
+Дистрибутив Rust включает в себя инструмент, `rustdoc`, который генерирует
+документацию. `rustdoc` также используется Cargo через `cargo doc`.
 
-Documentation can be generated in two ways: from source code, and from
-standalone Markdown files.
+Документация может быть сгенерирована двумя методами: из исходного кода, и из
+отдельных файлов в формате Markdown.
 
-## Documenting source code
+## Документирование исходного кода
 
-The primary way of documenting a Rust project is through annotating the source
-code. You can use documentation comments for this purpose:
+Основной способ документирования проекта на Rust заключается в комментировании
+исходного кода. Для этой цели вы можете использовать документирующие
+комментарии:
 
 ```rust,ignore
-/// Constructs a new `Rc<T>`.
+/// Создаёт новый `Rc<T>`.
 ///
 /// # Examples
 ///
@@ -28,43 +29,45 @@ code. You can use documentation comments for this purpose:
 /// let five = Rc::new(5);
 /// ```
 pub fn new(value: T) -> Rc<T> {
-    // implementation goes here
+    // здесь реализация
 }
 ```
 
-This code generates documentation that looks [like this][rc-new]. I've left the
-implementation out, with a regular comment in its place.
+Этот код генерирует документацию, которая выглядит [так][rc-new]. В приведенном
+коде реализация метода была заменена на обычный комментарий. Первое, на что
+следует обратить внимание в этом примере, это на использование `///` вместо
+`//`. Символы `///` указывают, что это документирующий комментарий.
 
-The first thing to notice about this annotation is that it uses
-`///` instead of `//`. The triple slash
-indicates a documentation comment.
+[rc-new]: http://doc.rust-lang.org/std/rc/struct.Rc.html#method.new
 
-Documentation comments are written in Markdown.
+Документирующие комментарии пишутся на Markdown.
 
-Rust keeps track of these comments, and uses them when generating
-documentation. This is important when documenting things like enums:
+Rust отслеживает такие комментарии, и использует их при создании документации.
+
+При документировании таких вещей, как перечисления, нужно учитывать некоторые
+особенности работы `rustdoc`. Такой код работает:
 
 ```rust
-/// The `Option` type. See [the module level documentation](../) for more.
+/// Тип `Option`. Подробнее смотрите [документацию уровня модуля](http://doc.rust-lang.org/).
 enum Option<T> {
-    /// No value
+    /// Нет значения
     None,
-    /// Some value `T`
+    /// Некоторое значение `T`
     Some(T),
 }
 ```
 
-The above works, but this does not:
+А такой — нет:
 
 ```rust,ignore
-/// The `Option` type. See [the module level documentation](../) for more.
+/// Тип `Option`. Подробнее смотрите [документацию уровня модуля](http://doc.rust-lang.org/).
 enum Option<T> {
-    None, /// No value
-    Some(T), /// Some value `T`
+    None, /// Нет значения
+    Some(T), /// Некоторое значение `T`
 }
 ```
 
-You'll get an error:
+Вы получите ошибку:
 
 ```text
 hello.rs:4:1: 4:2 error: expected ident, found `}`
@@ -72,68 +75,76 @@ hello.rs:4 }
            ^
 ```
 
-This [unfortunate error](https://github.com/rust-lang/rust/issues/22547) is
-correct: documentation comments apply to the thing after them, and there's 
-nothing after that last comment.
+Эта досадная [ошибка](https://github.com/rust-lang/rust/issues/22547)
+заключается в следующем: комментарии документации распространяются на элементы,
+расположенные за ними, а в данном примере нет элемента, расположенного после
+последнего комментария.
 
-[rc-new]: https://doc.rust-lang.org/nightly/std/rc/struct.Rc.html#method.new
+### Написание комментариев документации
 
-### Writing documentation comments
-
-Anyway, let's cover each part of this comment in detail:
+Давайте рассмотрим каждую часть приведенного комментария в деталях:
 
 ```rust
-/// Constructs a new `Rc<T>`.
+/// Создаёт новый `Rc<T>`.
 # fn foo() {}
 ```
 
-The first line of a documentation comment should be a short summary of its
-functionality. One sentence. Just the basics. High level.
+Первая строка документирующего комментария должна представлять из себя краткую
+информацию о функциональности. Одно предложение. Только самое основное.
+Высокоуровневое.
 
 ```rust
 ///
-/// Other details about constructing `Rc<T>`s, maybe describing complicated
-/// semantics, maybe additional options, all kinds of stuff.
+/// Подробности создания `Rc<T>`, возможно, описывающие сложности семантики,
+/// дополнительные опции, и всё остальное.
 ///
 # fn foo() {}
 ```
 
-Our original example had just a summary line, but if we had more things to say,
-we could have added more explanation in a new paragraph.
+Наш исходный пример включал только строку с краткой информацией, но если бы у
+нас было больше информации, о которой следует сказать, мы могли бы добавить эту
+информацию в новом параграфе.
 
-#### Special sections
+#### Специальные разделы
 
-Next, are special sections. These are indicated with a header, `#`. There
-are four kinds of headers that are commonly used. They aren't special syntax,
-just convention, for now.
+```rust
+/// # Examples
+# fn foo() {}
+```
+
+Далее идут специальные разделы. Они обознаются заголовком, который начинается с
+`#`. Существуют три вида заголовков, которые обычно используются. Они не
+являются каким-либо специальным синтаксисом, на данный момент это просто
+соглашение.
 
 ```rust
 /// # Panics
 # fn foo() {}
 ```
 
-Unrecoverable misuses of a function (i.e. programming errors) in Rust are
-usually indicated by panics, which kill the whole current thread at the very
-least. If your function has a non-trivial contract like this, that is
-detected/enforced by panics, documenting it is very important.
+Раздел `Panics`. Неустранимые ошибки при неправильном вызове функции (так
+называемые ошибки программирования) в Rust, как правило, вызывают панику,
+которая, в крайнем случае, убивает весь текущий поток (thread). Если ваша
+функция имеет подобное нетривиальное поведение — т.е. обнаруживает/вызывает
+панику, то очень важно задокументировать это.
 
 ```rust
 /// # Failures
 # fn foo() {}
 ```
 
-If your function or method returns a `Result<T, E>`, then describing the
-conditions under which it returns `Err(E)` is a nice thing to do. This is
-slightly less important than `Panics`, because failure is encoded into the type
-system, but it's still a good thing to do.
+Раздел `Failures`. Если ваша функция или метод возвращает `Result<T, E>`, то
+хорошим тоном является описание условий, при которых она возвращает `Err(E)`.
+Это чуть менее важно, чем описание `Panics`, потому как неудача кодируется в
+системе типов, но это не значит, что стоит пренебрегать данной возможностью.
 
 ```rust
 /// # Safety
 # fn foo() {}
 ```
 
-If your function is `unsafe`, you should explain which invariants the caller is
-responsible for upholding.
+Раздел `Safety`. Если ваша функция является `unsafe`, необходимо пояснить, какие
+инварианты вызова должны поддерживаться.
 
 ```rust
 /// # Examples
@@ -146,44 +157,45 @@ responsible for upholding.
 # fn foo() {}
 ```
 
-Fourth, `Examples`. Include one or more examples of using your function or
-method, and your users will love you for it. These examples go inside of
-code block annotations, which we'll talk about in a moment, and can have
-more than one section:
+Раздел `Examples`. Включите в этот раздел один или несколько примеров
+использования функции или метода, и ваши пользователи будут вам благодарны.
+Примеры должны размещаться внутри блоков кода, о которых мы сейчас поговорим.
+Этот раздел может иметь более одного подраздела:
 
 ```rust
 /// # Examples
 ///
-/// Simple `&str` patterns:
+/// Простые образцы типа `&str`:
 ///
 /// ```
-/// let v: Vec<&str> = "Mary had a little lamb".split(' ').collect();
-/// assert_eq!(v, vec!["Mary", "had", "a", "little", "lamb"]);
+/// let v: Vec<&str> = "И была у них курочка Ряба".split(' ').collect();
+/// assert_eq!(v, vec!["И", "была", "у", "них", "курочка", "Ряба"]);
 /// ```
 ///
-/// More complex patterns with a lambda:
+/// Более сложные образцы с замыканиями:
 ///
 /// ```
-/// let v: Vec<&str> = "abc1def2ghi".split(|c: char| c.is_numeric()).collect();
-/// assert_eq!(v, vec!["abc", "def", "ghi"]);
+/// let v: Vec<&str> = "абв1где2жзи".split(|c: char| c.is_numeric()).collect();
+/// assert_eq!(v, vec!["абв", "где", "жзи"]);
 /// ```
 # fn foo() {}
 ```
 
-Let's discuss the details of these code blocks.
+Давайте подробно обсудим блоки кода.
 
-#### Code block annotations
+#### Блок кода
 
-To write some Rust code in a comment, use the triple graves:
+Чтобы написать код на Rust в комментарии, используйте символы ```:
 
 ```rust
 /// ```
-/// println!("Hello, world");
+/// println!("Привет, мир");
 /// ```
 # fn foo() {}
 ```
 
-If you want something that's not Rust code, you can add an annotation:
+Если вы хотите написать код на любом другом языке (не на Rust), вы можете
+добавить аннотацию:
 
 ```rust
 /// ```c
@@ -192,29 +204,31 @@ If you want something that's not Rust code, you can add an annotation:
 # fn foo() {}
 ```
 
-This will highlight according to whatever language you're showing off.
-If you're just showing plain text, choose `text`.
+Это позволит использовать подсветку синтаксиса, соответствующую тому языку,
+который был указан в аннотации. Если же это простой текст, то в аннотации
+указывается `text`.
 
-It's important to choose the correct annotation here, because `rustdoc` uses it
-in an interesting way: It can be used to actually test your examples in a
-library crate, so that they don't get out of date. If you have some C code but
-`rustdoc` thinks it's Rust because you left off the annotation, `rustdoc` will
-complain when trying to generate the documentation.
+Важно выбрать правильную аннотацию, потому что `rustdoc` использует ее
+интересным способом: Rust может выполнять проверку работоспособности примеров на
+момент создания документации. Это позволяет избежать устаревания примеров.
+Предположим, у вас есть код на C. Если вы опустите аннотацию, указывающую, что
+это код на C, то `rustdoc` будет думать, что это код на Rust, поэтому он
+пожалуется при попытке создания документации.
 
-## Documentation as tests
+## Тесты в документации
 
-Let's discuss our sample example documentation:
+Давайте обсудим наш пример документации:
 
 ```rust
 /// ```
-/// println!("Hello, world");
+/// println!("Привет, мир");
 /// ```
 # fn foo() {}
 ```
 
-You'll notice that you don't need a `fn main()` or anything here. `rustdoc` will
-automatically add a main() wrapper around your code, and in the right place.
-For example:
+Заметьте, что здесь нет нужды в `fn main()` или чём-нибудь подобном. `rustdoc`
+автоматически добавит оборачивающий `main()` вокруг вашего кода в нужном месте.
+Например:
 
 ```rust
 /// ```
@@ -225,7 +239,7 @@ For example:
 # fn foo() {}
 ```
 
-This will end up testing:
+В конечном итоге это будет тест:
 
 ```rust
 fn main() {
@@ -234,42 +248,43 @@ fn main() {
 }
 ```
 
-Here's the full algorithm rustdoc uses to postprocess examples:
+Вот полный алгоритм, который `rustdoc` использует для обработки примеров:
 
-1. Any leading `#![foo]` attributes are left intact as crate attributes.
-2. Some common `allow` attributes are inserted, including
-   `unused_variables`, `unused_assignments`, `unused_mut`,
-   `unused_attributes`, and `dead_code`. Small examples often trigger
-   these lints.
-3. If the example does not contain `extern crate`, then `extern crate
-   <mycrate>;` is inserted.
-2. Finally, if the example does not contain `fn main`, the remainder of the
-   text is wrapped in `fn main() { your_code }`
+1. Любые ведущие (leading) атрибуты `#![foo]` остаются без изменений в качестве
+   атрибутов контейнера.
+2. Будут вставлены некоторые общие атрибуты `allow`, в том числе:
+   `unused_variables`, `unused_assignments`, `unused_mut`, `unused_attributes`,
+   `dead_code`. Небольшие примеры часто приводят к срабатыванию этих анализов.
+3. Если пример не содержит `extern crate`, то будет вставлено `extern crate
+   <mycrate>;`.
+4. Наконец, если пример не содержит `fn main`, то оставшаяся часть текста будет
+   обернута в `fn main() { your_code }`
 
-Sometimes, this isn't enough, though. For example, all of these code samples
-with `///` we've been talking about? The raw text:
+Хотя иногда этого не достаточно. Например, что насчёт всех этих примеров кода с
+`///`, о которых мы говорили? Простой текст, обработанный `rustdoc`, выглядит
+так:
 
 ```text
-/// Some documentation.
+/// Некоторая документация.
 # fn foo() {}
 ```
 
-looks different than the output:
+А исходный текст на Rust после обработки выглядит так:
 
 ```rust
-/// Some documentation.
+/// Некоторая документация.
 # fn foo() {}
 ```
 
-Yes, that's right: you can add lines that start with `# `, and they will
-be hidden from the output, but will be used when compiling your code. You
-can use this to your advantage. In this case, documentation comments need
-to apply to some kind of function, so if I want to show you just a
-documentation comment, I need to add a little function definition below
-it. At the same time, it's just there to satisfy the compiler, so hiding
-it makes the example more clear. You can use this technique to explain
-longer examples in detail, while still preserving the testability of your
-documentation. For example, this code:
+Да, именно так: вы можете добавлять строки, которые начинаются с `# `, и они
+будут скрыты в выводе, но при этом будут использоваться во время компиляции
+кода. Вы можете использовать это в своих интересах. Если в документирующем
+комментарии необходимо обратиться к какой-то функции, то ниже нужно будет
+добавить определение этой функции. В то же время, это делается только для того,
+чтобы удовлетворить компилятор, поэтому сокрытие ненужных строк в выводе делает
+пример более ясным. Вы можете использовать эту технику, чтобы детально объяснять
+длинные примеры, сохраняя при этом тестируемость документации. Например, вот
+код:
 
 ```rust
 let x = 5;
@@ -277,9 +292,9 @@ let y = 6;
 println!("{}", x + y);
 ```
 
-Here's an explanation, rendered:
+Ниже приведено отрисованное объяснение этого кода.
 
-First, we set `x` to five:
+Сперва мы устанавливаем `x` равным пяти:
 
 ```rust
 let x = 5;
@@ -287,7 +302,7 @@ let x = 5;
 # println!("{}", x + y);
 ```
 
-Next, we set `y` to six:
+Затем мы устанавливаем `y` равным шести:
 
 ```rust
 # let x = 5;
@@ -295,7 +310,7 @@ let y = 6;
 # println!("{}", x + y);
 ```
 
-Finally, we print the sum of `x` and `y`:
+В конце мы печатаем сумму `x` и `y`:
 
 ```rust
 # let x = 5;
@@ -303,9 +318,9 @@ Finally, we print the sum of `x` and `y`:
 println!("{}", x + y);
 ```
 
-Here's the same explanation, in raw text:
+А вот то же самое объяснение, но в виде простого текста:
 
-> First, we set `x` to five:
+> Сперва мы устанавливаем `x` равным пяти:
 >
 > ```text
 > let x = 5;
@@ -313,7 +328,7 @@ Here's the same explanation, in raw text:
 > # println!("{}", x + y);
 > ```
 >
-> Next, we set `y` to six:
+> Затем мы устанавливаем `y` равным шести:
 >
 > ```text
 > # let x = 5;
@@ -321,7 +336,7 @@ Here's the same explanation, in raw text:
 > # println!("{}", x + y);
 > ```
 >
-> Finally, we print the sum of `x` and `y`:
+> В конце мы печатаем сумму `x` и `y`:
 >
 > ```text
 > # let x = 5;
@@ -329,30 +344,30 @@ Here's the same explanation, in raw text:
 > println!("{}", x + y);
 > ```
 
-By repeating all parts of the example, you can ensure that your example still
-compiles, while only showing the parts that are relevant to that part of your
-explanation.
+Повторяя все части примера, вы можете быть уверены, что ваш пример
+компилируется, а не просто отображает кусочки кода, которые как-то относятся к
+той или иной части вашего объяснения.
 
-### Documenting macros
+### Документирование макросов
 
-Here’s an example of documenting a macro:
+Вот пример документирования макроса:
 
 ```rust
-/// Panic with a given message unless an expression evaluates to true.
+/// Паниковать с данным сообщением, если только выражение не является истиной.
 ///
 /// # Examples
 ///
 /// ```
 /// # #[macro_use] extern crate foo;
 /// # fn main() {
-/// panic_unless!(1 + 1 == 2, “Math is broken.”);
+/// panic_unless!(1 + 1 == 2, "Математика сломалась.");
 /// # }
 /// ```
 ///
 /// ```should_panic
 /// # #[macro_use] extern crate foo;
 /// # fn main() {
-/// panic_unless!(true == false, “I’m broken.”);
+/// panic_unless!(true == false, "Я сломан.");
 /// # }
 /// ```
 #[macro_export]
@@ -362,28 +377,30 @@ macro_rules! panic_unless {
 # fn main() {}
 ```
 
-You’ll note three things: we need to add our own `extern crate` line, so that
-we can add the `#[macro_use]` attribute. Second, we’ll need to add our own
-`main()` as well. Finally, a judicious use of `#` to comment out those two
-things, so they don’t show up in the output.
+В нем вы можете заметить три вещи. Во-первых, мы должны собственноручно добавить
+строку с `extern crate` для того, чтобы мы могли указать атрибут `#[macro_use]`.
+Во-вторых, мы также собственноручно должны добавить `main()`. И наконец, разумно
+будет использовать `#`, чтобы закомментировать все, что мы добавили в первых
+двух пунктах, что бы оно не отображалось в генерируемом выводе.
 
-### Running documentation tests
+### Запуск тестов в документации
 
-To run the tests, either
+Для запуска тестов можно использовать одну из двух комманд
 
 ```bash
 $ rustdoc --test path/to/my/crate/root.rs
-# or
+# или
 $ cargo test
 ```
 
-That's right, `cargo test` tests embedded documentation too. **However,
-`cargo test` will not test binary crates, only library ones.** This is
-due to the way `rustdoc` works: it links against the library to be tested,
-but with a binary, there’s nothing to link to.
+Все верно, `cargo test` также выполняет тесты, встроенные в документацию. Тем не
+менее, `cargo test` не будет тестировать исполняемые контейнеры, только
+библиотечные. Это связано с тем, как работает `rustdoc`: он компонуется с
+библиотекой, которую надо протестировать, но в случае с исполняемым файлом
+компоноваться не с чем.
 
-There are a few more annotations that are useful to help `rustdoc` do the right
-thing when testing your code:
+Есть еще несколько полезных аннотаций, которые помогают `rustdoc` работать
+правильно при тестировании кода:
 
 ```rust
 /// ```ignore
@@ -392,10 +409,11 @@ thing when testing your code:
 # fn foo() {}
 ```
 
-The `ignore` directive tells Rust to ignore your code. This is almost never
-what you want, as it's the most generic. Instead, consider annotating it
-with `text` if it's not code, or using `#`s to get a working example that
-only shows the part you care about.
+Аннотация `ignore` указывает Rust, что код должен быть проигнорирован. Почти во
+всех случаях это не то, что вам нужно, так как эта директива носит очень общий
+характер. Вместо неё лучше использовать аннотацию `text`, если это не код, или
+`#`, чтобы получить рабочий пример, отображающий только ту часть, которая вам
+нужна.
 
 ```rust
 /// ```should_panic
@@ -404,29 +422,32 @@ only shows the part you care about.
 # fn foo() {}
 ```
 
-`should_panic` tells `rustdoc` that the code should compile correctly, but
-not actually pass as a test.
+Аннотация `should_panic` указывает `rustdoc`, что код должен компилироваться, но
+выполнение теста должно завершиться ошибкой.
 
 ```rust
 /// ```no_run
 /// loop {
-///     println!("Hello, world");
+///     println!("Привет, мир");
 /// }
 /// ```
 # fn foo() {}
 ```
 
-The `no_run` attribute will compile your code, but not run it. This is
-important for examples such as "Here's how to start up a network service,"
-which you would want to make sure compile, but might run in an infinite loop!
+Аннотация `no_run` указывает, что код должен компилироваться, но запускать его
+на выполнение не требуется. Это важно для таких примеров, которые должны успешно
+компилироваться, но выполнение которых оказывается бесконечным циклом! Например:
+«Вот как запустить сетевой сервис».
 
-### Documenting modules
+### Документирование модулей
 
-Rust has another kind of doc comment, `//!`. This comment doesn't document the next item, but the enclosing item. In other words:
+Rust предоставляет ещё один вид документирующих комментариев, `//!`. Этот
+комментарий относится не к следующему за ним элементу, а к элементу, который его
+включает. Другими словами:
 
 ```rust
 mod foo {
-    //! This is documentation for the `foo` module.
+    //! Это документация для модуля `foo`.
     //!
     //! # Examples
 
@@ -434,29 +455,31 @@ mod foo {
 }
 ```
 
-This is where you'll see `//!` used most often: for module documentation. If
-you have a module in `foo.rs`, you'll often open its code and see this:
+Приведённый пример демонстрирует наиболее распространённое использование `//!`:
+документирование модуля. Если же модуль расположен в файле `foo.rs`, то вы,
+открывая его код, часто будете видеть следующее:
 
 ```rust
-//! A module for using `foo`s.
+//! Модуль использования разных `foo`.
 //!
-//! The `foo` module contains a lot of useful functionality blah blah blah
+//! Модуль `foo` содержит много полезной функциональности ла-ла-ла
 ```
 
-### Documentation comment style
+### Стиль документирующих комментариев
 
-Check out [RFC 505][rfc505] for full conventions around the style and format of
-documentation.
+Изучите [RFC 505][rfc505] для получения полных сведений о соглашениях по стилю и
+формату документации.
 
 [rfc505]: https://github.com/rust-lang/rfcs/blob/master/text/0505-api-comment-conventions.md
 
-## Other documentation
+## Другая документация
 
-All of this behavior works in non-Rust source files too. Because comments
-are written in Markdown, they're often `.md` files.
+Все эти правила поведения также применимы и в отношении исходных файлов не на
+Rust. Так как комментарии пишутся на Markdown, то часто эти файлы имеют
+расширение `.md`.
 
-When you write documentation in Markdown files, you don't need to prefix
-the documentation with comments. For example:
+Когда вы пишете документацию в файлах Markdown, вам не нужно добавлять префикс
+документирующего комментария, `///`. Например:
 
 ```rust
 /// # Examples
@@ -469,7 +492,7 @@ the documentation with comments. For example:
 # fn foo() {}
 ```
 
-is just
+преобразуется в
 
 ~~~markdown
 # Examples
@@ -481,20 +504,21 @@ let five = Rc::new(5);
 ```
 ~~~
 
-when it's in a Markdown file. There is one wrinkle though: Markdown files need
-to have a title like this:
+когда он находится в файле Markdown. Однако есть один недостаток: файлы Markdown
+должны иметь заголовок наподобие этого:
 
 ```markdown
-% The title
+% Заголовок
 
-This is the example documentation.
+Это пример документации.
 ```
 
-This `%` line needs to be the very first line of the file.
+Строка, начинающаяся с `%`, должна быть самой первой строкой файла.
 
-## `doc` attributes
+## Атрибуты `doc`
 
-At a deeper level, documentation comments are sugar for documentation attributes:
+На более глубоком уровне, комментарии документации — это синтаксический сахар
+для атрибутов документации:
 
 ```rust
 /// this
@@ -504,7 +528,7 @@ At a deeper level, documentation comments are sugar for documentation attributes
 # fn bar() {}
 ```
 
-are the same, as are these:
+Т.е. представленные выше комментарии идентичны, также как и ниже:
 
 ```rust
 //! this
@@ -512,12 +536,14 @@ are the same, as are these:
 #![doc="/// this"]
 ```
 
-You won't often see this attribute used for writing documentation, but it
-can be useful when changing some options, or when writing a macro.
+Вы не часто будете видеть этот атрибут, используемый для написания документации,
+но он может быть полезен для изменения некоторых настроек, или при написании
+макроса.
 
-### Re-exports
+### Ре-экспорт
 
-`rustdoc` will show the documentation for a public re-export in both places:
+`rustdoc` будет показывать документацию для общедоступного (public) ре-экспорта
+в двух местах:
 
 ```ignore
 extern crate foo;
@@ -525,11 +551,11 @@ extern crate foo;
 pub use foo::bar;
 ```
 
-This will create documentation for bar both inside the documentation for the
-crate `foo`, as well as the documentation for your crate. It will use the same
-documentation in both places.
+Это создаст документацию для `bar` как в документации для контейнера `foo`, так
+и в документации к вашему контейнеру. То есть в обоих местах будет использована
+одна и та же документация.
 
-This behavior can be suppressed with `no_inline`:
+Такое поведение может быть подавлено с помощью `no_inline`:
 
 ```ignore
 extern crate foo;
@@ -538,33 +564,36 @@ extern crate foo;
 pub use foo::bar;
 ```
 
-### Controlling HTML
+### Управление HTML
 
-You can control a few aspects of the HTML that `rustdoc` generates through the
-`#![doc]` version of the attribute:
+Вы можете управлять некоторыми аспектами HTML, который генерирует `rustdoc`,
+через атрибут `#![doc]`:
 
 ```rust
-#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://doc.rust-lang.org/")]
+#![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+       html_favicon_url = "http://www.rust-lang.org/favicon.ico",
+       html_root_url = "http://doc.rust-lang.org/")];
 ```
 
-This sets a few different options, with a logo, favicon, and a root URL.
+В этом примере устанавливается несколько различных опций: логотип, иконка и
+корневой URL.
 
-## Generation options
+## Опции генерации
 
-`rustdoc` also contains a few other options on the command line, for further customization:
+`rustdoc` также содержит несколько опций командной строки для дальнейшей
+настройки:
 
-- `--html-in-header FILE`: includes the contents of FILE at the end of the
-  `<head>...</head>` section.
-- `--html-before-content FILE`: includes the contents of FILE directly after
-  `<body>`, before the rendered content (including the search bar).
-- `--html-after-content FILE`: includes the contents of FILE after all the rendered content.
+- `--html-in-header FILE`: включить содержимое FILE в конец раздела
+  `<head>...</head>`.
+- `--html-before-content FILE`: включить содержимое FILE сразу после `<body>`,
+  перед отображаемым содержимым (в том числе строки поиска).
+- `--html-after-content FILE`: включить содержимое FILE после всего
+  отображаемого содержимого.
 
-## Security note
+## Замечание по безопасности
 
-The Markdown in documentation comments is placed without processing into
-the final webpage. Be careful with literal HTML:
+Комментарии в документации в формате Markdown помещаются в конечную веб-страницу
+без обработки. Будьте осторожны с HTML-литералами:
 
 ```rust
 /// <script>alert(document.cookie)</script>

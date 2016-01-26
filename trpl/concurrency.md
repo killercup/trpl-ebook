@@ -1,70 +1,69 @@
-% Concurrency
+% Многозадачность
 
-Concurrency and parallelism are incredibly important topics in computer
-science, and are also a hot topic in industry today. Computers are gaining more
-and more cores, yet many programmers aren't prepared to fully utilize them.
+Многозадачность и параллелизм являются невероятно важными проблемами в
+информатике. Это актуальная тема для современной индустрии. У компьютеров все
+больше и больше ядер, но многие программисты не готовы в полной мере
+использовать их.
 
-Rust's memory safety features also apply to its concurrency story too. Even
-concurrent Rust programs must be memory safe, having no data races. Rust's type
-system is up to the task, and gives you powerful ways to reason about
-concurrent code at compile time.
+Средства Rust для безопасной работы с памятью в полной мере применимы и при
+работе в многозадачной среде. Даже многозадачные программы на Rust должны
+безопасно работать с памятью, и не создавать состояний гонок по данным. Система
+типов Rust достаточно мощна, чтобы справиться с этими задачами на этапе
+компиляции.
 
-Before we talk about the concurrency features that come with Rust, it's important
-to understand something: Rust is low-level enough that the vast majority of
-this is provided by the standard library, not by the language. This means that
-if you don't like some aspect of the way Rust handles concurrency, you can
-implement an alternative way of doing things.
-[mio](https://github.com/carllerche/mio) is a real-world example of this
-principle in action.
+Прежде чем мы поговорим об особенностях многозадачности в Rust, важно понять вот
+что: Rust — достаточно низкоуровневый язык, поэтому вся поддержка
+многозадачности реализована в стандартной библиотеке, а не в самом языке. Это
+означает, что если вам не нравится какой-то аспект реализации многозадачности в
+Rust, вы всегда можете создать альтернативную библиотеку.
+[mio](https://github.com/carllerche/mio) — реально существующий пример такого
+подхода.
 
-## Background: `Send` and `Sync`
+## Справочная информация: `Send` и `Sync`
 
-Concurrency is difficult to reason about. In Rust, we have a strong, static
-type system to help us reason about our code. As such, Rust gives us two traits
-to help us make sense of code that can possibly be concurrent.
+Рассуждать о многозадачности довольно трудно. Rust строго статически
+типизирован, и это помогает нам делать выводы о коде. В связи с этим Rust
+предоставляет два типажа, помогающих нам разбираться в любом коде, который
+вообще может быть многозадачным.
 
 ### `Send`
 
-The first trait we're going to talk about is
-[`Send`](../std/marker/trait.Send.html). When a type `T` implements `Send`, it
-indicates that something of this type is able to have ownership transferred
-safely between threads.
+Первый типаж, о котором мы будем говорить, называется
+[`Send`](http://doc.rust-lang.org/std/marker/trait.Send.html). Когда тип `T`
+реализует `Send`, это указывает компилятору, что владение переменными этого типа
+можно безопасно перемещать между потоками.
 
-This is important to enforce certain restrictions. For example, if we have a
-channel connecting two threads, we would want to be able to send some data
-down the channel and to the other thread. Therefore, we'd ensure that `Send` was
-implemented for that type.
+Это важно для соблюдения некоторых ограничений. Например, это имеет значение,
+когда у нас есть канал, соединяющий два потока, и мы хотим отправлять некоторые
+данные по каналу из одного потока в другой. Следовательно, мы должны
+гарантировать, что для отправляемого типа данных реализован типаж `Send`.
 
-In the opposite way, if we were wrapping a library with FFI that isn't
-threadsafe, we wouldn't want to implement `Send`, and so the compiler will help
-us enforce that it can't leave the current thread.
+И наоборот, если мы оборачиваем библиотеку чужого кода (FFI), и она не является
+потокобезопасной, то нам не следует реализовывать типаж `Send`, и компилятор
+поможет нам убедиться в невозможности покинуть текущий поток.
 
 ### `Sync`
 
-The second of these traits is called [`Sync`](../std/marker/trait.Sync.html).
-When a type `T` implements `Sync`, it indicates that something
-of this type has no possibility of introducing memory unsafety when used from
-multiple threads concurrently through shared references. This implies that
-types which don't have [interior mutability](mutability.html) are inherently
-`Sync`, which includes simple primitive types (like `u8`) and aggregate types
-containing them.
+Второй из этих типажей называется
+[`Sync`](http://doc.rust-lang.org/std/marker/trait.Sync.html). Когда тип `T`
+реализует `Sync`, это указывает компилятору, что использование переменных этого
+типа не приводит к небезопасной работе с памятью в многопоточной среде.
 
-For sharing references across threads, Rust provides a wrapper type called
-`Arc<T>`. `Arc<T>` implements `Send` and `Sync` if and only if `T` implements
-both `Send` and `Sync`. For example, an object of type `Arc<RefCell<U>>` cannot
-be transferred across threads because
-[`RefCell`](choosing-your-guarantees.html#refcell%3Ct%3E) does not implement
-`Sync`, consequently `Arc<RefCell<U>>` would not implement `Send`.
+Например, совместное использование неизменяемых данных с помощью атомарного
+счетчика ссылок является потокобезопасным. Rust обеспечивает такой тип,
+`Arc<T>`, и он реализует `Sync`, так что при помощи этого типа можно безопасно
+обмениваться данными между потоками.
 
-These two traits allow you to use the type system to make strong guarantees
-about the properties of your code under concurrency. Before we demonstrate
-why, we need to learn how to create a concurrent Rust program in the first
-place!
+Эти два типажа позволяют использовать систему типов, чтобы получить надежные
+гарантии о свойствах вашего кода в условиях многозадачности. Прежде чем мы
+покажем, как этого достигнуть, сначала мы должны узнать, как вообще написать
+многозадачную программу в Rust!
 
-## Threads
+## Потоки
 
-Rust's standard library provides a library for threads, which allow you to
-run Rust code in parallel. Here's a basic example of using `std::thread`:
+Стандартная библиотека Rust предоставляет библиотеку многопоточности, которая
+позволяет запускать код на Rust параллельно. Вот простой пример использования
+`std::thread`:
 
 ```rust
 use std::thread;
@@ -76,9 +75,9 @@ fn main() {
 }
 ```
 
-The `thread::spawn()` method accepts a [closure](closures.html), which is executed in a
-new thread. It returns a handle to the thread, that can be used to
-wait for the child thread to finish and extract its result:
+Метод `thread::spawn()` в качестве единственного аргумента принимает замыкание,
+которое выполняется в новом потоке. Он возвращает дескриптор потока, который
+используется для ожидания завершения этого потока и извлечения его результата:
 
 ```rust
 use std::thread;
@@ -92,36 +91,40 @@ fn main() {
 }
 ```
 
-Many languages have the ability to execute threads, but it's wildly unsafe.
-There are entire books about how to prevent errors that occur from shared
-mutable state. Rust helps out with its type system here as well, by preventing
-data races at compile time. Let's talk about how you actually share things
-between threads.
+Многие языки имеют возможность выполнять потоки, но это дико опасно. Есть целые
+книги о том, как избежать ошибок, которые происходят от совместного
+использования изменяемого состояния. В Rust снова помогает система типов,
+которая предотвращает гонки данных на этапе компиляции. Давайте поговорим о том,
+как же на самом деле обеспечивается совместное использование чего-либо в
+условиях нескольких потоков.
 
-## Safe Shared Mutable State
+## Безопасное совместное использование изменяемого состояния
 
-Due to Rust's type system, we have a concept that sounds like a lie: "safe
-shared mutable state." Many programmers agree that shared mutable state is
-very, very bad.
+Вчитайтесь: «безопасное совместное использование изменяемого состояния». Похоже
+на ложь, не так ли? Многие программисты считают, что организовать многопоточную
+работу с изменяемым состоянием очень сложно и почти невозможно. Но благодаря
+системе типов Rust, это всё же правда — безопасно работать с изменяемыми данными
+можно.
 
-Someone once said this:
+Кто-то однажды сказал это:
 
-> Shared mutable state is the root of all evil. Most languages attempt to deal
-> with this problem through the 'mutable' part, but Rust deals with it by
-> solving the 'shared' part.
+> Совместно используемое изменяемое состояние является корнем всех зол.
+> Большинство языков пытаются решить эту проблему через часть, отвечающую за
+> «изменяемое», но Rust решает ее через часть, отвечающую за «совместно
+> используемое».
 
-The same [ownership system](ownership.html) that helps prevent using pointers
-incorrectly also helps rule out data races, one of the worst kinds of
-concurrency bugs.
+Та же самая [система владения](ownership.html), которая помогает предотвратить
+неправильное использование указателей, также помогает исключить гонки по данным,
+один из худших видов ошибок многозадачности.
 
-As an example, here is a Rust program that would have a data race in many
-languages. It will not compile:
+В качестве примера приведем программу на Rust, которая входила бы в состояние
+гонки по данным на многих языках. На Rust она не скомпилируется:
 
 ```ignore
 use std::thread;
 
 fn main() {
-    let mut data = vec![1, 2, 3];
+    let mut data = vec![1u32, 2, 3];
 
     for i in 0..3 {
         thread::spawn(move || {
@@ -133,7 +136,7 @@ fn main() {
 }
 ```
 
-This gives us an error:
+Она выдает ошибку:
 
 ```text
 8:17 error: capture of moved value: `data`
@@ -141,34 +144,31 @@ This gives us an error:
         ^~~~
 ```
 
-Rust knows this wouldn't be safe! If we had a reference to `data` in each
-thread, and the thread takes ownership of the reference, we'd have three
-owners!
+В данном случае мы знаем, что наш код _должен_ быть безопасным, но Rust в этом
+не уверен. И, на самом деле, он не является безопасным: мы работаем с `data` в
+каждом потоке. При этом, поток становится владельцем того, что он получает как
+часть окружения замыкания. А это значит, что у нас есть три владельца! Это
+плохо. Мы можем исправить это с помощью типа `Arc<T>`, который является
+атомарным указателем со счетчиком ссылок. «Атомарный» означает, что им безопасно
+обмениваться между потоками.
 
-So, we need some type that lets us have more than one reference to a value and
-that we can share between threads, that is it must implement `Sync`.
-
-We'll use `Arc<T>`, rust's standard atomic reference count type, which
-wraps a value up with some extra runtime bookkeeping which allows us to
-share the ownership of the value between multiple references at the same time.
-
-The bookkeeping consists of a count of how many of these references exist to
-the value, hence the reference count part of the name.
-
-The Atomic part means `Arc<T>` can safely be accessed from multiple threads.
-To do this the compiler guarantees that mutations of the internal count use
-indivisible operations which can't have data races.
-
+Чтобы гарантировать, что его можно безопасно использовать из нескольких потоков,
+`Arc<T>` предполагает наличие еще одного свойства у вложенного типа. Он
+предполагает, что `T` реализует типаж `Sync`. В нашем случае мы также хотим,
+чтобы была возможность изменять вложенное значение. Нам нужен тип, который может
+обеспечить изменение своего содержимого лишь одним пользователем одновременно.
+Для этого мы можем использовать тип `Mutex<T>`. Вот вторая версия нашего кода.
+Она по-прежнему не работает, но по другой причине:
 
 ```ignore
 use std::thread;
-use std::sync::Arc;
+use std::sync::Mutex;
 
 fn main() {
-    let mut data = Arc::new(vec![1, 2, 3]);
+    let mut data = Mutex::new(vec![1u32, 2, 3]);
 
     for i in 0..3 {
-        let data = data.clone();
+        let data = data.lock().unwrap();
         thread::spawn(move || {
             data[i] += 1;
         });
@@ -178,36 +178,37 @@ fn main() {
 }
 ```
 
-We now call `clone()` on our `Arc<T>`, which increases the internal count.
-This handle is then moved into the new thread.
-
-And... still gives us an error.
+Вот ошибка:
 
 ```text
-<anon>:11:24 error: cannot borrow immutable borrowed content as mutable
-<anon>:11                    data[i] += 1;
-                             ^~~~
+<anon>:9:9: 9:22 error: the trait `core::marker::Send` is not implemented for the type `std::sync::mutex::MutexGuard<'_, collections::vec::Vec<u32>>` [E0277]
+<anon>:11         thread::spawn(move || {
+                  ^~~~~~~~~~~~~
+<anon>:9:9: 9:22 note: `std::sync::mutex::MutexGuard<'_, collections::vec::Vec<u32>>` cannot be sent between threads safely
+<anon>:11         thread::spawn(move || {
+                  ^~~~~~~~~~~~~
 ```
 
-`Arc<T>` assumes one more property about its contents to ensure that it is safe
-to share across threads: it assumes its contents are `Sync`. This is true for
-our value if it's immutable, but we want to be able to mutate it, so we need
-something else to persuade the borrow checker we know what we're doing.
+Вы можете видеть, что [`Mutex`](http://doc.rust-lang.org/std/sync/struct.Mutex.html) содержит метод
+[`lock`](http://doc.rust-lang.org/std/sync/struct.Mutex.html#method.lock), который имеет следующую
+сигнатуру:
 
-It looks like we need some type that allows us to safely mutate a shared value,
-for example a type that that can ensure only one thread at a time is able to
-mutate the value inside it at any one time.
+```ignore
+fn lock(&self) -> LockResult<MutexGuard<T>>
+```
 
-For that, we can use the `Mutex<T>` type!
+Так как типаж `Send` не был реализован для `MutexGuard<T>`, мы не можем
+перемещать охранное значение мьютекса через границы потоков, что и сказано в
+сообщении об ошибке.
 
-Here's the working version:
+Мы можем использовать `Arc<T>`, чтобы исправить это. Вот рабочая версия:
 
 ```rust
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 fn main() {
-    let data = Arc::new(Mutex::new(vec![1, 2, 3]));
+    let data = Arc::new(Mutex::new(vec![1u32, 2, 3]));
 
     for i in 0..3 {
         let data = data.clone();
@@ -221,26 +222,15 @@ fn main() {
 }
 ```
 
-Note that the value of `i` is bound (copied) to the closure and not shared
-among the threads.
-
-Also note that [`lock`](../std/sync/struct.Mutex.html#method.lock) method of
-[`Mutex`](../std/sync/struct.Mutex.html) has this signature:
-
-```ignore
-fn lock(&self) -> LockResult<MutexGuard<T>>
-```
-
-and because `Send` is not implemented for `MutexGuard<T>`, the guard cannot
-cross thread boundaries, ensuring thread-locality of lock acquire and release.
-
-Let's examine the body of the thread more closely:
+Теперь мы вызываем `clone()` для нашего `Arc`, что увеличивает внутренний
+счетчик. Затем полученная ссылка перемещается в новый поток. Давайте более
+подробно рассмотрим тело потока:
 
 ```rust
 # use std::sync::{Arc, Mutex};
 # use std::thread;
 # fn main() {
-#     let data = Arc::new(Mutex::new(vec![1, 2, 3]));
+#     let data = Arc::new(Mutex::new(vec![1u32, 2, 3]));
 #     for i in 0..3 {
 #         let data = data.clone();
 thread::spawn(move || {
@@ -252,25 +242,26 @@ thread::spawn(move || {
 # }
 ```
 
-First, we call `lock()`, which acquires the mutex's lock. Because this may fail,
-it returns an `Result<T, E>`, and because this is just an example, we `unwrap()`
-it to get a reference to the data. Real code would have more robust error handling
-here. We're then free to mutate it, since we have the lock.
+Во-первых, мы вызываем метод `lock()`, который захватывает блокировку мьютекса.
+Так как вызов данного метода может потерпеть неудачу, он возвращает `Result<T,
+E>`, но, поскольку это просто пример, мы используем `unwrap()`, чтобы получить
+ссылку на данные. Реальный код должен иметь более надежную обработку ошибок в
+такой ситуации. После этого мы свободно изменяем данные, так как у нас есть
+блокировка.
 
-Lastly, while the threads are running, we wait on a short timer. But
-this is not ideal: we may have picked a reasonable amount of time to
-wait but it's more likely we'll either be waiting longer than
-necessary or not long enough, depending on just how much time the
-threads actually take to finish computing when the program runs.
+Под конец мы ждём какое-то время, пока потоки отработают. Это не идеальный
+способ дождаться окончания их работы: возможно, мы выбрали разумное время
+ожидания но, скорее всего, мы будем ждать либо больше чем нужно, либо меньше чем
+нужно, в зависимости от того, сколько на самом деле времени потребуется
+потокам, чтобы закончить вычисления.
 
-A more precise alternative to the timer would be to use one of the
-mechanisms provided by the Rust standard library for synchronizing
-threads with each other. Let's talk about one of them: channels.
+Есть более точные способы синхронизации потоков, и несколько из них реализовано
+в стандартной библиотеке Rust. Давайте поговорим об одном из них: каналах.
 
-## Channels
+## Каналы
 
-Here's a version of our code that uses channels for synchronization, rather
-than waiting for a specific time:
+Вот версия нашего кода, которая использует для синхронизации каналы, вместо
+того, чтобы ждать в течение определенного времени:
 
 ```rust
 use std::sync::{Arc, Mutex};
@@ -278,7 +269,7 @@ use std::thread;
 use std::sync::mpsc;
 
 fn main() {
-    let data = Arc::new(Mutex::new(0));
+    let data = Arc::new(Mutex::new(0u32));
 
     let (tx, rx) = mpsc::channel();
 
@@ -299,11 +290,14 @@ fn main() {
 }
 ```
 
-We use the `mpsc::channel()` method to construct a new channel. We just `send`
-a simple `()` down the channel, and then wait for ten of them to come back.
+Мы используем метод `mpsc::channel()`, чтобы создать новый канал. В этом примере
+мы в каждом из десяти потоков вызываем метод `send`, который передает по каналу
+пустой кортеж `()`, а затем в главном потоке ждем, пока не будут приняты все
+десять значений.
 
-While this channel is just sending a generic signal, we can send any data that
-is `Send` over the channel!
+Хотя по этому каналу посылается просто сигнал (пустой кортеж `()` не несёт
+никаких данных), в общем случае мы можем отправить по каналу любое значение,
+которое реализует типаж `Send`!
 
 ```rust
 use std::thread;
@@ -312,42 +306,38 @@ use std::sync::mpsc;
 fn main() {
     let (tx, rx) = mpsc::channel();
 
-    for i in 0..10 {
+    for _ in 0..10 {
         let tx = tx.clone();
 
         thread::spawn(move || {
-            let answer = i * i;
+            let answer = 42u32;
 
             tx.send(answer);
         });
     }
 
-    for _ in 0..10 {
-        println!("{}", rx.recv().unwrap());
-    }
+   rx.recv().ok().expect("Could not receive answer");
 }
 ```
 
-Here we create 10 threads, asking each to calculate the square of a number (`i`
-at the time of `spawn()`), and then `send()` back the answer over the channel.
+`u32` реализует `Send`, потому что мы можем сделать копию. Итак, создаётся
+поток, в котором вычисляется ответ, а затем этот ответ с помощью метода `send()`
+передаётся обратно по каналу.
 
+## Паника
 
-## Panics
-
-A `panic!` will crash the currently executing thread. You can use Rust's
-threads as a simple isolation mechanism:
+`panic!` аварийно завершает выполняемый в данный момент поток. Вы можете
+использовать потоки Rust как простой механизм изоляции:
 
 ```rust
 use std::thread;
 
-let handle = thread::spawn(move || {
+let result = thread::spawn(move || {
     panic!("oops!");
-});
-
-let result = handle.join();
+}).join();
 
 assert!(result.is_err());
 ```
 
-`Thread.join()` gives us a `Result` back, which allows us to check if the thread
-has panicked or not.
+Используемый в коде выше метод `join()` структуры `Thread` возвращает `Result`,
+что позволяет нам проверить, паниковал ли поток, или он завершился нормально.

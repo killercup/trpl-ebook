@@ -1,17 +1,18 @@
-% Borrow and AsRef
+% Типажи `Borrow` и `AsRef`
 
-The [`Borrow`][borrow] and [`AsRef`][asref] traits are very similar, but
-different. Here’s a quick refresher on what these two traits mean.
+Типажи [`Borrow`][borrow] и [`AsRef`][asref] очень похожи, но в то же время
+отличаются. Ниже приводится небольшая памятка об этих двух типажах.
 
-[borrow]: ../std/borrow/trait.Borrow.html
-[asref]: ../std/convert/trait.AsRef.html
+[borrow]: http://doc.rust-lang.org/std/borrow/trait.Borrow.html
+[asref]: http://doc.rust-lang.org/std/convert/trait.AsRef.html
 
-# Borrow
+# Типаж Borrow
 
-The `Borrow` trait is used when you’re writing a datastructure, and you want to
-use either an owned or borrowed type as synonymous for some purpose.
+Типаж `Borrow` используется, когда вы пишете структуру данных и хотите
+использовать владение и заимствование типа как синонимы.
 
-For example, [`HashMap`][hashmap] has a [`get` method][get] which uses `Borrow`:
+Например, [`HashMap`][hashmap] имеет метод [`get`][get], который использует
+`Borrow`:
 
 ```rust,ignore
 fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
@@ -19,20 +20,20 @@ fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
           Q: Hash + Eq
 ```
 
-[hashmap]: ../std/collections/struct.HashMap.html
-[get]: ../std/collections/struct.HashMap.html#method.get
+[hashmap]: http://doc.rust-lang.org/std/collections/struct.HashMap.html
+[get]: http://doc.rust-lang.org/std/collections/struct.HashMap.html#method.get
 
-This signature is pretty complicated. The `K` parameter is what we’re interested
-in here. It refers to a parameter of the `HashMap` itself:
+Эта сигнатура является довольно сложной. Параметр `K` — это то, что нас здесь
+интересует. Он ссылается на параметр самого `HashMap`:
 
 ```rust,ignore
 struct HashMap<K, V, S = RandomState> {
 ```
 
-The `K` parameter is the type of _key_ the `HashMap` uses. So, looking at
-the signature of `get()` again, we can use `get()` when the key implements
-`Borrow<Q>`. That way, we can make a `HashMap` which uses `String` keys,
-but use `&str`s when we’re searching:
+Параметр `K` представляет собой тип _ключа_, который использует `HashMap`.
+Взглянем на сигнатуру `get()` еще раз. Использовать `get()` возможно, когда ключ
+реализует `Borrow<Q>`. Таким образом, мы можем сделать `HashMap`, который
+использует ключи `String`, но использовать `&str`, когда мы выполняем поиск:
 
 ```rust
 use std::collections::HashMap;
@@ -43,20 +44,21 @@ map.insert("Foo".to_string(), 42);
 assert_eq!(map.get("Foo"), Some(&42));
 ```
 
-This is because the standard library has `impl Borrow<str> for String`.
+Это возможно, так как стандартная библиотека содержит `impl Borrow<str> for
+String`.
 
-For most types, when you want to take an owned or borrowed type, a `&T` is
-enough. But one area where `Borrow` is effective is when there’s more than one
-kind of borrowed value. This is especially true of references and slices: you
-can have both an `&T` or a `&mut T`. If we wanted to accept both of these types,
-`Borrow` is up for it:
+Для большинства типов, когда вы хотите получить право собственности или
+позаимствовать значений, достаточно использовать просто `&T`. `Borrow` же
+становится полезен, когда есть более одного вида занимаемого значения. Это
+особенно верно для ссылок и срезов: у вас может быть как `&T`, так и `&mut T`.
+Если мы хотим принимать оба этих типа, `Borrow` как раз для этого подходит:
 
 ```rust
 use std::borrow::Borrow;
 use std::fmt::Display;
 
 fn foo<T: Borrow<i32> + Display>(a: T) {
-    println!("a is borrowed: {}", a);
+    println!("a заимствовано: {}", a);
 }
 
 let mut i = 5;
@@ -65,12 +67,12 @@ foo(&i);
 foo(&mut i);
 ```
 
-This will print out `a is borrowed: 5` twice.
+Это выведет `a заимствовано: 5` дважды.
 
-# AsRef
+# Типаж AsRef
 
-The `AsRef` trait is a conversion trait. It’s used for converting some value to
-a reference in generic code. Like this:
+Типаж `AsRef` является преобразующим типажом. Он используется в обобщённом коде
+для преобразования некоторого значения в ссылку. Например:
 
 ```rust
 let s = "Hello".to_string();
@@ -80,14 +82,15 @@ fn foo<T: AsRef<str>>(s: T) {
 }
 ```
 
-# Which should I use?
+# Что в каком случае следует использовать?
 
-We can see how they’re kind of the same: they both deal with owned and borrowed
-versions of some type. However, they’re a bit different.
+Мы видим, что они вроде одинаковы: имеют дело с владением и заимствованием
+значения некоторого типа. Тем не менее, эти типажи немного отличаются.
 
-Choose `Borrow` when you want to abstract over different kinds of borrowing, or
-when you’re building a datastructure that treats owned and borrowed values in
-equivalent ways, such as hashing and comparison.
+Используйте `Borrow`, когда вы хотите абстрагироваться от различных видов
+заимствований, или когда вы строите структуру данных, которая использует
+владеющие и заимствованные значения как эквивалентные. Например, это может
+пригодиться в хэшировании и сравнении.
 
-Choose `AsRef` when you want to convert something to a reference directly, and
-you’re writing generic code.
+Используйте `AsRef`, когда вы пишете обобщённый код и хотите непосредственно
+преобразовать что-либо в ссылку.

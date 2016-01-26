@@ -1,48 +1,49 @@
-% Patterns
+% Шаблоны сопоставления `match`
 
-Patterns are quite common in Rust. We use them in [variable
-bindings][bindings], [match statements][match], and other places, too. Let’s go
-on a whirlwind tour of all of the things patterns can do!
+Шаблоны достаточно часто используются в Rust. Мы уже использовали их в разделе
+[Связывание переменных][bindings], в разделе [Конструкция `match`][match], а
+также в некоторых других местах. Давайте коротко пробежимся по всем
+возможностям, которые можно реализовать с помощью шаблонов!
 
 [bindings]: variable-bindings.html
 [match]: match.html
 
-A quick refresher: you can match against literals directly, and `_` acts as an
-‘any’ case:
+Быстро освежим в памяти: сопоставлять с шаблоном литералы можно либо напрямую,
+либо с использованием символа `_`, который означает *любой* случай:
 
 ```rust
 let x = 1;
 
 match x {
-    1 => println!("one"),
-    2 => println!("two"),
-    3 => println!("three"),
-    _ => println!("anything"),
+    1 => println!("один"),
+    2 => println!("два"),
+    3 => println!("три"),
+    _ => println!("что угодно"),
 }
 ```
 
-This prints `one`.
+Этот код напечатает `один`.
 
-# Multiple patterns
+# Сопоставление с несколькими шаблонами
 
-You can match multiple patterns with `|`:
+Вы можете сопоставлять с несколькими шаблонами, используя `|`:
 
 ```rust
 let x = 1;
 
 match x {
-    1 | 2 => println!("one or two"),
-    3 => println!("three"),
-    _ => println!("anything"),
+    1 | 2 => println!("один или два"),
+    3 => println!("три"),
+    _ => println!("что угодно"),
 }
 ```
 
-This prints `one or two`.
+Этот код напечатает `один или два`.
 
-# Destructuring
+# Деструктуризация
 
-If you have a compound data type, like a [`struct`][struct], you can destructure it
-inside of a pattern:
+Если вы работаете с составным типом данных, вроде [`struct`][struct], вы можете
+разобрать его на части («деструктурировать») внутри шаблона:
 
 ```rust
 struct Point {
@@ -59,7 +60,7 @@ match origin {
 
 [struct]: structs.html
 
-We can use `:` to give a value a different name.
+Мы можем использовать `:`, чтобы привязать значение к новому имени.
 
 ```rust
 struct Point {
@@ -74,7 +75,8 @@ match origin {
 }
 ```
 
-If we only care about some of the values, we don’t have to give them all names:
+Если нас интересуют только некоторые значения, мы можем не давать имена всем
+составляющим:
 
 ```rust
 struct Point {
@@ -85,13 +87,14 @@ struct Point {
 let origin = Point { x: 0, y: 0 };
 
 match origin {
-    Point { x, .. } => println!("x is {}", x),
+    Point { x, .. } => println!("x равен {}", x),
 }
 ```
 
-This prints `x is 0`.
+Этот код напечатает `x равен 0`.
 
-You can do this kind of match on any member, not just the first:
+Вы можете использовать это в любом сопоставлении: не обязательно игнорировать
+именно первый элемент:
 
 ```rust
 struct Point {
@@ -102,51 +105,52 @@ struct Point {
 let origin = Point { x: 0, y: 0 };
 
 match origin {
-    Point { y, .. } => println!("y is {}", y),
+    Point { y, .. } => println!("y равен {}", y),
 }
 ```
 
-This prints `y is 0`.
+Этот код напечатает `y равен 0`.
 
-This ‘destructuring’ behavior works on any compound data type, like
-[tuples][tuples] or [enums][enums].
+Можно произвести деструктуризацию любого составного типа данных — например,
+[кортежей][tuples] и [перечислений][enums].
 
 [tuples]: primitive-types.html#tuples
 [enums]: enums.html
 
-# Ignoring bindings
+# Игнорирование связывания
 
-You can use `_` in a pattern to disregard the type and value.
-For example, here’s a `match` against a `Result<T, E>`:
+Вы можете использовать в шаблоне `_`, чтобы проигнорировать соответствующее
+значение. Например, вот сопоставление `Result<T, E>`:
 
 ```rust
-# let some_value: Result<i32, &'static str> = Err("There was an error");
+# let some_value: Result<i32, &'static str> = Err("Здесь была какая-то ошибка");
 match some_value {
-    Ok(value) => println!("got a value: {}", value),
-    Err(_) => println!("an error occurred"),
+    Ok(value) => println!("получили значение: {}", value),
+    Err(_) => println!("произошла ошибка"),
 }
 ```
 
-In the first arm, we bind the value inside the `Ok` variant to `value`. But
-in the `Err` arm, we use `_` to disregard the specific error, and just print
-a general error message.
+В первой ветви мы привязываем значение варианта `Ok` к имени `value`. А в ветви
+обработки варианта `Err` мы используем `_`, чтобы проигнорировать конкретную
+ошибку, и просто печатаем общее сообщение.
 
-`_` is valid in any pattern that creates a binding. This can be useful to
-ignore parts of a larger structure:
+`_` допустим в любом шаблоне, который связывает имена. Это можно использовать,
+чтобы проигнорировать части большой структуры:
 
 ```rust
 fn coordinate() -> (i32, i32, i32) {
-    // generate and return some sort of triple tuple
+    // создаём и возвращаем какой-то кортеж из трёх элементов
 # (1, 2, 3)
 }
 
 let (x, _, z) = coordinate();
 ```
 
-Here, we bind the first and last element of the tuple to `x` and `z`, but
-ignore the middle element.
+Здесь мы связываем первый и последний элемент кортежа с именами `x` и `z`
+соответственно, а второй элемент игнорируем.
 
-Similarly, you can use `..` in a pattern to disregard multiple values.
+Похожим образом, в шаблоне можно использовать `..`, чтобы проигнорировать
+несколько значений.
 
 ```rust
 enum OptionalTuple {
@@ -157,85 +161,85 @@ enum OptionalTuple {
 let x = OptionalTuple::Value(5, -2, 3);
 
 match x {
-    OptionalTuple::Value(..) => println!("Got a tuple!"),
-    OptionalTuple::Missing => println!("No such luck."),
+    OptionalTuple::Value(..) => println!("Получили кортеж!"),
+    OptionalTuple::Missing => println!("Вот неудача."),
 }
 ```
 
-This prints `Got a tuple!`.
+Этот код печатает `Получили кортеж!`.
 
-# ref and ref mut
+# ref и ref mut
 
-If you want to get a [reference][ref], use the `ref` keyword:
+Если вы хотите получить [ссылку][ref], то используйте ключевое слово `ref`:
 
 ```rust
 let x = 5;
 
 match x {
-    ref r => println!("Got a reference to {}", r),
+    ref r => println!("Получили ссылку на {}", r),
 }
 ```
 
-This prints `Got a reference to 5`.
+Этот код напечатает `Получили ссылку на 5`.
 
 [ref]: references-and-borrowing.html
 
-Here, the `r` inside the `match` has the type `&i32`. In other words, the `ref`
-keyword _creates_ a reference, for use in the pattern. If you need a mutable
-reference, `ref mut` will work in the same way:
+Здесь `r` внутри `match` имеет тип `&i32`. Другими словами, ключевое слово `ref`
+_создает_ ссылку, для использования в шаблоне. Если вам нужна изменяемая ссылка,
+то `ref mut` будет работать аналогичным образом:
 
 ```rust
 let mut x = 5;
 
 match x {
-    ref mut mr => println!("Got a mutable reference to {}", mr),
+    ref mut mr => println!("Получили изменяемую ссылку на {}", mr),
 }
 ```
 
-# Ranges
+# Сопоставление с диапазоном
 
-You can match a range of values with `...`:
+Вы можете сопоставлять с диапазоном значений, используя `...`:
 
 ```rust
 let x = 1;
 
 match x {
-    1 ... 5 => println!("one through five"),
-    _ => println!("anything"),
+    1 ... 5 => println!("от одного до пяти"),
+    _ => println!("что угодно"),
 }
 ```
 
-This prints `one through five`.
+Этот код напечатает `от одного до пяти`.
 
-Ranges are mostly used with integers and `char`s:
+Диапазоны в основном используются с числами или одиночными символами (`char`).
 
 ```rust
 let x = '💅';
 
 match x {
-    'a' ... 'j' => println!("early letter"),
-    'k' ... 'z' => println!("late letter"),
-    _ => println!("something else"),
+    'а' ... 'и' => println!("ранняя буква"),
+    'к' ... 'я' => println!("поздняя буква"),
+    _ => println!("что-то ещё"),
 }
 ```
 
-This prints `something else`.
+Этот код напечатает `что-то ещё`.
 
-# Bindings
+# Связывание
 
-You can bind values to names with `@`:
+Вы можете связать значение с именем с помощью символа `@`:
 
 ```rust
 let x = 1;
 
 match x {
-    e @ 1 ... 5 => println!("got a range element {}", e),
-    _ => println!("anything"),
+    e @ 1 ... 5 => println!("получили элемент диапазона {}", e),
+    _ => println!("что угодно"),
 }
 ```
 
-This prints `got a range element 1`. This is useful when you want to
-do a complicated match of part of a data structure:
+Этот код напечатает `получили элемент диапазона 1`. Это полезно, когда вы хотите
+сделать сложное сопоставление для части структуры данных:
 
 ```rust
 #[derive(Debug)]
@@ -251,23 +255,23 @@ match x {
 }
 ```
 
-This prints `Some("Steve")`: we’ve bound the inner `name` to `a`.
+Этот код напечатает `Some("Steve")`: мы связали внутреннюю `name` с `a`.
 
-If you use `@` with `|`, you need to make sure the name is bound in each part
-of the pattern:
+Если вы используете `@` совместно с `|`, то вы должны убедиться, что имя
+связывается в каждой из частей шаблона:
 
 ```rust
 let x = 5;
 
 match x {
-    e @ 1 ... 5 | e @ 8 ... 10 => println!("got a range element {}", e),
-    _ => println!("anything"),
+    e @ 1 ... 5 | e @ 8 ... 10 => println!("получили элемент диапазона {}", e),
+    _ => println!("что угодно"),
 }
 ```
 
-# Guards
+# Ограничители шаблонов
 
-You can introduce ‘match guards’ with `if`:
+Вы можете ввести *ограничители шаблонов* (*match guards*) с помощью `if`:
 
 ```rust
 enum OptionalInt {
@@ -278,43 +282,44 @@ enum OptionalInt {
 let x = OptionalInt::Value(5);
 
 match x {
-    OptionalInt::Value(i) if i > 5 => println!("Got an int bigger than five!"),
-    OptionalInt::Value(..) => println!("Got an int!"),
-    OptionalInt::Missing => println!("No such luck."),
+    OptionalInt::Value(i) if i > 5 => println!("Получили целое больше пяти!"),
+    OptionalInt::Value(..) => println!("Получили целое!"),
+    OptionalInt::Missing => println!("Неудача."),
 }
 ```
 
-This prints `Got an int!`.
+Этот код напечатает `Получили целое!`.
 
-If you’re using `if` with multiple patterns, the `if` applies to both sides:
+Если вы используете `if` с несколькими шаблонами, он применяется к обоим частям:
 
 ```rust
 let x = 4;
 let y = false;
 
 match x {
-    4 | 5 if y => println!("yes"),
-    _ => println!("no"),
+    4 | 5 if y => println!("да"),
+    _ => println!("нет"),
 }
 ```
 
-This prints `no`, because the `if` applies to the whole of `4 | 5`, and not to
-just the `5`, In other words, the the precedence of `if` behaves like this:
+Этот код печатает `нет`, потому что `if` применяется ко всему `4 | 5`, а не
+только к `5`. Другими словами, приоритет `if` выглядит так:
 
 ```text
 (4 | 5) if y => ...
 ```
 
-not this:
+а не так:
 
 ```text
 4 | (5 if y) => ...
 ```
 
-# Mix and Match
+# Заключение
 
-Whew! That’s a lot of different ways to match things, and they can all be
-mixed and matched, depending on what you’re doing:
+Вот так! Существует много разных способов использования конструкции
+сопоставления с шаблоном, и все они могут быть смешаны и состыкованы, в
+зависимости от того, что вы хотите сделать:
 
 ```rust,ignore
 match x {
@@ -322,4 +327,4 @@ match x {
 }
 ```
 
-Patterns are very powerful. Make good use of them.
+Шаблоны — это очень мощный инструмент. Используйте их.

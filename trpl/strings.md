@@ -1,87 +1,113 @@
-% Strings
+% Строки
 
-Strings are an important concept for any programmer to master. Rust’s string
-handling system is a bit different from other languages, due to its systems
-focus. Any time you have a data structure of variable size, things can get
-tricky, and strings are a re-sizable data structure. That being said, Rust’s
-strings also work differently than in some other systems languages, such as C.
+Строки — важное понятие для любого программиста. Система обработки строк в Rust
+немного отличается от других языков, потому что это язык системного
+программирования. Работать со структурами данных с переменным размером довольно
+сложно, и строки — как раз такая структура данных. Кроме того, работа со
+строками в Rust также отличается и от некоторых системных языков, таких как C.
 
-Let’s dig into the details. A ‘string’ is a sequence of Unicode scalar values
-encoded as a stream of UTF-8 bytes. All strings are guaranteed to be a valid
-encoding of UTF-8 sequences. Additionally, unlike some systems languages,
-strings are not null-terminated and can contain null bytes.
+Давайте разбираться в деталях. *string* — это последовательность скалярных
+значений юникод, закодированных в виде потока байт UTF-8. Все строки должны быть
+гарантированно валидными UTF-8 последовательностями. Кроме того, строки не
+оканчиваются нулём и могут содержать нулевые байты.
 
-Rust has two main types of strings: `&str` and `String`. Let’s talk about
-`&str` first. These are called ‘string slices’. String literals are of the type
-`&'static str`:
-
-```rust
-let greeting = "Hello there."; // greeting: &'static str
-```
-
-This string is statically allocated, meaning that it’s saved inside our
-compiled program, and exists for the entire duration it runs. The `greeting`
-binding is a reference to this statically allocated string. String slices
-have a fixed size, and cannot be mutated.
-
-A `String`, on the other hand, is a heap-allocated string. This string is
-growable, and is also guaranteed to be UTF-8. `String`s are commonly created by
-converting from a string slice using the `to_string` method.
+В Rust есть два основных типа строк: `&str` и `String`. Сперва поговорим о
+`&str` — это «строковый срез». Строковые срезы имеют фиксированный размер и
+не могут быть изменены. Они представляют собой ссылку на последовательность
+байт UTF-8:
 
 ```rust
-let mut s = "Hello".to_string(); // mut s: String
+let greeting = "Всем привет."; // greeting: &'static str
+```
+
+`"Всем привет."` — это строковый литерал, его тип — `&'static str`.
+Строковые литералы являются статически размещенными строковыми срезами. Это
+означает, что они сохраняются внутри нашей скомпилированной программы и
+существуют в течение всего периода ее выполнения. Имя `greeting` представляет
+собой ссылку на эту статически размещенную строку. Любая функция, ожидающая
+строковый срез, может также принять в качестве аргумента строковый литерал.
+
+Строковые литералы могут состоять из нескольких строк. Такие литералы можно
+записывать в двух разных формах. Первая будет включать в себя перевод на новую
+строку и ведущие пробелы:
+
+```rust
+let s = "foo
+    bar";
+
+assert_eq!("foo\n        bar", s);
+```
+
+Вторая форма, включающая в себя `\`, вырезает пробелы и перевод на новую строку:
+
+```rust
+let s = "foo\
+    bar"; 
+
+assert_eq!("foobar", s);
+```
+
+Но в Rust есть не только `&str`. Тип `String` представляет собой строку, 
+размещенную в куче. Эта строка расширяема, и она также гарантированно является 
+последовательностью UTF-8. `String` обычно создаётся путем преобразования из 
+строкового среза с использованием метода `to_string`.
+
+```rust
+let mut s = "Привет".to_string(); // mut s: String
 println!("{}", s);
 
-s.push_str(", world.");
+s.push_str(", мир.");
 println!("{}", s);
 ```
 
-`String`s will coerce into `&str` with an `&`:
+`String` преобразуются в `&str` с помощью `&`:
 
 ```rust
 fn takes_slice(slice: &str) {
-    println!("Got: {}", slice);
+    println!("Получили: {}", slice);
 }
 
 fn main() {
-    let s = "Hello".to_string();
+    let s = "Привет".to_string();
     takes_slice(&s);
 }
 ```
 
-This coercion does not happen for functions that accept one of `&str`’s traits
-instead of `&str`. For example, [`TcpStream::connect`][connect] has a parameter
-of type `ToSocketAddrs`. A `&str` is okay but a `String` must be explicitly
-converted using `&*`.
+Это преобразование не происходит в случае функций, которые принимают какой-то
+типаж `&str`, а не сам `&str`. Например, у метода
+[`TcpStream::connect`][connect] есть параметр типа `ToSocketAddrs`. Сюда можно
+передать `&str`, но `String` нужно явно преобразовать с помощью `&*`.
 
 ```rust,no_run
 use std::net::TcpStream;
 
-TcpStream::connect("192.168.0.1:3000"); // &str parameter
+TcpStream::connect("192.168.0.1:3000"); // параметр &str
 
 let addr_string = "192.168.0.1:3000".to_string();
-TcpStream::connect(&*addr_string); // convert addr_string to &str
+TcpStream::connect(&*addr_string); // преобразуем addr_string в &str
 ```
 
-Viewing a `String` as a `&str` is cheap, but converting the `&str` to a
-`String` involves allocating memory. No reason to do that unless you have to!
+Представление `String` как `&str` — дешёвая операция, но преобразование `&str`
+в `String` предполагает выделение памяти. Не стоит делать это без необходимости!
 
-## Indexing
+## Индексация
 
-Because strings are valid UTF-8, strings do not support indexing:
+Поскольку строки являются валидными UTF-8 последовательностями, то они не
+поддерживают индексацию:
 
 ```rust,ignore
-let s = "hello";
+let s = "привет";
 
-println!("The first letter of s is {}", s[0]); // ERROR!!!
+println!("Первая буква s — {}", s[0]); // ОШИБКА!!!
 ```
 
-Usually, access to a vector with `[]` is very fast. But, because each character
-in a UTF-8 encoded string can be multiple bytes, you have to walk over the
-string to find the nᵗʰ letter of a string. This is a significantly more
-expensive operation, and we don’t want to be misleading. Furthermore, ‘letter’
-isn’t something defined in Unicode, exactly. We can choose to look at a string as
-individual bytes, or as codepoints:
+Как правило, доступ к вектору с помощью `[]` является очень быстрой операцией.
+Но поскольку каждый символ в строке, закодированной UTF-8, может быть
+представлен несколькими байтами, то при поиске вы должны перебрать n-ое
+количество литер в строке. Это значительно более дорогая операция, а мы не хотим
+вводить в заблуждение. Кроме того, «литера» — это не совсем то, что определено в
+Unicode. Мы можем выбрать как рассматривать строку: как отдельные байты или как
+кодовые единицы (codepoints):
 
 ```rust
 let hachiko = "忠犬ハチ公";
@@ -99,51 +125,51 @@ for c in hachiko.chars() {
 println!("");
 ```
 
-This prints:
+Этот код напечатает:
 
 ```text
 229, 191, 160, 231, 138, 172, 227, 131, 143, 227, 131, 129, 229, 133, 172, 
 忠, 犬, ハ, チ, 公, 
 ```
 
-As you can see, there are more bytes than `char`s.
+Как вы можете видеть, количество байт больше, чем количество символов (`char`).
 
-You can get something similar to an index like this:
+Вы можете получить что-то наподобие индекса, как показано ниже:
 
 ```rust
 # let hachiko = "忠犬ハチ公";
-let dog = hachiko.chars().nth(1); // kinda like hachiko[1]
+let dog = hachiko.chars().nth(1); // что-то вроде hachiko[1]
 ```
 
-This emphasizes that we have to walk from the beginning of the list of `chars`.
+Это подчеркивает, что мы должны пройти по списку `chars` от его начала.
 
-## Slicing
+## Срезы
 
-You can get a slice of a string with slicing syntax:
+Вы можете получить срез строки с помощью синтаксиса срезов:
 
 ```rust
 let dog = "hachiko";
 let hachi = &dog[0..5];
 ```
 
-But note that these are _byte_ offsets, not _character_ offsets. So
-this will fail at runtime:
+Но заметьте, что это индексы _байтов_, а не _символов_. Поэтому этот код
+запаникует:
 
 ```rust,should_panic
 let dog = "忠犬ハチ公";
 let hachi = &dog[0..2];
 ```
 
-with this error:
+с такой ошибкой:
 
 ```text
 thread '<main>' panicked at 'index 0 and/or 2 in `忠犬ハチ公` do not lie on
 character boundary'
 ```
 
-## Concatenation
+## Конкатенация
 
-If you have a `String`, you can concatenate a `&str` to the end of it:
+Если у вас есть `String`, то вы можете присоединить к нему в конец `&str`:
 
 ```rust
 let hello = "Hello ".to_string();
@@ -152,7 +178,7 @@ let world = "world!";
 let hello_world = hello + world;
 ```
 
-But if you have two `String`s, you need an `&`:
+Но если у вас есть две `String`, то необходимо использовать `&`:
 
 ```rust
 let hello = "Hello ".to_string();
@@ -161,8 +187,8 @@ let world = "world!".to_string();
 let hello_world = hello + &world;
 ```
 
-This is because `&String` can automatically coerce to a `&str`. This is a
-feature called ‘[`Deref` coercions][dc]’.
+Это потому, что `&String` может быть автоматически приведен к `&str`. Эта
+возможность называется «[Приведение при разыменовании][dc]».
 
 [dc]: deref-coercions.html
-[connect]: ../std/net/struct.TcpStream.html#method.connect
+[connect]: https://doc.rust-lang.org/stable/std/net/struct.TcpStream.html#method.connect

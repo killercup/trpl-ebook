@@ -1,10 +1,11 @@
-% if let
+% Конструкция `if let`
 
-`if let` allows you to combine `if` and `let` together to reduce the overhead
-of certain kinds of pattern matches.
+Иногда хочется сделать определённые вещи менее неуклюже. Например,
+скомбинировать `if` и `let` чтобы более удобно сделать сопоставление с образцом.
+Для этого есть `if let`.
 
-For example, let’s say we have some sort of `Option<T>`. We want to call a function
-on it if it’s `Some<T>`, but do nothing if it’s `None`. That looks like this:
+В качестве примера рассмотрим `Option<T>`. Если это `Some<T>`, мы хотим вызвать
+функцию на этом значении, а если это `None` — не делать ничего. Вроде такого:
 
 ```rust
 # let option = Some(5);
@@ -15,7 +16,7 @@ match option {
 }
 ```
 
-We don’t have to use `match` here, for example, we could use `if`:
+Здесь необязательно использовать `match`. `if` тоже подойдёт:
 
 ```rust
 # let option = Some(5);
@@ -26,8 +27,8 @@ if option.is_some() {
 }
 ```
 
-Neither of these options is particularly appealing. We can use `if let` to
-do the same thing in a nicer way:
+Но оба этих варианта выглядят странно. Мы можем исправить это с помощью `if
+let`:
 
 ```rust
 # let option = Some(5);
@@ -37,12 +38,12 @@ if let Some(x) = option {
 }
 ```
 
-If a [pattern][patterns] matches successfully, it binds any appropriate parts of
-the value to the identifiers in the pattern, then evaluates the expression. If
-the pattern doesn’t match, nothing happens.
+Если [сопоставление с образцом][patterns] успешно, имена в образце связываются с
+соответствующими частями разбираемого значения, и блок исполняется. Если
+значение не соответствует образцу, ничего не происходит.
 
-If you’d rather to do something else when the pattern does not match, you can
-use `else`:
+Если вы хотите делать что-то ещё при несовпадении с образцом, используйте
+`else`:
 
 ```rust
 # let option = Some(5);
@@ -57,8 +58,8 @@ if let Some(x) = option {
 
 ## `while let`
 
-In a similar fashion, `while let` can be used when you want to conditionally
-loop as long as a value matches a certain pattern. It turns code like this:
+Похожим образом, `while let` можно использовать для перебора значений, пока
+они соответствуют образцу. Код вроде такого:
 
 ```rust
 # let option: Option<i32> = None;
@@ -70,7 +71,7 @@ loop {
 }
 ```
 
-Into code like this:
+Превращается в такой:
 
 ```rust
 # let option: Option<i32> = None;

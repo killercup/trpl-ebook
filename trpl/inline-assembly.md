@@ -1,9 +1,10 @@
-% Inline Assembly
+% Встроенный ассемблерный код
 
-For extremely low-level manipulations and performance reasons, one
-might wish to control the CPU directly. Rust supports using inline
-assembly to do this via the `asm!` macro. The syntax roughly matches
-that of GCC & Clang:
+Если вам нужно работать на самом низком уровне или повысить производительность
+программы, то у вас может возникнуть необходимость управлять процессором
+напрямую. Rust поддерживает использование встроенного ассемблера и делает это с
+помощью с помощью макроса `asm!`. Синтаксис примерно соответствует синтаксису
+GCC и Clang:
 
 ```ignore
 asm!(assembly template
@@ -14,16 +15,18 @@ asm!(assembly template
    );
 ```
 
-Any use of `asm` is feature gated (requires `#![feature(asm)]` on the
-crate to allow) and of course requires an `unsafe` block.
+Использование `asm` является закрытой возможностью (требуется указать
+`#![feature(asm)]` для контейнера, чтобы разрешить ее использование) и, конечно
+же, требует `unsafe` блока.
 
-> **Note**: the examples here are given in x86/x86-64 assembly, but
-> all platforms are supported.
+> **Примечание**: здесь примеры приведены для x86/x86-64 ассемблера, но
+поддерживаются все платформы.
 
-## Assembly template
+## Шаблон инструкции ассемблера
 
-The `assembly template` is the only required parameter and must be a
-literal string (i.e. `""`)
+Шаблон инструкции ассемблера (assembly template) является единственным
+обязательным параметром, и он должен быть представлен строкой символов (т.е.
+`""`)
 
 ```rust
 #![feature(asm)]
@@ -46,10 +49,11 @@ fn main() {
 }
 ```
 
-(The `feature(asm)` and `#[cfg]`s are omitted from now on.)
+(Далее атрибуты `feature(asm)` и `#[cfg]` будут опущены.)
 
-Output operands, input operands, clobbers and options are all optional
-but you must add the right number of `:` if you skip them:
+Выходные операнды (output operands), входные операнды (input operands),
+затираемое (clobbers) и опции (options) не являются обязательными, но вы должны
+будете добавить соответствующее количество `:` если хотите пропустить их:
 
 ```rust
 # #![feature(asm)]
@@ -63,7 +67,7 @@ asm!("xor %eax, %eax"
 # } }
 ```
 
-Whitespace also doesn't matter:
+Пробелы и отступы также не имеют значения:
 
 ```rust
 # #![feature(asm)]
@@ -73,11 +77,12 @@ asm!("xor %eax, %eax" ::: "{eax}");
 # } }
 ```
 
-## Operands
+## Операнды
 
-Input and output operands follow the same format: `:
-"constraints1"(expr1), "constraints2"(expr2), ..."`. Output operand
-expressions must be mutable lvalues, or not yet assigned:
+Входные и выходные операнды имеют одинаковый формат:
+`:"ограничение1"(выражение1), "ограничение2"(выражение2), ..."`. Выражения для
+выходных операндов должны быть либо изменяемыми, либо неизменяемыми, но еще не
+иницилиализированными, L-значениями:
 
 ```rust
 # #![feature(asm)]
@@ -100,11 +105,11 @@ fn main() {
 }
 ```
 
-If you would like to use real operands in this position, however,
-you are required to put curly braces `{}` around the register that
-you want, and you are required to put the specific size of the
-operand. This is useful for very low level programming, where
-which register you use is important:
+Однако, если вы захотите использовать реальные операнды (регистры) в этой
+позиции, то вам потребуется заключить используемый регистр в фигурные скобки
+`{}`, и вы должны будете указать конкретный размер операнда. Это полезно для
+очень низкоуровневого программирования, когда важны регистры, которые вы
+используете:
 
 ```rust
 # #![feature(asm)]
@@ -116,12 +121,11 @@ result
 # }
 ```
 
-## Clobbers
+## Затираемое (Clobbers)
 
-Some instructions modify registers which might otherwise have held
-different values so we use the clobbers list to indicate to the
-compiler not to assume any values loaded into those registers will
-stay valid.
+Некоторые инструкции могут изменять значения регистров, поэтому мы используем
+список затираемого. Он указывает компилятору, что тот не должен допускать
+какого-либо изменение значений этих регистров, чтобы они оставались корректными.
 
 ```rust
 # #![feature(asm)]
@@ -132,28 +136,31 @@ asm!("mov $$0x200, %eax" : /* no outputs */ : /* no inputs */ : "{eax}");
 # } }
 ```
 
-Input and output registers need not be listed since that information
-is already communicated by the given constraints. Otherwise, any other
-registers used either implicitly or explicitly should be listed.
+Если входные и выходные регистры уже заданы в ограничениях, то их не нужно
+перечислять здесь. В противном случае, любые другие регистры, используемые явно
+или неявно, должны быть перечислены.
 
-If the assembly changes the condition code register `cc` should be
-specified as one of the clobbers. Similarly, if the assembly modifies
-memory, `memory` should also be specified.
+Если ассемблер изменяет регистр кода условия `cc`, то он должен быть указан в
+качестве одного из затираемых. Точно так же, если ассемблер модифицирует память,
+то должно быть указано `memory`.
 
-## Options
+## Опции
 
-The last section, `options` is specific to Rust. The format is comma
-separated literal strings (i.e. `:"foo", "bar", "baz"`). It's used to
-specify some extra info about the inline assembly:
+Последний раздел, `options`, специфичен для Rust. Формат представляет собой
+разделенные запятыми текстовые строки (т.е. `:"foo", "bar", "baz"`). Он
+используется для того, чтобы задать некоторые дополнительные данные для
+встроенного ассемблера:
 
-Current valid options are:
+На текущий момент разрешены следующие опции:
 
-1. *volatile* - specifying this is analogous to
-   `__asm__ __volatile__ (...)` in gcc/clang.
-2. *alignstack* - certain instructions expect the stack to be
-   aligned a certain way (i.e. SSE) and specifying this indicates to
-   the compiler to insert its usual stack alignment code
-3. *intel* - use intel syntax instead of the default AT&T.
+1. *volatile* — эта опция аналогична `__asm__ __volatile__ (...)` в gcc/clang;
+
+2. *alignstack* — некоторые инструкции ожидают, что стек был выровнен
+определенным образом (т.е. SSE), и эта опция указывает компилятору вставить
+свой обычный код выравнивания стека;
+
+3. *intel* — эта опция указывает использовать синтаксис Intel вместо
+используемого по умолчанию синтаксиса AT&T.
 
 ```rust
 # #![feature(asm)]
@@ -167,11 +174,11 @@ println!("eax is currently {}", result);
 # }
 ```
 
-## More Information
+## Больше информации
 
-The current implementation of the `asm!` macro is a direct binding to [LLVM's
-inline assembler expressions][llvm-docs], so be sure to check out [their
-documentation as well][llvm-docs] for more information about clobbers,
-constraints, etc.
+Текущая реализация макроса `asm!` --- это прямое связывание с
+[встроенным ассемблером LLVM][llvm-docs], поэтому изучите и их
+[документацию][llvm-docs], чтобы лучше понять список затираемого, ограничения и
+др.
 
 [llvm-docs]: http://llvm.org/docs/LangRef.html#inline-assembler-expressions

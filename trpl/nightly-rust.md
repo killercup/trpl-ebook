@@ -1,20 +1,21 @@
-% Nightly Rust
+% Нестабильные возможности Rust
 
-Rust provides three distribution channels for Rust: nightly, beta, and stable.
-Unstable features are only available on nightly Rust. For more details on this
-process, see ‘[Stability as a deliverable][stability]’.
+Rust обеспечивает три канала распространения для Rust: nightly, beta и stable.
+Нестабильные функции доступны только в nightly Rust. Для более подробной
+информации об этом процессе смотрите «[Стабильность как результат][stability]».
 
 [stability]: http://blog.rust-lang.org/2014/10/30/Stability.html
 
-To install nightly Rust, you can use `rustup.sh`:
+Чтобы установить nightly Rust, вы можете использовать `rustup.sh`:
 
 ```bash
 $ curl -s https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly
 ```
 
-If you're concerned about the [potential insecurity][insecurity] of using `curl
-| sh`, please keep reading and see our disclaimer below. And feel free to
-use a two-step version of the installation and examine our installation script:
+Если вы беспокоитесь о [потенциальной безопасности][insecurity] использования
+данной команды `curl | sh`, то продолжайте читать далее. Вы также можете
+использовать двухступенчатый вариант установки и изучить наш установочный
+скрипт:
 
 ```bash
 $ curl -f -L https://static.rust-lang.org/rustup.sh -O
@@ -23,77 +24,86 @@ $ sh rustup.sh --channel=nightly
 
 [insecurity]: http://curlpipesh.tumblr.com
 
-If you're on Windows, please download either the [32-bit installer][win32] or
-the [64-bit installer][win64] and run it.
+Если же вы используете Windows, то, пожалуйста, скачайте один из установочных
+пакетов: [32-битный][win32] или [64-битный][win64] и запустите его.
 
-[win32]: https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
-[win64]: https://static.rust-lang.org/dist/rust-nightly-x86_64-pc-windows-gnu.msi
+[win32]: https://static.rust-lang.org/dist/rust-1.0.0-beta-i686-pc-windows-gnu.msi
+[win64]: https://static.rust-lang.org/dist/rust-1.0.0-beta-x86_64-pc-windows-gnu.msi
 
-## Uninstalling
+## Удаление
 
-If you decide you don't want Rust anymore, we'll be a bit sad, but that's okay.
-Not every programming language is great for everyone. Just run the uninstall
-script:
+Если вы решили, что Rust вам больше не нужен, то мы будем чуть-чуть огорчены, но
+это нормально. Не каждый язык программирования отлично подходит для всех. Просто
+запустите скрипт деинсталляции:
 
 ```bash
 $ sudo /usr/local/lib/rustlib/uninstall.sh
 ```
 
-If you used the Windows installer, just re-run the `.msi` and it will give you
-an uninstall option.
+Если вы использовали установщик Windows, то просто повторно запустите `.msi`,
+который предложит вам возможность удаления.
 
-Some people, and somewhat rightfully so, get very upset when we tell you to
-`curl | sh`. Basically, when you do this, you are trusting that the good
-people who maintain Rust aren't going to hack your computer and do bad things.
-That's a good instinct! If you're one of those people, please check out the
-documentation on [building Rust from Source][from-source], or [the official
-binary downloads][install-page].
+Некоторые люди, причём не безосновательно, насторожились, когда мы сказали
+использовать `curl | sh`. Когда вы делаете так, вы должны доверять тем хорошим
+людям, которые поддерживают Rust, и не бояться, что они попытаются взломать ваш
+компьютер и сделать какие-либо плохие вещи. Озабоченность своей безопасностью -
+это очень хорошо. Если вы один из таких людей, пожалуйста посмотрите в
+документации как [собрать Rust из исходных кодов][from source] или скачайте уже
+[скомпилированный Rust][install page]. Мы обещаем, что данный способ не будет
+использоваться для установки Rust всегда: скрипт был сделан для быстрого
+обновления пока Rust находится в стадии alpha.
 
-[from-source]: https://github.com/rust-lang/rust#building-from-source
-[install-page]: https://www.rust-lang.org/install.html
+[from source]: https://github.com/rust-lang/rust#building-from-source
+[install page]: http://www.rust-lang.org/install.html
 
-Oh, we should also mention the officially supported platforms:
+Мы так же должны упомянуть официально поддерживаемые платформы:
 
 * Windows (7, 8, Server 2008 R2)
-* Linux (2.6.18 or later, various distributions), x86 and x86-64
-* OSX 10.7 (Lion) or greater, x86 and x86-64
+* Linux (2.6.18 и более новые, разные дистрибутивы), x86 и x86-64
+* OSX 10.7 (Lion) и более новые, x86 и x86-64
 
-We extensively test Rust on these platforms, and a few others, too, like
-Android. But these are the ones most likely to work, as they have the most
-testing.
+Rust активно тестируется на всех этих платформах, а также на некоторых других,
+например на Android. Но мы указали те, на которых Rust точно должен работать,
+ибо для этих платформ он тестируется больше всего.
 
-Finally, a comment about Windows. Rust considers Windows to be a first-class
-platform upon release, but if we're honest, the Windows experience isn't as
-integrated as the Linux/OS X experience is. We're working on it! If anything
-does not work, it is a bug. Please let us know if that happens. Each and every
-commit is tested against Windows just like any other platform.
+Напоследок, замечание о Windows. Rust считает, что Windows — это первоклассная
+платформа для релиза, но если быть честными, то опыт разработки для Windows не
+на столько хорош, как для Linux/OS X. Мы работаем над этим! Если что-то не
+работает, то это ошибка. Пожалуйста, дайте нам знать, если такое произойдёт.
+Каждый коммит тестируется на Windows, впрочем так же, как и на любой другой
+платформе.
 
-If you've got Rust installed, you can open up a shell, and type this:
+Если вы уже установили Rust, то откройте терминал и введите это:
 
 ```bash
 $ rustc --version
 ```
 
-You should see the version number, commit hash, commit date and build date:
+Вы должны увидеть версию, хэш коммита, дату коммита и дату сборки:
 
 ```bash
 rustc 1.0.0-nightly (f11f3e7ba 2015-01-04) (built 2015-01-06)
 ```
 
-If you did, Rust has been installed successfully! Congrats!
+Итак, теперь у вас есть установленный Rust! Поздравляем!
 
-This installer also installs a copy of the documentation locally, so you can
-read it offline. On UNIX systems, `/usr/local/share/doc/rust` is the location.
-On Windows, it's in a `share/doc` directory, inside wherever you installed Rust
-to.
+Установщик также устанавливает документацию, которая доступна без подключения к
+сети. На UNIX системах она располагается в каталоге `/usr/local/share/doc/rust`.
+В Windows — в директории `share/doc`, относительно того куда вы установили Rust.
 
-If not, there are a number of places where you can get help. The easiest is
-[the #rust IRC channel on irc.mozilla.org][irc], which you can access through
-[Mibbit][mibbit]. Click that link, and you'll be chatting with other Rustaceans
-(a silly nickname we call ourselves), and we can help you out. Other great
-resources include [the user’s forum][users], and [Stack Overflow][stackoverflow].
+Также есть ещё ряд мест, где можно получить помощь. [Канал #rust на
+irc.mozilla.org][irc], к которому вы можете подключиться через [Mibbit][mibbit].
+Нажмите на эту ссылку, и вы будете общаться в чате с другими Rustaceans (это
+дурашливое прозвище, которым мы себя называем), и мы поможем вам. Другие
+полезные ресурсы, посвящённые Rust: [форум пользователей][users], [/r/rust
+subreddit][reddit], [stack overflow][stackoverflow]. Русскоязычные ресурсы:
+[канал #rust-ru на irc.mozilla.org][irc_ru], [google groups][google_groups_ru].
 
 [irc]: irc://irc.mozilla.org/#rust
 [mibbit]: http://chat.mibbit.com/?server=irc.mozilla.org&channel=%23rust
-[users]: https://users.rust-lang.org/
+[users]: http://users.rust-lang.org/ 
+[reddit]: http://www.reddit.com/r/rust
 [stackoverflow]: http://stackoverflow.com/questions/tagged/rust
+
+[irc_ru]: irc://irc.mozilla.org/#rust-ru
+[google_groups_ru]: https://groups.google.com/forum/#!forum/rust-russian

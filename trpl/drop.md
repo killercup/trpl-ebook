@@ -1,35 +1,36 @@
-% Drop
+% Типаж `Drop` (сброс)
 
-Now that we’ve discussed traits, let’s talk about a particular trait provided
-by the Rust standard library, [`Drop`][drop]. The `Drop` trait provides a way
-to run some code when a value goes out of scope. For example:
+Мы обсудили типажи. Теперь давайте поговорим о конкретном типаже,
+предоставляемом стандартной библиотекой Rust. Этот типаж — [`Drop`][drop]
+(сброс) — позволяет выполнить некоторый код, когда значение выходит из области
+видимости. Например:
 
-[drop]: ../std/ops/trait.Drop.html
+[drop]: http://doc.rust-lang.org/std/ops/trait.Drop.html
 
 ```rust
 struct HasDrop;
 
 impl Drop for HasDrop {
     fn drop(&mut self) {
-        println!("Dropping!");
+        println!("Сбрасываем!");
     }
 }
 
 fn main() {
     let x = HasDrop;
 
-    // do stuff
+    // сделаем что-то
 
-} // x goes out of scope here
+} // тут x выходит из области видимости
 ```
 
-When `x` goes out of scope at the end of `main()`, the code for `Drop` will
-run. `Drop` has one method, which is also called `drop()`. It takes a mutable
-reference to `self`.
+Когда `x` выходит из области видимости в конце `main()`, исполнится код
+реализации типажа `Drop`. У него один метод, который тоже называется `drop()`.
+Он принимает изменяемую ссылку на себя (`self`).
 
-That’s it! The mechanics of `Drop` are very simple, but there are some
-subtleties. For example, values are dropped in the opposite order they are
-declared. Here’s another example:
+Вот и всё! Работа `Drop` достаточно проста, но есть несколько
+тонкостей. Например, значения сбрасываются в порядке, обратном порядку их
+объявления. Вот ещё пример:
 
 ```rust
 struct Firework {
@@ -38,7 +39,7 @@ struct Firework {
 
 impl Drop for Firework {
     fn drop(&mut self) {
-        println!("BOOM times {}!!!", self.strength);
+        println!("БАБАХ силой {}!!!", self.strength);
     }
 }
 
@@ -48,20 +49,20 @@ fn main() {
 }
 ```
 
-This will output:
+Этот код выведет следующее:
 
 ```text
-BOOM times 100!!!
-BOOM times 1!!!
+БАБАХ силой 100!!!
+БАБАХ силой 1!!!
 ```
 
-The TNT goes off before the firecracker does, because it was declared
-afterwards. Last in, first out.
+Сначала взрывается тринитротолуоловая бомба (`tnt`), потому что она была
+объявлена последней. За ней взрывается шутиха (`firecracker`). Первым вошёл,
+последним вышел.
 
-So what is `Drop` good for? Generally, `Drop` is used to clean up any resources
-associated with a `struct`. For example, the [`Arc<T>` type][arc] is a
-reference-counted type. When `Drop` is called, it will decrement the reference
-count, and if the total number of references is zero, will clean up the
-underlying value.
+Так зачем нужен `Drop`? Часто `Drop` используют, чтобы освободить ресурсы,
+представленные структурой (`struct`). Например, счётчик ссылок [`Arc<T>`][arc]
+уменьшает число активных ссылок в `drop()`, и когда оно достигает нуля,
+освобождает хранимое значение.
 
-[arc]: ../std/sync/struct.Arc.html
+[arc]: http://doc.rust-lang.org/std/sync/struct.Arc.html

@@ -1,7 +1,7 @@
-% Variable Bindings
+% Связывание имён
 
-Virtually every non-'Hello World’ Rust program uses *variable bindings*. They
-look like this:
+Любая реальная программа на Rust посложнее, чем «Hello World», использует
+*связывание имён*. Это выглядит так:
 
 ```rust
 fn main() {
@@ -9,48 +9,49 @@ fn main() {
 }
 ```
 
-Putting `fn main() {` in each example is a bit tedious, so we’ll leave that out
-in the future. If you’re following along, make sure to edit your `main()`
-function, rather than leaving it off. Otherwise, you’ll get an error.
+Все операции, производимые ниже, будут происходить в функции `main()`, так как
+каждый раз вставлять в примеры `fn main() {` немного утомляет. Убедитесь, что
+примеры, приведённые в этом разделе, вы вводите в функцию `main()`, иначе можете
+получить ошибку при компиляции.
 
-In many languages, this is called a *variable*, but Rust’s variable bindings
-have a few tricks up their sleeves. For example the left-hand side of a `let`
-expression is a ‘[pattern][pattern]’, not just a variable name. This means we
-can do things like:
+Во многих языках программирования это называется *переменной*. Но у связывания
+переменных в Rust есть пара трюков в рукаве. В левой части выражения `let`
+располагается не просто имя переменной, а "[шаблон][pattern]". Это значит, что
+мы можем делать вещи вроде этой:
 
 ```rust
 let (x, y) = (1, 2);
 ```
 
-After this expression is evaluated, `x` will be one, and `y` will be two.
-Patterns are really powerful, and have [their own section][pattern] in the
-book. We don’t need those features for now, so we’ll just keep this in the back
-of our minds as we go forward.
+После завершения этого выражения `x` будет единицей, a `y` — двойкой. Шаблоны
+очень мощны, и о них написана отдельная [глава][pattern]. Но на данный момент
+нам не нужны эти возможности, так что мы просто будем помнить о них и пойдём
+дальше.
 
 [pattern]: patterns.html
 
-Rust is a statically typed language, which means that we specify our types up
-front, and they’re checked at compile time. So why does our first example
-compile? Well, Rust has this thing called ‘type inference’. If it can figure
-out what the type of something is, Rust doesn’t require you to actually type it
-out.
+Rust — статически типизированный язык программирования, и значит мы должны
+указывать типы, и они будут проверяться во время компиляции. Так почему же наш
+первый пример скомпилировался? В Rust есть нечто, называемое *выводом типов*.
+Если Rust самостоятельно может понять, какой тип у переменной, то он не требует
+указывать его.
 
-We can add the type if we want to, though. Types come after a colon (`:`):
+Тем не менее, мы можем указать желаемый тип. Он следует после двоеточия (`:`):
 
 ```rust
 let x: i32 = 5;
 ```
 
-If I asked you to read this out loud to the rest of the class, you’d say “`x`
-is a binding with the type `i32` and the value `five`.”
+Если бы мы попросили вас прочитать это вслух, вы бы сказали «`x` - это
+связывание типа `int` со значением `пять`».
 
-In this case we chose to represent `x` as a 32-bit signed integer. Rust has
-many different primitive integer types. They begin with `i` for signed integers
-and `u` for unsigned integers. The possible integer sizes are 8, 16, 32, and 64
-bits.
+В этом случае мы указали, что `x` у нас будет 32-битным целым числом со знаком.
+В Rust есть и другие целочисленные типы. Их имена начинаются с `i` для целых
+чисел со знаком и с `u` для целых чисел без знака. Целые числа могут иметь
+размер 8, 16, 32 и 64 бита.
 
-In future examples, we may annotate the type in a comment. The examples will
-look like this:
+В дальнейших примерах мы будем указывать тип в комментариях. Это будет выглядеть
+вот так:
 
 ```rust
 fn main() {
@@ -58,19 +59,19 @@ fn main() {
 }
 ```
 
-Note the similarities between this annotation and the syntax you use with
-`let`. Including these kinds of comments is not idiomatic Rust, but we'll
-occasionally include them to help you understand what the types that Rust
-infers are.
+Обратите внимание на сходство между этим комментарием и синтаксисом, который вы
+используете с `let`. Включение такого типа комментариев не является
+идиоматичным для Rust, но иногда мы будем включать их для того, чтобы помочь
+вам понять, какие типы будут выведены Rust.
 
-By default, bindings are *immutable*. This code will not compile:
+По умолчанию, связывание *неизменяемо*. Этот код не скомпилируется:
 
 ```rust,ignore
 let x = 5;
 x = 10;
 ```
 
-It will give you this error:
+И вы получите ошибку:
 
 ```text
 error: re-assignment of immutable variable `x`
@@ -78,30 +79,32 @@ error: re-assignment of immutable variable `x`
      ^~~~~~~
 ```
 
-If you want a binding to be mutable, you can use `mut`:
+Если вы хотите, чтобы связывание было изменяемым, вы можете использовать
+модификатор `mut`:
 
 ```rust
 let mut x = 5; // mut x: i32
 x = 10;
 ```
 
-There is no single reason that bindings are immutable by default, but we can
-think about it through one of Rust’s primary focuses: safety. If you forget to
-say `mut`, the compiler will catch it, and let you know that you have mutated
-something you may not have intended to mutate. If bindings were mutable by
-default, the compiler would not be able to tell you this. If you _did_ intend
-mutation, then the solution is quite easy: add `mut`.
+Может показаться, что незачем делать связывание неизменяемым по умолчанию. Но
+вспомните, на чём в первую очередь фокусируется Rust: на безопасности. Если вы
+случайно забыли указать `mut` и изменили связывание, компилятор заметит это, и
+сообщит вам, что вы попытались изменить не то, что собирались. Если бы по
+умолчанию связывание было изменяемым, то в приведённой выше ситуации компилятор
+не сможет вам помочь. Если вы намерены изменить значение переменной, то просто
+добавьте `mut`.
 
-There are other good reasons to avoid mutable state when possible, but they’re
-out of the scope of this guide. In general, you can often avoid explicit
-mutation, and so it is preferable in Rust. That said, sometimes, mutation is
-what you need, so it’s not verboten.
+Есть и другие весомые аргументы в пользу того, чтобы по возможности избегать
+изменяемого состояния, но это выходит за рамки данной книги. В общем, зачастую
+вы можете избежать явных изменений, и это предпочтительнее в Rust. Тем не менее,
+иногда без изменения значения просто не обойтись, так что это не запрещено.
 
-Let’s get back to bindings. Rust variable bindings have one more aspect that
-differs from other languages: bindings are required to be initialized with a
-value before you're allowed to use them.
+Вернёмся к связыванию. Связывание переменных в Rust имеет ещё одно отличие от
+других языков: оно требует инициализации перед использованием.
 
-Let’s try it out. Change your `src/main.rs` file to look like this:
+Давайте приступим к рассмотрению вышесказанного. Измените ваш файл `src/main.rs`
+так, что бы он выглядел следующим образом:
 
 ```rust
 fn main() {
@@ -111,8 +114,9 @@ fn main() {
 }
 ```
 
-You can use `cargo build` on the command line to build it. You’ll get a
-warning, but it will still print "Hello, world!":
+Используйте команду `cargo build` в командной строке, чтобы собрать проект. Вы
+должны получить предупреждение, но программа будет работать и будет выводить
+строку «Привет, мир!»:
 
 ```text
    Compiling hello_world v0.0.1 (file:///home/you/projects/hello_world)
@@ -122,25 +126,26 @@ src/main.rs:2     let x: i32;
                       ^
 ```
 
-Rust warns us that we never use the variable binding, but since we never use
-it, no harm, no foul. Things change if we try to actually use this `x`,
-however. Let’s do that. Change your program to look like this:
+Rust предупредит нас о том, что мы не используем связанную переменную, но от
+того, что мы её не используем, не будет никакого вреда, поэтому это не ошибка.
+Однако, всё изменится, если мы попробуем использовать `x`. Сделаем это. Измените
+вашу программу так, что бы она выглядела следующим образом:
 
 ```rust,ignore
 fn main() {
     let x: i32;
 
-    println!("The value of x is: {}", x);
+    println!("x имеет значение {}", x);
 }
 ```
 
-And try to build it. You’ll get an error:
+И попробуйте собрать проект. Вы получите ошибку:
 
 ```bash
 $ cargo build
    Compiling hello_world v0.0.1 (file:///home/you/projects/hello_world)
 src/main.rs:4:39: 4:40 error: use of possibly uninitialized variable: `x`
-src/main.rs:4     println!("The value of x is: {}", x);
+src/main.rs:4     println!("x имеет значение {}", x);
                                                     ^
 note: in expansion of format_args!
 <std macros>:2:23: 2:77 note: expansion site
@@ -150,20 +155,20 @@ error: aborting due to previous error
 Could not compile `hello_world`.
 ```
 
-Rust will not let us use a value that has not been initialized. Next, let’s
-talk about this stuff we've added to `println!`.
+Rust не позволит использовать неинициализированную переменную. Далее, поговорим
+о `{}`, которые мы добавили в `println!`.
 
-If you include two curly braces (`{}`, some call them moustaches...) in your
-string to print, Rust will interpret this as a request to interpolate some sort
-of value. *String interpolation* is a computer science term that means "stick
-in the middle of a string." We add a comma, and then `x`, to indicate that we
-want `x` to be the value we’re interpolating. The comma is used to separate
-arguments we pass to functions and macros, if you’re passing more than one.
+Если вы добавите две фигурные скобки (`{}`, иногда называемые «усами»...) в вашу
+печатаемую строку, Rust истолкует это как просьбу вставки некоторого значения.
+*Строковая интерполяция* — это термин в информатике, который обозначает
+«вставить посреди строки». Мы добавили запятую, и затем `x`, чтобы указать, что
+мы хотим вставить `x` в строку. Запятая используется для разделения параметров,
+если в функцию или макрос передаётся больше одного параметра.
 
-When you just use the curly braces, Rust will attempt to display the value in a
-meaningful way by checking out its type. If you want to specify the format in a
-more detailed manner, there are a [wide number of options available][format].
-For now, we'll just stick to the default: integers aren't very complicated to
-print.
+При вставке переменной в строку, Rust проверит её тип и попытается отобразить
+осмысленное значение. Если вы хотите указать формат более детально, то можете
+ознакомиться с [доступными способами форматирования строк (англ.)][format]. На
+данный момент мы просто используем способ по умолчанию: печатать целые числа не
+очень сложно.
 
-[format]: ../std/fmt/index.html
+[format]: http://doc.rust-lang.org/std/fmt/index.html

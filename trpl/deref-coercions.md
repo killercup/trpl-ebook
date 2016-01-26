@@ -1,7 +1,7 @@
-% `Deref` coercions
+% Преобразования при разыменовании (deref coercions)
 
-The standard library provides a special trait, [`Deref`][deref]. It’s normally
-used to overload `*`, the dereference operator:
+Стандартная библиотека Rust реализует особый типаж, [`Deref`][deref]. Обычно его
+используют, чтобы перегрузить `*`, операцию разыменования:
 
 ```rust
 use std::ops::Deref;
@@ -24,73 +24,76 @@ fn main() {
 }
 ```
 
-[deref]: ../std/ops/trait.Deref.html
+[deref]: http://doc.rust-lang.org/std/ops/trait.Deref.html
 
-This is useful for writing custom pointer types. However, there’s a language
-feature related to `Deref`: ‘deref coercions’. Here’s the rule: If you have a
-type `U`, and it implements `Deref<Target=T>`, values of `&U` will
-automatically coerce to a `&T`. Here’s an example:
+Это полезно при написании своих указательных типов. Однако, в языке есть
+возможность, связанная с `Deref`: преобразования при разыменовании. Вот правило:
+если есть тип `U`, и он реализует `Deref<Target=T>`, значения `&U` будут
+автоматически преобразованы в `&T`, когда это необходимо. Вот пример:
 
 ```rust
 fn foo(s: &str) {
-    // borrow a string for a second
+    // позаимствуем строку на секунду
 }
 
-// String implements Deref<Target=str>
+// String реализует Deref<Target=str>
 let owned = "Hello".to_string();
 
-// therefore, this works:
+// Поэтому, такой код работает:
 foo(&owned);
 ```
 
-Using an ampersand in front of a value takes a reference to it. So `owned` is a
-`String`, `&owned` is an `&String`, and since `impl Deref<Target=str> for
-String`, `&String` will deref to `&str`, which `foo()` takes.
+Амперсанд перед значением означает, что мы берём ссылку на него. Поэтому `owned`
+- это `String`, а `&owned` — `&String`. Поскольку у нас есть реализация типажа
+`impl Deref<Target=str> for String`, `&String` разыменуется в `&str`, что
+устраивает `foo()`.
 
-That’s it. This rule is one of the only places in which Rust does an automatic
-conversion for you, but it adds a lot of flexibility. For example, the `Rc<T>`
-type implements `Deref<Target=T>`, so this works:
+Вот и всё. Это правило — одно из немногих мест в Rust, где типы преобразуются
+автоматически. Оно позволяет писать гораздо более гибкий код. Например, тип
+`Rc<T>` реализует `Deref<Target=T>`, поэтому такой код работает:
 
 ```rust
 use std::rc::Rc;
 
 fn foo(s: &str) {
-    // borrow a string for a second
+    // позаимствуем строку на секунду
 }
 
-// String implements Deref<Target=str>
+// String реализует Deref<Target=str>
 let owned = "Hello".to_string();
 let counted = Rc::new(owned);
 
-// therefore, this works:
+// Поэтому, такой код работает:
 foo(&counted);
 ```
 
-All we’ve done is wrap our `String` in an `Rc<T>`. But we can now pass the
-`Rc<String>` around anywhere we’d have a `String`. The signature of `foo`
-didn’t change, but works just as well with either type. This example has two
-conversions: `Rc<String>` to `String` and then `String` to `&str`. Rust will do
-this as many times as possible until the types match.
+Мы всего лишь обернули наш `String` в `Rc<T>`. Но теперь мы можем передать
+`Rc<String>` везде, куда мы могли передать `String`. Сигнатура `foo` не
+поменялась, и работает как с одним, так и с другим типом. Этот пример делает два
+преобразования: сначала `Rc<String` преобразуется в `String`, а потом `String` в
+`&str`. Rust сделает столько преобразований, сколько возможно, пока типы не
+совпадут.
 
-Another very common implementation provided by the standard library is:
+Другая известная реализация, предоставляемая стандартной библиотекой, это
+`impl Deref<Target=[T]> for Vec<T>`:
 
 ```rust
 fn foo(s: &[i32]) {
-    // borrow a slice for a second
+    // позаимствуем срез на секунду
 }
 
-// Vec<T> implements Deref<Target=[T]>
+// Vec<T> реализует Deref<Target=[T]>
 let owned = vec![1, 2, 3];
 
 foo(&owned);
 ```
 
-Vectors can `Deref` to a slice.
+Вектора могут разыменовываться в срезы.
 
-## Deref and method calls
+## Разыменование и вызов методов
 
-`Deref` will also kick in when calling a method. Consider the following
-example.
+`Deref` также будет работать при вызове метода. Другими словами, возможен такой
+код:
 
 ```rust
 struct Foo;
@@ -99,13 +102,13 @@ impl Foo {
     fn foo(&self) { println!("Foo"); }
 }
 
-let f = &&Foo;
+let f = Foo;
 
 f.foo();
 ```
 
-Even though `f` is a `&&Foo` and `foo` takes `&self`, this works. That’s
-because these things are the same:
+Несмотря на то, что `f` — это не ссылка, а `foo` принимает `&self`, это будет
+работать. Более того, все примеры ниже делают одно и то же:
 
 ```rust,ignore
 f.foo();
@@ -114,6 +117,6 @@ f.foo();
 (&&&&&&&&f).foo();
 ```
 
-A value of type `&&&&&&&&&&&&&&&&Foo` can still have methods defined on `Foo`
-called, because the compiler will insert as many * operations as necessary to
-get it right. And since it’s inserting `*`s, that uses `Deref`.
+Методы `Foo` можно вызывать и на значении типа `&&&&&&&&&&&&&&&&Foo`, потому что
+компилятор сделает столько разыменований, сколько нужно для совпадения типов.
+А разыменование использует `Deref`.

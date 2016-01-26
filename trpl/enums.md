@@ -1,7 +1,8 @@
-% Enums
+% Перечисления
 
-An `enum` in Rust is a type that represents data that could be one of
-several possible variants:
+В Rust *перечисление* (`enum`) — это тип данных, который представляет собой один
+из нескольких возможных вариантов. Каждый вариант в перечислении может быть
+также связан с другими данными:
 
 ```rust
 enum Message {
@@ -12,17 +13,18 @@ enum Message {
 }
 ```
 
-Each variant can optionally have data associated with it. The syntax for
-defining variants resembles the syntaxes used to define structs: you can
-have variants with no data (like unit-like structs), variants with named
-data, and variants with unnamed data (like tuple structs). Unlike
-separate struct definitions, however, an `enum` is a single type. A
-value of the enum can match any of the variants. For this reason, an
-enum is sometimes called a ‘sum type’: the set of possible values of the
-enum is the sum of the sets of possible values for each variant.
+Синтаксис для объявления вариантов схож с синтаксисом для объявления структур:
+у вас могут быть варианты без данных (как unit-подобные структуры), варианты с
+именованными данными и варианты с безымянными данными (подобно кортежным
+структурам). Варианты перечисления имеют один и тот же тип, и в отличии от
+структур не являются определением отдельных типов. Значение перечисления может
+соответствовать любому из вариантов. Из-за этого перечисления иногда называют
+*тип-сумма* (*sum-type*): множество возможных значений перечисления — это сумма
+множеств возможных значений каждого варианта.
 
-We use the `::` syntax to use the name of each variant: they’re scoped by the name
-of the `enum` itself. This allows both of these to work:
+Мы используем синтаксис `::` чтобы использовать имя каждого из вариантов. Их
+область видимости ограничена именем самого перечисления. Это позволяет
+использовать оба варианта из примера ниже совместно:
 
 ```rust
 # enum Message {
@@ -38,36 +40,35 @@ enum BoardGameTurn {
 let y: BoardGameTurn = BoardGameTurn::Move { squares: 1 };
 ```
 
-Both variants are named `Move`, but since they’re scoped to the name of
-the enum, they can both be used without conflict.
+Оба варианта имеют одинаковое имя `Move`, но поскольку область видимости
+каждого из них ограничена именем соответствующего перечисления, они могут быть
+использованы без конфликтов.
 
-A value of an enum type contains information about which variant it is,
-in addition to any data associated with that variant. This is sometimes
-referred to as a ‘tagged union’, since the data includes a ‘tag’
-indicating what type it is. The compiler uses this information to
-enforce that you’re accessing the data in the enum safely. For instance,
-you can’t simply try to destructure a value as if it were one of the
-possible variants:
+Значение перечисления, в дополнение к любым данным, которые связаны с ним,
+содержит информацию о том, какой именно это вариант. Это иногда называют
+*размеченное объединение* (*tagged union*), поскольку данные включают в себя
+метку, обозначающую что это за тип.
 
 ```rust,ignore
 fn process_color_change(msg: Message) {
-    let Message::ChangeColor(r, g, b) = msg; // compile-time error
+    let Message::ChangeColor(r, g, b) = msg; // ошибка времени компиляции
 }
 ```
 
-Not supporting these operations may seem rather limiting, but it’s a limitation
-which we can overcome. There are two ways: by implementing equality ourselves,
-or by pattern matching variants with [`match`][match] expressions, which you’ll
-learn in the next section. We don’t know enough about Rust to implement
-equality yet, but we’ll find out in the [`traits`][traits] section.
+То, что пользовательские типы по умолчанию не поддерживают операции, может
+показаться довольно ограниченным. Но это ограничение, которое мы всегда можем
+преодолеть. Есть два способа: реализовать операцию самостоятельно, или
+воспользоваться сопоставлением с образцом с помощью [`match`][match], о котором
+вы узнаете в следующем разделе. Пока мы еще недостаточно знаем Rust, чтобы
+реализовывать операции, но мы научимся делать это в разделе [`traits`][traits].
 
 [match]: match.html
-[if-let]: if-let.html
 [traits]: traits.html
 
-# Constructors as functions
+# Конструкторы как функции
 
-An enum’s constructors can also be used like functions. For example:
+Конструктор перечисления может быть также использован как обычная функция.
+Например:
 
 ```rust
 # enum Message {
@@ -76,7 +77,7 @@ An enum’s constructors can also be used like functions. For example:
 let m = Message::Write("Hello, world".to_string());
 ```
 
-Is the same as
+тоже самое, что и
 
 ```rust
 # enum Message {
@@ -89,10 +90,10 @@ fn foo(x: String) -> Message {
 let x = foo("Hello, world".to_string());
 ```
 
-This is not immediately useful to us, but when we get to
-[`closures`][closures], we’ll talk about passing functions as arguments to
-other functions. For example, with [`iterators`][iterators], we can do this
-to convert a vector of `String`s into a vector of `Message::Write`s:
+На данный момент это не так уж и полезно для нас, но когда мы перейдем к
+[замыканиям][closures], мы поговорим о передаче функций в роли аргумента другой
+функции. Например, с помощью [итераторов][iterators] мы можем преобразовывать
+вектор строк в вектор состоящий из `Message::Write`:
 
 ```rust
 # enum Message {

@@ -1,14 +1,17 @@
-% Glossary
+% Глоссарий
 
-Not every Rustacean has a background in systems programming, nor in computer
-science, so we've added explanations of terms that might be unfamiliar.
+Не каждый пользователь Rust имеет опыт работы с системами программирования, или
+необходимые знания в области компьютерной науки, поэтому мы добавили разъяснения
+терминов, которые могут быть незнакомы.
 
-### Abstract Syntax Tree
+<a name="abstract-syntax-tree"></a>
+### Абстрактное синтаксическое дерево
 
-When a compiler is compiling your program, it does a number of different things.
-One of the things that it does is turn the text of your program into an
-‘abstract syntax tree’, or ‘AST’. This tree is a representation of the structure
-of your program. For example, `2 + 3` can be turned into a tree:
+Когда компилятор компилирует программу, он делает целый ряд различных вещей.
+Одна из вещей, которые он делает, это преобразует текст вашей программы в
+'Абстрактное синтаксическое дерево,' или 'AST.' Это дерево является
+представлением структуры вашей программы. Например, `2 + 3` может быть
+преобразовано в дерево:
 
 ```text
   +
@@ -16,7 +19,7 @@ of your program. For example, `2 + 3` can be turned into a tree:
 2   3
 ```
 
-And `2 + (3 * 4)` would look like this:
+А `2 + (3 * 4)` будет выглядеть следующим образом:
 
 ```text
   +
@@ -26,9 +29,10 @@ And `2 + (3 * 4)` would look like this:
   3   4
 ```
 
-### Arity
+<a name="arity"></a>
+### Арность
 
-Arity refers to the number of arguments a function or operation takes.
+Арность означает число аргументов, которые принимает функция или операция.
 
 ```rust
 let x = (2, 3);
@@ -36,36 +40,33 @@ let y = (4, 6);
 let z = (8, 2, 6);
 ```
 
-In the example above `x` and `y` have arity 2. `z` has arity 3.
+В приведенном выше примере `x` и `y` имеют арность 2. `z` имеет арность 3.
 
-### DST (Dynamically Sized Type)
+<a name="expression"></a>
+### Выражение
 
-A type without a statically known size or alignment. ([more info][link])
+В программировании, выражение — это комбинация значений, постоянных,
+переменных и функций, которая вычисляется в одно значение. Например, `2 + (3 *
+4)` — выражение, вычисляющееся в значение `14`. Стоит заметить, что у
+выражений могут быть побочные эффекты. Например, функция, участвующая в
+выражении, может делать что-то ещё помимо непосредственно возврата значения.
 
-[link]: ../nomicon/exotic-sizes.html#dynamically-sized-types-(dsts)
+### Язык, ориентированный на выражения
 
-### Expression
-
-In computer programming, an expression is a combination of values, constants,
-variables, operators and functions that evaluate to a single value. For example,
-`2 + (3 * 4)` is an expression that returns the value 14. It is worth noting
-that expressions can have side-effects. For example, a function included in an
-expression might perform actions other than simply returning a value.
-
-### Expression-Oriented Language
-
-In early programming languages, [expressions][expression] and
-[statements][statement] were two separate syntactic categories: expressions had
-a value and statements did things. However, later languages blurred this
-distinction, allowing expressions to do things and statements to have a value.
-In an expression-oriented language, (nearly) every statement is an expression
-and therefore returns a value. Consequently, these expression statements can
-themselves form part of larger expressions.
+В ранних языках программирования [выражения][expression] и
+[операторы][statement] были двумя отдельными видами синтаксиса: выражения
+вычислялись в выражение, а операторы производили действия с побочными эффектами.
+Однако поздние языки уже не имели такого чёткого разделения по этому критерию. В
+языке, ориентированном на выражения, почти любой оператор — это выражение, а
+значит, оно возвращает значение. Следовательно, эти выражения могут сами
+являться частью ещё больших выражений.
 
 [expression]: glossary.html#expression
 [statement]: glossary.html#statement
 
-### Statement
+<a name="statement"></a>
+### Оператор
 
-In computer programming, a statement is the smallest standalone element of a
-programming language that commands a computer to perform an action.
+В программировании, оператор — это наименьший отдельный элемент языка, который
+обозначает выполнение компьютером законченного действия. Например, в языке C
+`printf("42");` — это оператор.

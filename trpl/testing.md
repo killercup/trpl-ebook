@@ -1,27 +1,33 @@
-% Testing
+% Тестирование
 
 > Program testing can be a very effective way to show the presence of bugs, but
 > it is hopelessly inadequate for showing their absence.
 >
 > Edsger W. Dijkstra, "The Humble Programmer" (1972)
 
-Let's talk about how to test Rust code. What we will not be talking about is
-the right way to test Rust code. There are many schools of thought regarding
-the right and wrong way to write tests. All of these approaches use the same
-basic tools, and so we'll show you the syntax for using them.
+> Тестирование программы может быть очень эффективным способом показать наличие
+> ошибок, но оно безнадёжно неподходяще для доказательства их отсутствия.
+>
+> Дейкстра, Эдсгер Вибе, «The Humble Programmer» (1972)
 
-# The `test` attribute
+Давайте поговорим о том, как тестировать код на Rust. Мы не будем рассказывать о
+том, какой подход к тестированию Rust кода является верным. Есть много подходов,
+каждый из которых имеет свое представление о правильном написании тестов. Но все
+эти подходы используют одни и те же основные инструменты, и мы покажем вам
+синтаксис их использования.
 
-At its simplest, a test in Rust is a function that's annotated with the `test`
-attribute. Let's make a new project with Cargo called `adder`:
+# Тесты с атрибутом `test`
+
+В самом простом случае, тест в Rust — это функция, аннотированная атрибутом
+`test`. Давайте создадим новый проект Cargo, который будет называться `adder`:
 
 ```bash
 $ cargo new adder
 $ cd adder
 ```
 
-Cargo will automatically generate a simple test when you make a new project.
-Here's the contents of `src/lib.rs`:
+При создании нового проекта, Cargo автоматически сгенерирует простой тест. Ниже
+представлено содержимое `src/lib.rs`:
 
 ```rust
 #[test]
@@ -29,9 +35,9 @@ fn it_works() {
 }
 ```
 
-Note the `#[test]`. This attribute indicates that this is a test function. It
-currently has no body. That's good enough to pass! We can run the tests with
-`cargo test`:
+Обратите внимание на `#[test]`. Этот атрибут указывает, что это тестовая
+функция. В этом примере она не имеет тела. Но такого вида функции достаточно,
+чтобы удачно выполнить тест. Запуск тестов осуществляется командой `cargo test`.
 
 ```bash
 $ cargo test
@@ -50,29 +56,32 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-Cargo compiled and ran our tests. There are two sets of output here: one
-for the test we wrote, and another for documentation tests. We'll talk about
-those later. For now, see this line:
+Cargo скомпилировал и запустил наши тесты. В результате мы получили выходные
+данные, поделенные на два раздела: один содержит информацию о тесте, который мы
+написали, а другой — информацию о тестах из документации. Но об этом позже. А
+сейчас посмотрим на эту строку:
 
 ```text
 test it_works ... ok
 ```
 
-Note the `it_works`. This comes from the name of our function:
+Обратите внимание на `it_works`. Это название нашей функции:
 
 ```rust
 fn it_works() {
 # }
 ```
 
-We also get a summary line:
+Мы также получили итоговую строку:
 
 ```text
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-So why does our do-nothing test pass? Any test which doesn't `panic!` passes,
-and any test that does `panic!` fails. Let's make our test fail:
+Так почему же наш ничего не делающий тест был выполнен удачно? Любой тест,
+который не вызывает `panic!`, выполняется удачно, а любой тест, который вызывает
+`panic!`, выполняется неудачно. Давайте сделаем тест, который выполнится
+неудачно:
 
 ```rust
 #[test]
@@ -81,9 +90,9 @@ fn it_works() {
 }
 ```
 
-`assert!` is a macro provided by Rust which takes one argument: if the argument
-is `true`, nothing happens. If the argument is false, it `panic!`s. Let's run
-our tests again:
+`assert!` — это макрос, определенный в Rust, и принимающий один аргумент: если
+аргумент имеет значение `true`, то ничего не происходит; если аргумент является
+`false`, то вызывается `panic!`. Давайте запустим наши тесты снова:
 
 ```bash
 $ cargo test
@@ -108,41 +117,43 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured
 thread '<main>' panicked at 'Some tests failed', /home/steve/src/rust/src/libtest/lib.rs:247
 ```
 
-Rust indicates that our test failed:
+Rust сообщает, что наш тест выполнен неудачно:
 
 ```text
 test it_works ... FAILED
 ```
 
-And that's reflected in the summary line:
+Это же отражается в итоговой строке:
 
 ```text
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured
 ```
 
-We also get a non-zero status code. We can use `$?` on OS X and Linux:
+Мы также получаем ненулевой код состояния. Можно использовать `$?` на OS X и Linux:
 
 ```bash
 $ echo $?
 101
 ```
 
-On Windows, if you’re using `cmd`:
+На Windows, если вы используете `cmd`:
 
 ```bash
-> echo %ERRORLEVEL%
+    echo %ERRORLEVEL%
 ```
 
-And if you’re using PowerShell:
+И если вы используете PowerShell:
 
 ```bash
-> echo $LASTEXITCODE # the code itself
-> echo $? # a boolean, fail or succeed
+    echo $LASTEXITCODE # сам код
+    echo $? # логическое, успешно или не успешно
 ```
 
-This is useful if you want to integrate `cargo test` into other tooling.
+Это бывает полезно, если вы хотите интегрировать `cargo test` в сторонний
+инструмент.
 
-We can invert our test's failure with another attribute: `should_panic`:
+Можно инвертировать ожидаемый результат теста с помощью атрибута:
+`should_panic`:
 
 ```rust
 #[test]
@@ -152,7 +163,8 @@ fn it_works() {
 }
 ```
 
-This test will now succeed if we `panic!` and fail if we complete. Let's try it:
+Теперь этот тест будет выполнен удачно, если вызывается `panic!`, и неудачно,
+если `panic!` не вызывается. Давайте попробуем:
 
 ```bash
 $ cargo test
@@ -171,8 +183,8 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-Rust provides another macro, `assert_eq!`, that compares two arguments for
-equality:
+Rust предоставляет и другой макрос, `assert_eq!`, который проверяет равенство
+двух аргументов:
 
 ```rust
 #[test]
@@ -182,8 +194,8 @@ fn it_works() {
 }
 ```
 
-Does this test pass or fail? Because of the `should_panic` attribute, it
-passes:
+А теперь этот тест будет выполнен удачно или неудачно? Из-за атрибута
+`should_panic` он завершится удачно:
 
 ```bash
 $ cargo test
@@ -202,11 +214,11 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-`should_panic` tests can be fragile, as it's hard to guarantee that the test
-didn't fail for an unexpected reason. To help with this, an optional `expected`
-parameter can be added to the `should_panic` attribute. The test harness will
-make sure that the failure message contains the provided text. A safer version
-of the example above would be:
+Тесты `should_panic` могут быть хрупкими, поскольку трудно гарантировать, что
+тест не вызовет панику по неожиданной причине. Чтобы помочь в этом аспекте, к
+атрибуту `should_panic` может быть добавлен необязательный параметр `expected`.
+Тогда тест также будет проверять, что сообщение об ошибке содержит ожидаемый
+текст. Ниже представлен более безопасный вариант приведенного выше примера:
 
 ```rust
 #[test]
@@ -216,7 +228,7 @@ fn it_works() {
 }
 ```
 
-That's all there is to the basics! Let's write one 'real' test:
+Вот и все, что касается основ! Давайте напишем один «настоящий» тест:
 
 ```rust,ignore
 pub fn add_two(a: i32) -> i32 {
@@ -229,16 +241,16 @@ fn it_works() {
 }
 ```
 
-This is a very common use of `assert_eq!`: call some function with
-some known arguments and compare it to the expected output.
+Это распространенное использование макроса `assert_eq!`: вызывать некоторую
+функцию с известными аргументами и сравнить результат её вызова с ожидаемым
+результатом.
 
-# The `ignore` attribute
+# Тесты с атрибутом `ignore`
 
-Sometimes a few specific tests can be very time-consuming to execute. These
-can be disabled by default by using the `ignore` attribute:
+Некоторые тесты могу занимать много времени на выполнение. Такие тесты могут
+быть отключены по умолчанию с помощью атрибута `ignore`:
 
 ```rust
-#[test]
 fn it_works() {
     assert_eq!(4, add_two(2));
 }
@@ -246,12 +258,12 @@ fn it_works() {
 #[test]
 #[ignore]
 fn expensive_test() {
-    // code that takes an hour to run
+    // код, который занимает час на выполнение
 }
 ```
 
-Now we run our tests and see that `it_works` is run, but `expensive_test` is
-not:
+Теперь запустим наши тесты и видим, что `it_works` запускается, а
+`expensive_test` нет:
 
 ```bash
 $ cargo test
@@ -271,7 +283,8 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-The expensive tests can be run explicitly using `cargo test -- --ignored`:
+Дорогостоящие тесты могут быть запущены с помощью команды
+`cargo test -- --ignored`:
 
 ```bash
 $ cargo test -- --ignored
@@ -289,14 +302,14 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-The `--ignored` argument is an argument to the test binary, and not to cargo,
-which is why the command is `cargo test -- --ignored`.
+Аргумент `--ignored` — это аргумент для тестового исполняемого файла, а не для
+Cargo, именно поэтому команда выглядит так `cargo test -- --ignored`.
 
-# The `tests` module
+# Тесты в модуле `test`
 
-There is one way in which our existing example is not idiomatic: it's
-missing the `tests` module. The idiomatic way of writing our example
-looks like this:
+Есть один нюанс, из-за которого наш пример нельзя назвать идиоматичным:
+отсутствует модуль тестирования. Идиоматичный вариант нашего примера будет
+выглядеть примерно так:
 
 ```rust,ignore
 pub fn add_two(a: i32) -> i32 {
@@ -304,7 +317,7 @@ pub fn add_two(a: i32) -> i32 {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::add_two;
 
     #[test]
@@ -314,25 +327,28 @@ mod tests {
 }
 ```
 
-There's a few changes here. The first is the introduction of a `mod tests` with
-a `cfg` attribute. The module allows us to group all of our tests together, and
-to also define helper functions if needed, that don't become a part of the rest
-of our crate. The `cfg` attribute only compiles our test code if we're
-currently trying to run the tests. This can save compile time, and also ensures
-that our tests are entirely left out of a normal build.
+Здесь есть несколько изменений. Первое — это введение `mod test` с атрибутом
+`cfg`. Модуль позволяет сгруппировать все наши тесты вместе, а также, если
+нужно, определить вспомогательные функции, которые будут отделены от остальной
+части контейнера. Атрибут `cfg` указывает на то, что тест будет скомпилирован,
+только когда мы попытаемся запустить тесты. Это может сэкономить время
+компиляции, а также гарантирует, что наши тесты полностью исключены из обычной
+сборки.
 
-The second change is the `use` declaration. Because we're in an inner module,
-we need to bring our test function into scope. This can be annoying if you have
-a large module, and so this is a common use of globs. Let's change our
-`src/lib.rs` to make use of it:
+Второе изменение заключается в объявлении `use`. Так как мы находимся во
+внутреннем модуле, то мы должны объявить использование тестируемой функции в его
+области видимости. Это может раздражать, если у вас большой модуль, и поэтому
+обычно используют возможность `glob`. Давайте изменим `src/lib.rs`
+соответствующим образом:
 
 ```rust,ignore
+
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     #[test]
@@ -342,7 +358,7 @@ mod tests {
 }
 ```
 
-Note the different `use` line. Now we run our tests:
+Обратите внимание на различие в строке с `use`. Теперь запустим наши тесты:
 
 ```bash
 $ cargo test
@@ -351,7 +367,7 @@ $ cargo test
      Running target/adder-91b3e234d4ed382a
 
 running 1 test
-test tests::it_works ... ok
+test test::it_works ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 
@@ -362,17 +378,18 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-It works!
+Работает!
 
-The current convention is to use the `tests` module to hold your "unit-style"
-tests. Anything that just tests one small bit of functionality makes sense to
-go here. But what about "integration-style" tests instead? For that, we have
-the `tests` directory
+Данный подход представляет собой использование модуля `test`, содержащего
+модульные тесты (unit tests). Любой код, задачей которого является только лишь
+тестирование небольшого кусочка функциональности, имеет смысл перенести в этот
+модуль. Но что если мы хотим написать «интеграционные тесты» (integration
+tests)? Для этого следует использовать директорию `tests`.
 
-# The `tests` directory
+# Тесты в директории `tests`
 
-To write an integration test, let's make a `tests` directory, and
-put a `tests/lib.rs` file inside, with this as its contents:
+Чтобы написать интеграционный тест, давайте создадим директорию `tests`, и
+положим в нее файл `tests/lib.rs` со следующим содержимым:
 
 ```rust,ignore
 extern crate adder;
@@ -383,13 +400,14 @@ fn it_works() {
 }
 ```
 
-This looks similar to our previous tests, but slightly different. We now have
-an `extern crate adder` at the top. This is because the tests in the `tests`
-directory are an entirely separate crate, and so we need to import our library.
-This is also why `tests` is a suitable place to write integration-style tests:
-they use the library like any other consumer of it would.
+Выглядит примерно так же, как и наши предыдущие тесты, но есть некоторые
+отличия. Теперь сверху у нас `extern crate adder`. Это потому, что тесты в
+директории `tests` — это отдельный контейнер, и, следовательно, мы должны
+компоноваться с нашей библиотекой. Это также объясняет, почему директория
+`tests` — наиболее подходящее место для написания интеграционных тестов: они
+используют библиотеку, как это делал бы любой другой потребитель.
 
-Let's run them:
+Давайте запустим их:
 
 ```bash
 $ cargo test
@@ -397,7 +415,7 @@ $ cargo test
      Running target/adder-91b3e234d4ed382a
 
 running 1 test
-test tests::it_works ... ok
+test test::it_works ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 
@@ -415,24 +433,24 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-Now we have three sections: our previous test is also run, as well as our new
-one.
+Теперь у нас появилось три раздела: запускается старый модульный тест, а также
+новый интеграционный тест.
 
-That's all there is to the `tests` directory. The `tests` module isn't needed
-here, since the whole thing is focused on tests.
+Это все, что касается директории `tests`. Модуль `test` здесь не нужен, так как
+здесь всё относится к тестам.
 
-Let's finally check out that third section: documentation tests.
+Давайте, наконец, перейдем к третьей части: тесты в документации.
 
-# Documentation tests
+# Тесты в документации
 
-Nothing is better than documentation with examples. Nothing is worse than
-examples that don't actually work, because the code has changed since the
-documentation has been written. To this end, Rust supports automatically
-running examples in your documentation (**note:** this only works in library
-crates, not binary crates). Here's a fleshed-out `src/lib.rs` with examples:
+Нет ничего лучше, чем документация с примерами. Нет ничего хуже, чем примеры,
+которые на самом деле не работают, потому что код изменился с тех пор, как была
+написана документация. Для того, чтобы такой ситуации не возникало, Rust
+поддерживает автоматический запуск примеров в документации (имейте ввиду, что
+это работает только с библиотеками). Вот дополненный `src/lib.rs` с примерами:
 
 ```rust,ignore
-//! The `adder` crate provides functions that add numbers to other numbers.
+//! Контейнер `adder` предоставляет функции сложения чисел.
 //!
 //! # Examples
 //!
@@ -440,7 +458,7 @@ crates, not binary crates). Here's a fleshed-out `src/lib.rs` with examples:
 //! assert_eq!(4, adder::add_two(2));
 //! ```
 
-/// This function adds two to its argument.
+/// Эта функция прибавляет 2 к своему аргументу.
 ///
 /// # Examples
 ///
@@ -454,7 +472,7 @@ pub fn add_two(a: i32) -> i32 {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     #[test]
@@ -464,12 +482,15 @@ mod tests {
 }
 ```
 
-Note the module-level documentation with `//!` and the function-level
-documentation with `///`. Rust's documentation supports Markdown in comments,
-and so triple graves mark code blocks. It is conventional to include the
-`# Examples` section, exactly like that, with examples following.
+Обратите внимание на документацию уровня модуля, начинающуюся с `//!` и на
+документацию уровня функции, начинающуюся с `///`. Документация Rust
+поддерживает Markdown в комментариях, поэтому блоки кода помечают тройными
+символами \`. В комментарии документации обычно включают раздел `# Examples`,
+содержащий примеры, такие как этот. (Примечание переводчика: заголовок `#
+Examples` имеет особое значение: его нельзя написать по-другому или написать на
+русском языке, иначе Rust не найдёт примеров кода в документации.)
 
-Let's run the tests again:
+Давайте запустим тесты снова:
 
 ```bash
 $ cargo test
@@ -477,7 +498,7 @@ $ cargo test
      Running target/adder-91b3e234d4ed382a
 
 running 1 test
-test tests::it_works ... ok
+test test::it_works ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 
@@ -497,8 +518,14 @@ test _0 ... ok
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-Now we have all three kinds of tests running! Note the names of the
-documentation tests: the `_0` is generated for the module test, and `add_two_0`
-for the function test. These will auto increment with names like `add_two_1` as
-you add more examples.
+Теперь у нас запускаются все три вида тестов! Обратите внимание на имена тестов
+из документации: `_0` генерируется для модульных тестов, и `add_two_0` — для
+функциональных тестов. Цифры на конце будут увеличиваться автоматически, если вы
+добавите еще примеров. Например, при добавлении ещё одного функционального
+теста, он получит имя `add_two_1`.
 
+Мы не рассмотрели все детали написания тестов в документации. Подробнее
+смотрите главу [Документация](documentation.html).
+
+Последнее замечание: тесты в документации *не работают* для исполняемых файлов.
+Подробнее об организации файлов можно узнать в главе [Контейнеры и модули](crates-and-modules.html).

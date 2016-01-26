@@ -1,31 +1,32 @@
-% Functions
+% Функции
 
-Every Rust program has at least one function, the `main` function:
+Каждая программа на Rust имеет по крайней мере одну функцию — `main`:
 
 ```rust
 fn main() {
 }
 ```
 
-This is the simplest possible function declaration. As we mentioned before,
-`fn` says ‘this is a function’, followed by the name, some parentheses because
-this function takes no arguments, and then some curly braces to indicate the
-body. Here’s a function named `foo`:
+Это простейшее объявление функции. Как мы упоминали ранее, ключевое слово `fn`
+объявляет функцию. За ним следует её имя, пустые круглые скобки (поскольку эта
+функция не принимает аргументов), а затем тело функции, заключённое в фигурные
+скобки. Вот функция `foo`:
 
 ```rust
 fn foo() {
 }
 ```
 
-So, what about taking arguments? Here’s a function that prints a number:
+Итак, что насчёт аргументов, принимаемых функцией? Вот функция, печатающая
+число:
 
 ```rust
 fn print_number(x: i32) {
-    println!("x is: {}", x);
+    println!("x равен: {}", x);
 }
 ```
 
-Here’s a complete program that uses `print_number`:
+Вот полная программа, использующая функцию `print_number`:
 
 ```rust
 fn main() {
@@ -33,14 +34,14 @@ fn main() {
 }
 
 fn print_number(x: i32) {
-    println!("x is: {}", x);
+    println!("x равен: {}", x);
 }
 ```
 
-As you can see, function arguments work very similar to `let` declarations:
-you add a type to the argument name, after a colon.
+Как видите, аргументы функций похожи на операторы `let`: вы можете объявить тип
+аргумента после двоеточия.
 
-Here’s a complete program that adds two numbers together and prints them:
+Вот полная программа, которая складывает два числа и печатает их:
 
 ```rust
 fn main() {
@@ -48,36 +49,36 @@ fn main() {
 }
 
 fn print_sum(x: i32, y: i32) {
-    println!("sum is: {}", x + y);
+    println!("сумма чисел: {}", x + y);
 }
 ```
 
-You separate arguments with a comma, both when you call the function, as well
-as when you declare it.
+Аргументы разделяются запятой — и при вызове функции, и при её объявлении.
 
-Unlike `let`, you _must_ declare the types of function arguments. This does
-not work:
+В отличие от `let`, вы _должны_ объявлять типы аргументов функции. Этот код не
+скомпилируется:
 
 ```rust,ignore
 fn print_sum(x, y) {
-    println!("sum is: {}", x + y);
+    println!("сумма чисел: {}", x + y);
 }
 ```
 
-You get this error:
+Вы увидите такую ошибку:
 
 ```text
 expected one of `!`, `:`, or `@`, found `)`
 fn print_number(x, y) {
 ```
 
-This is a deliberate design decision. While full-program inference is possible,
-languages which have it, like Haskell, often suggest that documenting your
-types explicitly is a best-practice. We agree that forcing functions to declare
-types while allowing for inference inside of function bodies is a wonderful
-sweet spot between full inference and no inference.
+Это осознанное решение при проектировании языка. Бесспорно, вывод типов во всей
+программе возможен. Однако даже в Haskell считается хорошим стилем явно
+документировать типы функций, хотя в этом языке и возможен полный вывод типов.
+Мы считаем, что принудительное объявление типов функций при сохранении
+локального вывода типов — это хороший компромисс.
 
-What about returning a value? Here’s a function that adds one to an integer:
+Как насчёт возвращаемого значения? Вот функция, которая прибавляет один к
+целому:
 
 ```rust
 fn add_one(x: i32) -> i32 {
@@ -85,10 +86,10 @@ fn add_one(x: i32) -> i32 {
 }
 ```
 
-Rust functions return exactly one value, and you declare the type after an
-‘arrow’, which is a dash (`-`) followed by a greater-than sign (`>`). The last
-line of a function determines what it returns. You’ll note the lack of a
-semicolon here. If we added it in:
+Функции в Rust возвращают ровно одно значение, тип которого объявляется после
+«стрелки». «Стрелка» представляет собой дефис (`-`), за которым следует знак
+«больше» (`>`). Заметьте, что в функции выше нет точки с запятой. Если бы мы
+добавили её:
 
 ```rust,ignore
 fn add_one(x: i32) -> i32 {
@@ -96,7 +97,7 @@ fn add_one(x: i32) -> i32 {
 }
 ```
 
-We would get an error:
+мы бы получили ошибку:
 
 ```text
 error: not all control paths return a value
@@ -109,61 +110,60 @@ help: consider removing this semicolon:
           ^
 ```
 
-This reveals two interesting things about Rust: it is an expression-based
-language, and semicolons are different from semicolons in other ‘curly brace
-and semicolon’-based languages. These two things are related.
+Здесь показаны две интересные особенности Rust. Во-первых, это язык,
+ориентированный на выражения, и во-вторых, смысл точки с запятой отличается от
+смысла аналогичного символа в других языках с синтаксисом на основе фигурных
+скобок и точки с запятой. Эти две особенности связаны.
 
-## Expressions vs. Statements
+<a name="expressions-vs.-statements"></a>
+## Выражения и операторы
 
-Rust is primarily an expression-based language. There are only two kinds of
-statements, and everything else is an expression.
+Rust — в первую очередь язык, ориентированный на выражения. Есть только два типа
+операторов, а всё остальное является выражением.
 
-So what's the difference? Expressions return a value, and statements do not.
-That’s why we end up with ‘not all control paths return a value’ here: the
-statement `x + 1;` doesn’t return a value. There are two kinds of statements in
-Rust: ‘declaration statements’ and ‘expression statements’. Everything else is
-an expression. Let’s talk about declaration statements first.
+А в чём же разница? Выражение возвращает значение, в то время как оператор -
+нет. Вот почему мы получаем здесь «not all control paths return a value»:
+оператор `х + 1;` не возвращает значение. Есть два типа операторов в Rust:
+«операторы объявления» и «операторы выражения». Все остальное — выражения.
+Давайте сначала поговорим об операторах объявления.
 
-In some languages, variable bindings can be written as expressions, not just
-statements. Like Ruby:
+*Оператор объявления* — это связывание. В некоторых языках связывание переменных
+может быть записано как выражение, а не только как оператор. Например, в Ruby:
 
 ```ruby
 x = y = 5
 ```
 
-In Rust, however, using `let` to introduce a binding is _not_ an expression. The
-following will produce a compile-time error:
+Однако, в Rust использование `let` для связывания _не является_ выражением.
+Следующий код вызовет ошибку компиляции:
 
 ```ignore
 let x = (let y = 5); // expected identifier, found keyword `let`
 ```
 
-The compiler is telling us here that it was expecting to see the beginning of
-an expression, and a `let` can only begin a statement, not an expression.
+Здесь компилятор сообщил нам, что ожидал увидеть выражение, но `let` является
+оператором, а не выражением.
 
-Note that assigning to an already-bound variable (e.g. `y = 5`) is still an
-expression, although its value is not particularly useful. Unlike other
-languages where an assignment evaluates to the assigned value (e.g. `5` in the
-previous example), in Rust the value of an assignment is an empty tuple `()`
-because the assigned value can have [just one owner](ownership.html), and any
-other returned value would be too surprising:
+Обратите внимание, что присвоение уже связанной переменной (например: `y = 5`)
+является выражением, но его значение не особенно полезно. В отличие от других
+языков, где результатом присваивания является присваиваемое значение (например,
+`5` из предыдущего примера), в Rust значением присваивания является пустой
+кортеж `()`.
 
 ```rust
 let mut y = 5;
 
-let x = (y = 6);  // x has the value `()`, not `6`
+let x = (y = 6);  // x будет присвоено значение `()`, а не `6`
 ```
 
-The second kind of statement in Rust is the *expression statement*. Its
-purpose is to turn any expression into a statement. In practical terms, Rust's
-grammar expects statements to follow other statements. This means that you use
-semicolons to separate expressions from each other. This means that Rust
-looks a lot like most other languages that require you to use semicolons
-at the end of every line, and you will see semicolons at the end of almost
-every line of Rust code you see.
+Вторым типом операторов в Rust является *оператор выражения*. Его цель -
+превратить любое выражение в оператор. В практическом плане, грамматика Rust
+ожидает, что за операторами будут идти другие операторы. Это означает, что вы
+используете точку с запятой для отделения выражений друг от друга. Rust выглядит
+как многие другие языки, которые требуют использовать точку с запятой в конце
+каждой строки. Вы увидите её в конце почти каждой строки кода на Rust.
 
-What is this exception that makes us say "almost"? You saw it already, in this
-code:
+Из-за чего мы говорим «почти»? Вы это уже видели в этом примере:
 
 ```rust
 fn add_one(x: i32) -> i32 {
@@ -171,25 +171,26 @@ fn add_one(x: i32) -> i32 {
 }
 ```
 
-Our function claims to return an `i32`, but with a semicolon, it would return
-`()` instead. Rust realizes this probably isn’t what we want, and suggests
-removing the semicolon in the error we saw before.
+Наша функция объявлена как возвращающая `i32`. Но если в конце есть точка с
+запятой, то вместо этого функция вернёт `()`. Компилятор Rust обрабатывает эту
+ситуацию и предлагает удалить точку с запятой.
 
-## Early returns
+## Досрочный возврат из функции
 
-But what about early returns? Rust does have a keyword for that, `return`:
+А что насчёт досрочного возврата из функции? У нас есть для этого ключевое слово
+`return`:
 
 ```rust
 fn foo(x: i32) -> i32 {
     return x;
 
-    // we never run this code!
+    // дальнейший код не будет исполнен!
     x + 1
 }
 ```
 
-Using a `return` as the last line of a function works, but is considered poor
-style:
+`return` можно написать в последней строке тела функции, но это считается
+плохим стилем:
 
 ```rust
 fn foo(x: i32) -> i32 {
@@ -197,114 +198,34 @@ fn foo(x: i32) -> i32 {
 }
 ```
 
-The previous definition without `return` may look a bit strange if you haven’t
-worked in an expression-based language before, but it becomes intuitive over
-time.
+Если вы никогда не работали с языком, в котором операторы являются выражениями,
+предыдущее определение без `return` может показаться вам странным. Но со
+временем вы просто перестанете замечать это.
 
-## Diverging functions
+## Расходящиеся функции
 
-Rust has some special syntax for ‘diverging functions’, which are functions that
-do not return:
+Для функций, которые не возвращают управление («расходящихся»), в Rust есть
+специальный синтаксис:
 
 ```rust
 fn diverges() -> ! {
-    panic!("This function never returns!");
+    panic!("Эта функция не возвращает управление!");
 }
 ```
 
-`panic!` is a macro, similar to `println!()` that we’ve already seen. Unlike
-`println!()`, `panic!()` causes the current thread of execution to crash with
-the given message. Because this function will cause a crash, it will never
-return, and so it has the type ‘`!`’, which is read ‘diverges’.
+`panic!` — это макрос, как и `println!()`, который мы встречали ранее. В отличие
+от `println!()`, `panic!()` вызывает остановку текущего потока исполнения с
+заданным сообщением.
 
-If you add a main function that calls `diverges()` and run it, you’ll get
-some output that looks like this:
-
-```text
-thread ‘<main>’ panicked at ‘This function never returns!’, hello.rs:2
-```
-
-If you want more information, you can get a backtrace by setting the
-`RUST_BACKTRACE` environment variable:
-
-```text
-$ RUST_BACKTRACE=1 ./diverges
-thread '<main>' panicked at 'This function never returns!', hello.rs:2
-stack backtrace:
-   1:     0x7f402773a829 - sys::backtrace::write::h0942de78b6c02817K8r
-   2:     0x7f402773d7fc - panicking::on_panic::h3f23f9d0b5f4c91bu9w
-   3:     0x7f402773960e - rt::unwind::begin_unwind_inner::h2844b8c5e81e79558Bw
-   4:     0x7f4027738893 - rt::unwind::begin_unwind::h4375279447423903650
-   5:     0x7f4027738809 - diverges::h2266b4c4b850236beaa
-   6:     0x7f40277389e5 - main::h19bb1149c2f00ecfBaa
-   7:     0x7f402773f514 - rt::unwind::try::try_fn::h13186883479104382231
-   8:     0x7f402773d1d8 - __rust_try
-   9:     0x7f402773f201 - rt::lang_start::ha172a3ce74bb453aK5w
-  10:     0x7f4027738a19 - main
-  11:     0x7f402694ab44 - __libc_start_main
-  12:     0x7f40277386c8 - <unknown>
-  13:                0x0 - <unknown>
-```
-
-`RUST_BACKTRACE` also works with Cargo’s `run` command:
-
-```text
-$ RUST_BACKTRACE=1 cargo run
-     Running `target/debug/diverges`
-thread '<main>' panicked at 'This function never returns!', hello.rs:2
-stack backtrace:
-   1:     0x7f402773a829 - sys::backtrace::write::h0942de78b6c02817K8r
-   2:     0x7f402773d7fc - panicking::on_panic::h3f23f9d0b5f4c91bu9w
-   3:     0x7f402773960e - rt::unwind::begin_unwind_inner::h2844b8c5e81e79558Bw
-   4:     0x7f4027738893 - rt::unwind::begin_unwind::h4375279447423903650
-   5:     0x7f4027738809 - diverges::h2266b4c4b850236beaa
-   6:     0x7f40277389e5 - main::h19bb1149c2f00ecfBaa
-   7:     0x7f402773f514 - rt::unwind::try::try_fn::h13186883479104382231
-   8:     0x7f402773d1d8 - __rust_try
-   9:     0x7f402773f201 - rt::lang_start::ha172a3ce74bb453aK5w
-  10:     0x7f4027738a19 - main
-  11:     0x7f402694ab44 - __libc_start_main
-  12:     0x7f40277386c8 - <unknown>
-  13:                0x0 - <unknown>
-```
-
-A diverging function can be used as any type:
+Поскольку эта функция вызывает остановку исполнения, она никогда не вернёт
+управление. Поэтому тип её возвращаемого значения обозначается знаком `!` и
+читается как «расходится». Значение расходящейся функции может быть использовано
+как значение любого типа:
 
 ```should_panic
 # fn diverges() -> ! {
-#    panic!("This function never returns!");
+#    panic!("Эта функция никогда не выходит!");
 # }
 let x: i32 = diverges();
 let x: String = diverges();
-```
-
-## Function pointers
-
-We can also create variable bindings which point to functions:
-
-```rust
-let f: fn(i32) -> i32;
-```
-
-`f` is a variable binding which points to a function that takes an `i32` as
-an argument and returns an `i32`. For example:
-
-```rust
-fn plus_one(i: i32) -> i32 {
-    i + 1
-}
-
-// without type inference
-let f: fn(i32) -> i32 = plus_one;
-
-// with type inference
-let f = plus_one;
-```
-
-We can then use `f` to call the function:
-
-```rust
-# fn plus_one(i: i32) -> i32 { i + 1 }
-# let f = plus_one;
-let six = f(5);
 ```

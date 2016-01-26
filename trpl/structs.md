@@ -1,15 +1,16 @@
-% Structs
+% Структуры
 
-`struct`s are a way of creating more complex data types. For example, if we were
-doing calculations involving coordinates in 2D space, we would need both an `x`
-and a `y` value:
+Структуры (`struct`) — это один из способов создания более сложных типов данных.
+Например, если мы рассчитываем что-то с использованием координат 2D пространства,
+то нам понадобятся оба значения — `x` и `y`:
 
 ```rust
 let origin_x = 0;
 let origin_y = 0;
 ```
 
-A `struct` lets us combine these two into a single, unified datatype:
+Структура позволяет нам объединить эти два значения в один тип с `x` и `y` в
+качестве имен полей:
 
 ```rust
 struct Point {
@@ -20,23 +21,27 @@ struct Point {
 fn main() {
     let origin = Point { x: 0, y: 0 }; // origin: Point
 
-    println!("The origin is at ({}, {})", origin.x, origin.y);
+    println!("Начало координат находится в ({}, {})", origin.x, origin.y);
 }
 ```
 
-There’s a lot going on here, so let’s break it down. We declare a `struct` with
-the `struct` keyword, and then with a name. By convention, `struct`s begin with
-a capital letter and are camel cased: `PointInSpace`, not `Point_In_Space`.
+Этот код делает много разных вещей, поэтому давайте разберём его по порядку. Мы
+объявляем структуру с помощью ключевого слова `struct`, за которым следует имя
+объявляемой структуры. Обычно, имена типов-структур начинаются с заглавной буквы
+и используют чередующийся регистр букв: название `PointInSpace` выглядит
+привычно, а `Point_In_Space` — нет.
 
-We can create an instance of our `struct` via `let`, as usual, but we use a `key:
-value` style syntax to set each field. The order doesn’t need to be the same as
-in the original declaration.
+Как всегда, мы можем создать экземпляр нашей структуры с помощью оператора
+`let`. Однако в данном случае мы используем синтаксис вида `ключ: значение` для
+установки значения каждого поля. Порядок инициализации полей не обязательно
+должен совпадать с порядком их объявления.
 
-Finally, because fields have names, we can access the field through dot
-notation: `origin.x`.
+Наконец, поскольку у полей есть имена, мы можем получить к ним доступ с помощью
+операции `точка`: `origin.x`.
 
-The values in `struct`s are immutable by default, like other bindings in Rust.
-Use `mut` to make them mutable:
+Значения, хранимые в структурах, неизменяемы по умолчанию. В этом плане они не
+отличаются от других именованных сущностей. Чтобы они стали изменяемы,
+используйте ключевое слово `mut`:
 
 ```rust
 struct Point {
@@ -49,14 +54,14 @@ fn main() {
 
     point.x = 5;
 
-    println!("The point is at ({}, {})", point.x, point.y);
+    println!("Точка находится в ({}, {})", point.x, point.y);
 }
 ```
 
-This will print `The point is at (5, 0)`.
+Этот код напечатает `Точка находится в (5, 0)`.
 
-Rust does not support field mutability at the language level, so you cannot
-write something like this:
+Rust не поддерживает изменяемость отдельных полей, поэтому вы не можете написать
+что-то вроде такого:
 
 ```rust,ignore
 struct Point {
@@ -65,11 +70,10 @@ struct Point {
 }
 ```
 
-Mutability is a property of the binding, not of the structure itself. If you’re
-used to field-level mutability, this may seem strange at first, but it
-significantly simplifies things. It even lets you make things mutable for a short
-time only:
-
+Изменяемость — это свойство имени, а не самой структуры. Если вы привыкли к
+управлению изменяемостью на уровне полей, сначала это может показаться
+непривычным, но на самом деле такое решение сильно упрощает вещи. Оно даже
+позволяет вам делать имена изменяемыми только на короткое время:
 
 ```rust,ignore
 struct Point {
@@ -82,16 +86,45 @@ fn main() {
 
     point.x = 5;
 
-    let point = point; // this new binding can’t change now
+    let point = point; // это новое имя неизменяемо
 
-    point.y = 6; // this causes an error
+    point.y = 6; // это вызывает ошибку
 }
 ```
 
-# Update syntax
+Структуры так же могут содержать `&mut` ссылки, это позволяет вам производить
+подобные преобразования:
 
-A `struct` can include `..` to indicate that you want to use a copy of some
-other `struct` for some of the values. For example:
+```rust
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+struct PointRef<'a> {
+    x: &'a mut i32,
+    y: &'a mut i32,
+}
+
+fn main() {
+    let mut point = Point { x: 0, y: 0 };
+
+    {
+        let r = PointRef { x: &mut point.x, y: &mut point.y };
+
+        *r.x = 5;
+        *r.y = 6;
+    }
+
+    assert_eq!(5, point.x);
+    assert_eq!(6, point.y);
+}
+```
+
+# Синтаксис обновления (update syntax)
+
+Вы можете включить в описание структуры `..` чтобы показать, что вы хотите
+использовать значения полей какой-то другой структуры. Например:
 
 ```rust
 struct Point3d {
@@ -104,9 +137,10 @@ let mut point = Point3d { x: 0, y: 0, z: 0 };
 point = Point3d { y: 1, .. point };
 ```
 
-This gives `point` a new `y`, but keeps the old `x` and `z` values. It doesn’t
-have to be the same `struct` either, you can use this syntax when making new
-ones, and it will copy the values you don’t specify:
+Этот код присваивает `point` новое `y`, но оставляет старые `x` и `z`. Это не
+обязательно должна быть та же самая структура — вы можете использовать этот
+синтаксис когда создаёте новые структуры, чтобы скопировать значения неуказанных
+полей:
 
 ```rust
 # struct Point3d {
@@ -118,30 +152,26 @@ let origin = Point3d { x: 0, y: 0, z: 0 };
 let point = Point3d { z: 1, x: 2, .. origin };
 ```
 
-# Tuple structs
+# Кортежные структуры
 
-Rust has another data type that’s like a hybrid between a [tuple][tuple] and a
-`struct`, called a ‘tuple struct’. Tuple structs have a name, but
-their fields don’t:
+В Rust есть ещё один тип данных, который представляет собой нечто среднее между
+[кортежем][tuple] и структурой. Он называется *кортежной структурой*. Кортежные
+структуры именуются, а вот у их полей имён нет:
+
+[tuple]: primitive-types.html#tuples
 
 ```rust
 struct Color(i32, i32, i32);
 struct Point(i32, i32, i32);
-```
 
-[tuple]: primitive-types.html#tuples
-
-These two will not be equal, even if they have the same values:
-
-```rust
-# struct Color(i32, i32, i32);
-# struct Point(i32, i32, i32);
 let black = Color(0, 0, 0);
 let origin = Point(0, 0, 0);
 ```
 
-It is almost always better to use a `struct` than a tuple struct. We would write
-`Color` and `Point` like this instead:
+Эти два объекта различны, несмотря на то, что у них одинаковые значения.
+
+Почти всегда, вместо кортежной структуры лучше использовать обычную структуру.
+Мы бы скорее объявили типы `Color` и `Point` вот так:
 
 ```rust
 struct Color {
@@ -157,13 +187,15 @@ struct Point {
 }
 ```
 
-Now, we have actual names, rather than positions. Good names are important,
-and with a `struct`, we have actual names.
+Хорошие имена важны, и хотя значения в кортежной структуре могут быть так же
+получены с помощью операции `точка`, структуры дают нам настоящее имя, а не
+позицию.
 
-There _is_ one case when a tuple struct is very useful, though, and that’s a
-tuple struct with only one element. We call this the ‘newtype’ pattern, because
-it allows you to create a new type, distinct from that of its contained value
-and expressing its own semantic meaning:
+Однако, _есть_ один случай, когда кортежные структуры очень полезны. Это
+кортежная структура с всего одним элементом. Такое использование называется
+*новым типом*, потому что оно позволяет создать новый тип, отличный от типа
+значения, содержащегося в кортежной структуре. При этом новый тип обозначает
+что-то другое:
 
 ```rust
 struct Inches(i32);
@@ -171,30 +203,33 @@ struct Inches(i32);
 let length = Inches(10);
 
 let Inches(integer_length) = length;
-println!("length is {} inches", integer_length);
+println!("Длина в дюймах: {}", integer_length);
 ```
 
-As you can see here, you can extract the inner integer type through a
-destructuring `let`, just as with regular tuples. In this case, the
-`let Inches(integer_length)` assigns `10` to `integer_length`.
+Как вы можете видеть в данном примере, извлечь вложенный целый тип можно с
+помощью деконструирующего `let`. Мы обсуждали это выше, в разделе «кортежи». В
+данном случае, оператор `let Inches(integer_length)` присваивает `10` имени
+`integer_length`.
 
-# Unit-like structs
+# Unit-подобные структуры
 
-You can define a `struct` with no members at all:
+Вы можете объявить структуру без полей вообще:
 
 ```rust
 struct Electron;
+
+let x = Electron;
 ```
 
-Such a `struct` is called ‘unit-like’ because it resembles the empty
-tuple, `()`, sometimes called ‘unit’. Like a tuple struct, it defines a
-new type.
+Такие структуры называют «unit-подобные» («unit-like»), потому что они похожи
+на пустой кортеж `()`, иногда называемый «unit». Как и кортежные структуры, их
+называют новым типом.
 
-This is rarely useful on its own (although sometimes it can serve as a
-marker type), but in combination with other features, it can become
-useful. For instance, a library may ask you to create a structure that
-implements a certain [trait][trait] to handle events. If you don’t have
-any data you need to store in the structure, you can just create a
-unit-like `struct`.
+Сами по себе они редко бывают полезны (хотя иногда их используют в качестве
+меток), но в сочетании с другими возможностями их использование имеет смысл.
+Например, для использования библиотеки может быть необходимо создать структуру,
+которая реализует определенный [типаж][trait] для обработки событий. Если у вас
+нет данных, которые нужно поместить в структуру, то можно просто создать
+unit-подобную структуру.
 
 [trait]: traits.html

@@ -1,68 +1,48 @@
-% Release Channels
+% Каналы сборок
 
-The Rust project uses a concept called ‘release channels’ to manage releases.
-It’s important to understand this process to choose which version of Rust
-your project should use.
+Проект Rust использует концепцию под названием «каналы сборок» для управления
+сборками. Важно понять этот процесс, чтобы выбрать, какую версию Rust
+использовать в вашем проекте.
 
-# Overview
+# Обзор
 
-There are three channels for Rust releases:
+Есть три канала сборок Rust:
 
-* Nightly
-* Beta
-* Stable
+* Ночной (Nightly)
+* Бета (Beta)
+* Стабильный (Stable)
 
-New nightly releases are created once a day. Every six weeks, the latest
-nightly release is promoted to ‘Beta’. At that point, it will only receive
-patches to fix serious errors. Six weeks later, the beta is promoted to
-‘Stable’, and becomes the next release of `1.x`.
+Новые ночные сборки создаются раз в день. Каждые шесть недель последняя ночная
+сборка переводится в канал «бета». С этого момента она будет получать только
+исправления серьёзных ошибок. Шесть недель спустя бета сборка переводится в
+канал «стабильный» и становится очередной стабильной сборкой `1.x`.
 
-This process happens in parallel. So every six weeks, on the same day,
-nightly goes to beta, beta goes to stable. When `1.x` is released, at
-the same time, `1.(x + 1)-beta` is released, and the nightly becomes the
-first version of `1.(x + 2)-nightly`.
+Этот процесс происходит параллельно. Так, каждые шесть недель, в один и тот же
+день, ночная сборка превращается в бета сборку, а бета сборка превращается в
+стабильную сборку. Это произойдёт одновременно: стабильная сборка получит версию
+`1.x`, бета сборка получит версию `1.(x + 1)-beta`, а ночная сборка станет
+первой версией `1.(x + 2)-nightly`.
 
-# Choosing a version
+# Выбор версии
 
-Generally speaking, unless you have a specific reason, you should be using the
-stable release channel. These releases are intended for a general audience.
+Вообще говоря, если у вас нет особых причин, вы должны использовать канал
+стабильных сборок. Эти сборки предназначены для широкой аудитории.
 
-However, depending on your interest in Rust, you may choose to use nightly
-instead. The basic tradeoff is this: in the nightly channel, you can use
-unstable, new Rust features. However, unstable features are subject to change,
-and so any new nightly release may break your code. If you use the stable
-release, you cannot use experimental features, but the next release of Rust
-will not cause significant issues through breaking changes.
+Однако, в зависимости от ваших интересов к Rust, вы можете вместо этого выбрать
+ночную сборку. Основной компромисс заключается в следующем: при выборе канала
+ночных сборок, вы можете использовать неустойчивые, новые возможности Rust. Тем
+не менее, нестабильные возможности могут быть изменены, и поэтому любая новая
+ночная сборка может сломать ваш код. Если же вы выберете стабильную сборку, то
+не сможете использовать экспериментальные возможности, но следующий релиз Rust
+не вызовет существенных проблем с критическими изменениями.
 
-# Helping the ecosystem through CI
+# Помощь экосистеме с помощью непрерывной интеграции
 
-What about beta? We encourage all Rust users who use the stable release channel
-to also test against the beta channel in their continuous integration systems.
-This will help alert the team in case there’s an accidental regression.
+А что насчёт бета канала? Мы призываем всех пользователей Rust, которые
+используют канал стабильных сборок, также протестировать работу с использованием
+бета канала в их системах непрерывной интеграции. Это поможет предупредить
+команду в случае возникновения неожиданных регрессий.
 
-Additionally, testing against nightly can catch regressions even sooner, and so
-if you don’t mind a third build, we’d appreciate testing against all channels.
-
-As an example, many Rust programmers use [Travis](https://travis-ci.org/) to
-test their crates, which is free for open source projects. Travis [supports
-Rust directly][travis], and you can use a `.travis.yml` file like this to
-test on all channels:
-
-```yaml
-language: rust
-rust:
-  - nightly
-  - beta
-  - stable
-
-matrix:
-  allow_failures:
-    - rust: nightly
-```
-
-[travis]: http://docs.travis-ci.com/user/languages/rust/
-
-With this configuration, Travis will test all three channels, but if something
-breaks on nightly, it won’t fail your build. A similar configuration is
-recommended for any CI system, check the documentation of the one you’re
-using for more details.
+Кроме того, тестирование работы с использованием ночного канала может выявить
+регрессии даже раньше, а поэтому, если вас не затруднит создание трех сборок, мы
+будем признательны тестированию работы с использованием всех трех каналов.

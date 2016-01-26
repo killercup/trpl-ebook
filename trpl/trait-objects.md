@@ -1,15 +1,16 @@
-% Trait Objects
+% Типажи-объекты
 
-When code involves polymorphism, there needs to be a mechanism to determine
-which specific version is actually run. This is called ‘dispatch’. There are
-two major forms of dispatch: static dispatch and dynamic dispatch. While Rust
-favors static dispatch, it also supports dynamic dispatch through a mechanism
-called ‘trait objects’.
+Когда код включает в себя полиморфизм, то должен быть механизм, чтобы
+определить, какая конкретная версия будет фактически вызвана. Это называется
+'диспетчеризация.' Есть две основные формы диспетчеризации: статическая и
+динамическая. Хотя Rust и отдает предпочтение статической диспетчеризации, он
+также поддерживает динамическую диспетчеризацию через механизм, называемый
+'типажи-объекты.'
 
-## Background
+## Подготовка
 
-For the rest of this chapter, we’ll need a trait and some implementations.
-Let’s make a simple one, `Foo`. It has one method that is expected to return a
+Для остальной части этой главы нам потребуется типаж и несколько его реализаций.
+Давайте создадим простой типаж `Foo`. Он содержит один метод, который возвращает
 `String`.
 
 ```rust
@@ -18,7 +19,7 @@ trait Foo {
 }
 ```
 
-We’ll also implement this trait for `u8` and `String`:
+Также мы реализуем этот типаж для `u8` и `String`:
 
 ```rust
 # trait Foo { fn method(&self) -> String; }
@@ -32,9 +33,10 @@ impl Foo for String {
 ```
 
 
-## Static dispatch
+## Статическая диспетчеризация
 
-We can use this trait to perform static dispatch with trait bounds:
+Мы можем использовать этот типаж для выполнения статической диспетчеризации с
+помощью ограничения типажом:
 
 ```rust
 # trait Foo { fn method(&self) -> String; }
@@ -53,10 +55,10 @@ fn main() {
 }
 ```
 
-Rust uses ‘monomorphization’ to perform static dispatch here. This means that
-Rust will create a special version of `do_something()` for both `u8` and
-`String`, and then replace the call sites with calls to these specialized
-functions. In other words, Rust generates something like this:
+Здесь Rust использует 'мономорфизацию' для статической диспетчеризации. Это
+означает, что Rust создаст специальную версию `do_something()` для каждого из
+типов: `u8` и `String`, а затем заменит все места вызовов на вызовы этих
+специализированных функций. Другими словами, Rust сгенерирует нечто вроде этого:
 
 ```rust
 # trait Foo { fn method(&self) -> String; }
@@ -79,45 +81,49 @@ fn main() {
 }
 ```
 
-This has a great upside: static dispatch allows function calls to be
-inlined because the callee is known at compile time, and inlining is
-the key to good optimization. Static dispatch is fast, but it comes at
-a tradeoff: ‘code bloat’, due to many copies of the same function
-existing in the binary, one for each type.
+Статическая диспетчеризация имеет большой потенциал: она позволяет вызывать
+функцию, которая будет встроена, потому что вызываемая версия этой функции
+известна на этапе компиляции, а встраивание — это ключ к хорошей оптимизации.
+Статическая диспетчеризация быстра, но это достигается путем компромисса:
+происходит 'раздувание кода' в связи с большим количеством копий одной и той же
+функции, по одной для каждого типа, расположенных в бинарном файле.
 
-Furthermore, compilers aren’t perfect and may “optimize” code to become slower.
-For example, functions inlined too eagerly will bloat the instruction cache
-(cache rules everything around us). This is part of the reason that `#[inline]`
-and `#[inline(always)]` should be used carefully, and one reason why using a
-dynamic dispatch is sometimes more efficient.
+Кроме того, компиляторы не совершенны и могут «оптимизировать» код так, что он
+станет медленнее. Например, встроенные функции будут слишком охотно раздувать
+кэш команд (правила кэширования все вокруг нас). Это одна из причин, по которой
+`#[inline]` и `#[inline(always)]` следует использовать осторожно, и почему
+использование динамической диспетчеризации иногда более эффективно.
 
-However, the common case is that it is more efficient to use static dispatch,
-and one can always have a thin statically-dispatched wrapper function that does
-a dynamic dispatch, but not vice versa, meaning static calls are more flexible.
-The standard library tries to be statically dispatched where possible for this
-reason.
+Тем не менее, в общем случае более эффективно использовать статическую
+диспетчеризацию. Кроме того, всегда можно иметь тонкую статически-
+диспетчеризуемую обертку для функции, которая выполняет динамическую
+диспетчеризацию, но не наоборот. То есть статические вызовы являются более
+гибкими. По этой причине стандартная библиотека старается быть статически
+диспетчеризуемой везде, где это возможно.
 
-## Dynamic dispatch
+## Динамическая диспетчеризация
 
-Rust provides dynamic dispatch through a feature called ‘trait objects’. Trait
-objects, like `&Foo` or `Box<Foo>`, are normal values that store a value of
-*any* type that implements the given trait, where the precise type can only be
-known at runtime.
+Rust обеспечивает динамическую диспетчеризацию через механизм под названием
+'типажи-объекты'. Типажи-объекты, такие как `&Foo` или `Box<Foo>`, это обычные
+переменные, хранящие значения *любого* типа, реализующего данный типаж.
+Конкретный тип типажа-объекта может быть определен только на этапе выполнения.
 
-A trait object can be obtained from a pointer to a concrete type that
-implements the trait by *casting* it (e.g. `&x as &Foo`) or *coercing* it
-(e.g. using `&x` as an argument to a function that takes `&Foo`).
+Типаж-объект может быть получен из указателя на конкретный тип, который
+реализует этот типаж, путем его `явного приведения` (например, `&x as &Foo`) или
+`неявного приведения` (например, используя `&x` в качестве аргумента функции,
+которая принимает `&Foo`).
 
-These trait object coercions and casts also work for pointers like `&mut T` to
-`&mut Foo` and `Box<T>` to `Box<Foo>`, but that’s all at the moment. Coercions
-and casts are identical.
+Явное и неявное приведение типажа-объекта также работает для таких указателей,
+как `&mut T` в `&mut Foo` и `Box<T>` в `Box<Foo>`, но это все на данный момент.
+Явное и неявное приведение идентичны.
 
-This operation can be seen as ‘erasing’ the compiler’s knowledge about the
-specific type of the pointer, and hence trait objects are sometimes referred to
-as ‘type erasure’.
+Эта операция может рассматриваться как «затирание» знания компилятора о
+конкретном типе указателя, поэтому типажи-объекты иногда называют «затиранием
+типов».
 
-Coming back to the example above, we can use the same trait to perform dynamic
-dispatch with trait objects by casting:
+Возвращаясь к примеру выше, мы можем использовать тот же самый типаж для
+выполнения динамической диспетчеризации с типажами-объектами путем явного
+приведения типа:
 
 ```rust
 # trait Foo { fn method(&self) -> String; }
@@ -134,7 +140,7 @@ fn main() {
 }
 ```
 
-or by coercing:
+или неявного приведения типа:
 
 ```rust
 # trait Foo { fn method(&self) -> String; }
@@ -151,42 +157,45 @@ fn main() {
 }
 ```
 
-A function that takes a trait object is not specialized to each of the types
-that implements `Foo`: only one copy is generated, often (but not always)
-resulting in less code bloat. However, this comes at the cost of requiring
-slower virtual function calls, and effectively inhibiting any chance of
-inlining and related optimizations from occurring.
+Функция, которая принимает типаж-объект, не обладает специализированными копиями
+для каждого из типов, которые реализуют типаж `Foo`: генерируется только одна
+копия. Часто (но не всегда), в результате происходит уменьшение раздувания кода.
+Тем не менее, это происходит за счет более медленного вызова виртуальных
+функций, и, по существу, блокирования любой возможности встраивания и связанных
+с этим оптимизаций.
 
-### Why pointers?
+### Почему указатели?
 
-Rust does not put things behind a pointer by default, unlike many managed
-languages, so types can have different sizes. Knowing the size of the value at
-compile time is important for things like passing it as an argument to a
-function, moving it about on the stack and allocating (and deallocating) space
-on the heap to store it.
+В отличие от многих управляемых языков, Rust по умолчанию не размещает значения
+по указателю, так как типы могут иметь различные размеры. Знать размер значения
+во время компиляции важно прежде всего для выполнения таких задач, как передача
+значения в качестве аргумента в функцию, что вызывает помещение переданного
+значения в стек, и выделение (и освобождение) места на куче для сохранения
+значения там.
 
-For `Foo`, we would need to have a value that could be at least either a
-`String` (24 bytes) or a `u8` (1 byte), as well as any other type for which
-dependent crates may implement `Foo` (any number of bytes at all). There’s no
-way to guarantee that this last point can work if the values are stored without
-a pointer, because those other types can be arbitrarily large.
+Для `Foo` допускается иметь значение, которое может быть либо `String` (24
+байт), либо `u8` (1 байт), либо любой другой тип, для которого в соответствующих
+крейтах может быть реализован `Foo` (возможно абсолютно любое число байт). Так
+как этот другой тип может быть сколь угодно большими, то нет никакого способа,
+гарантирующего, что последний вариант будет работать, если значения сохраняются
+без указателя.
 
-Putting the value behind a pointer means the size of the value is not relevant
-when we are tossing a trait object around, only the size of the pointer itself.
+Размещение значения по указателю означает, что, когда мы имеем дело с типажом-
+объектом, размер самого значения не важен, а важен лишь размер указателя.
 
-### Representation
+### Представление
 
-The methods of the trait can be called on a trait object via a special record
-of function pointers traditionally called a ‘vtable’ (created and managed by
-the compiler).
+Методы типажа можно вызвать для типажа-объекта с помощью специальной записи
+указателей на функции, традиционно называемой 'виртуальная таблица' ('vtable')
+(создается и управляется компилятором).
 
-Trait objects are both simple and complicated: their core representation and
-layout is quite straight-forward, but there are some curly error messages and
-surprising behaviors to discover.
+Типажи-объекты являются одновременно и простыми и сложными: их основное
+представление и устройство довольно прямолинейно, но есть некоторые тонкости
+относительно обнаружения сообщений об ошибках и странного поведения.
 
-Let’s start simple, with the runtime representation of a trait object. The
-`std::raw` module contains structs with layouts that are the same as the
-complicated built-in types, [including trait objects][stdraw]:
+Давайте начнем с простого, с рантайм представления типажа-объекта. Модуль
+`std::raw` содержит структуры с макетами, которые являются такими же, как и
+сложные встроенные типы, [в том числе типажи-объекты][stdraw]:
 
 ```rust
 # mod foo {
@@ -197,20 +206,21 @@ pub struct TraitObject {
 # }
 ```
 
-[stdraw]: ../std/raw/struct.TraitObject.html
+[stdraw]: http://doc.rust-lang.org/std/raw/struct.TraitObject.html
 
-That is, a trait object like `&Foo` consists of a ‘data’ pointer and a ‘vtable’
-pointer.
+То есть типаж-объект, такой как `&Foo`, состоит из указателя на «данные» и
+указателя на «виртуальную таблицу».
 
-The data pointer addresses the data (of some unknown type `T`) that the trait
-object is storing, and the vtable pointer points to the vtable (‘virtual method
-table’) corresponding to the implementation of `Foo` for `T`.
+Указатель `data` адресует данные (какого-то неизвестного типа `T`), которые
+хранит типаж-объект, а указатель `vtable` указывает на виртуальную таблицу
+(«таблица виртуальных методов»), которая соответствует реализации `Foo` для `T`.
 
 
-A vtable is essentially a struct of function pointers, pointing to the concrete
-piece of machine code for each method in the implementation. A method call like
-`trait_object.method()` will retrieve the correct pointer out of the vtable and
-then do a dynamic call of it. For example:
+По существу, виртуальная таблица — это структура указателей на функции,
+указывающих на конкретный кусок машинного кода для каждого метода в реализации.
+Вызов метода наподобие `trait_object.method()` возвращает правильный указатель
+из виртуальной таблицы, а затем динамически вызывает метод по этому указателю.
+Например:
 
 ```rust,ignore
 struct FooVtable {
@@ -223,19 +233,19 @@ struct FooVtable {
 // u8:
 
 fn call_method_on_u8(x: *const ()) -> String {
-    // the compiler guarantees that this function is only called
-    // with `x` pointing to a u8
+    // компилятор гарантирует, что эта функция вызывается только
+    // с `x`, указывающим на u8
     let byte: &u8 = unsafe { &*(x as *const u8) };
 
     byte.method()
 }
 
 static Foo_for_u8_vtable: FooVtable = FooVtable {
-    destructor: /* compiler magic */,
+    destructor: /* магия компилятора */,
     size: 1,
     align: 1,
 
-    // cast to a function pointer
+    // преобразование в указатель на функцию
     method: call_method_on_u8 as fn(*const ()) -> String,
 };
 
@@ -243,16 +253,16 @@ static Foo_for_u8_vtable: FooVtable = FooVtable {
 // String:
 
 fn call_method_on_String(x: *const ()) -> String {
-    // the compiler guarantees that this function is only called
-    // with `x` pointing to a String
+    // компилятор гарантирует, что эта функция вызывается только
+    // с `x`, указывающим на String
     let string: &String = unsafe { &*(x as *const String) };
 
     string.method()
 }
 
 static Foo_for_String_vtable: FooVtable = FooVtable {
-    destructor: /* compiler magic */,
-    // values for a 64-bit computer, halve them for 32-bit ones
+    destructor: /* магия компилятора */,
+    // значения для 64-битного компьютера, для 32-битного они в 2 раза меньше
     size: 24,
     align: 8,
 
@@ -260,19 +270,20 @@ static Foo_for_String_vtable: FooVtable = FooVtable {
 };
 ```
 
-The `destructor` field in each vtable points to a function that will clean up
-any resources of the vtable’s type: for `u8` it is trivial, but for `String` it
-will free the memory. This is necessary for owning trait objects like
-`Box<Foo>`, which need to clean-up both the `Box` allocation as well as the
-internal type when they go out of scope. The `size` and `align` fields store
-the size of the erased type, and its alignment requirements; these are
-essentially unused at the moment since the information is embedded in the
-destructor, but will be used in the future, as trait objects are progressively
-made more flexible.
+Поле `destructor` в каждой виртуальной таблице указывает на функцию, которая
+будет очищать любые ресурсы типа этой виртуальной таблицы, для `u8` она
+тривиальна, но для `String` она будет освобождать память. Это необходимо для
+владельцев типажей-объектов, таких как `Box<Foo>`, для которых необходимо
+очищать выделенную память как для `Box`, так и для внутреннего типа, когда они
+выходят из области видимости. Поля `size` и `align` хранят размер затёртого
+типа, и его требования к выравниванию; по существу, они не использовался в
+момент, так как информация встроенного в деструктор, но будет использоваться в
+будущем, так как объекты отличительным признакам постепенно становится более
+гибким.
 
-Suppose we’ve got some values that implement `Foo`. The explicit form of
-construction and use of `Foo` trait objects might look a bit like (ignoring the
-type mismatches: they’re all just pointers anyway):
+Предположим, у нас есть несколько значений, которые реализуют `Foo`, тогда явный
+вид создания и использования типажей-объектов `Foo` может выглядеть примерно как
+(игнорируются несоответствия типов: в любом случае, они всего лишь указатели):
 
 ```rust,ignore
 let a: String = "foo".to_string();
@@ -300,41 +311,3 @@ let y = TraitObject {
 // y.method();
 (y.vtable.method)(y.data);
 ```
-
-## Object Safety
-
-Not every trait can be used to make a trait object. For example, vectors implement
-`Clone`, but if we try to make a trait object:
-
-```ignore
-let v = vec![1, 2, 3];
-let o = &v as &Clone;
-```
-
-We get an error:
-
-```text
-error: cannot convert to a trait object because trait `core::clone::Clone` is not object-safe [E0038]
-let o = &v as &Clone;
-        ^~
-note: the trait cannot require that `Self : Sized`
-let o = &v as &Clone;
-        ^~
-```
-
-The error says that `Clone` is not ‘object-safe’. Only traits that are
-object-safe can be made into trait objects. A trait is object-safe if both of
-these are true:
-
-* the trait does not require that `Self: Sized`
-* all of its methods are object-safe
-
-So what makes a method object-safe? Each method must require that `Self: Sized`
-or all of the following:
-
-* must not have any type parameters
-* must not use `Self`
-
-Whew! As we can see, almost all of these rules talk about `Self`. A good intuition
-is “except in special circumstances, if your trait’s method uses `Self`, it is not
-object-safe.”

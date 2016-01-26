@@ -1,9 +1,11 @@
-%  Box Syntax and Patterns
+% Синтаксис упаковки и шаблоны `match`
 
-Currently the only stable way to create a `Box` is via the `Box::new` method.
-Also it is not possible in stable Rust to destructure a `Box` in a match
-pattern. The unstable `box` keyword can be used to both create and destructure
-a `Box`. An example usage would be:
+В настоящее время единственный стабильный способ создания `Box` — это создание с
+помощью метода `Box::new`. В стабильной сборке Rust также невозможно
+деструктурировать `Box` при использовании сопоставления с шаблоном. В
+нестабильной сборке может быть использовано ключевое слово `box`, как для
+создания, так и для деструктуризации `Box`. Ниже представлен пример
+использования:
 
 ```rust
 #![feature(box_syntax, box_patterns)]
@@ -25,14 +27,15 @@ fn main() {
 }
 ```
 
-Note that these features are currently hidden behind the `box_syntax` (box
-creation) and `box_patterns` (destructuring and pattern matching) gates
-because the syntax may still change in the future.
+Обратите внимание, что эти возможности в настоящее время являются скрытыми:
+`box_syntax` (создание упаковки) и `box_patterns` (деструктурирование и
+сопоставление с образцом), потому что синтаксис все еще может измениться в
+будущем.
 
-# Returning Pointers
+# Возврат указателей
 
-In many languages with pointers, you'd return a pointer from a function
-so as to avoid copying a large data structure. For example:
+Во многих языках с указателями, вы можете вернуть указатель из функции, чтобы
+таким образом избежать копирования большой структуры данных. Например:
 
 ```rust
 struct BigStruct {
@@ -57,10 +60,10 @@ fn main() {
 }
 ```
 
-The idea is that by passing around a box, you're only copying a pointer, rather
-than the hundred `i32`s that make up the `BigStruct`.
+Идея состоит в том, что, при передаче упаковки, происходит копирование только
+указателя, а не всех `int`, из которых состоит `BigStruct`.
 
-This is an antipattern in Rust. Instead, write this:
+Это антипаттерн в Rust. Вместо этого следует написать так:
 
 ```rust
 #![feature(box_syntax)]
@@ -87,14 +90,15 @@ fn main() {
 }
 ```
 
-This gives you flexibility without sacrificing performance.
+Это дает вам гибкость без ущерба для производительности.
 
-You may think that this gives us terrible performance: return a value and then
-immediately box it up ?! Isn't this pattern the worst of both worlds? Rust is
-smarter than that. There is no copy in this code. `main` allocates enough room
-for the `box`, passes a pointer to that memory into `foo` as `x`, and then
-`foo` writes the value straight into the `Box<T>`.
+Вы можете подумать, что такое использование даст нам ужасную производительность:
+возвращается значение, а затем оно сразу упаковывается?! Разве это не паттерн
+худшего из двух миров? Rust намного умнее. В этом коде не происходит
+копирование. `main` выделяет достаточно места для `box`, передает указатель на
+эту память в `foo` в виде `x`, а затем `foo` записывает значение прямо в
+`Box<T>`.
 
-This is important enough that it bears repeating: pointers are not for
-optimizing returning values from your code. Allow the caller to choose how they
-want to use your output.
+Это достаточно важно, поэтому стоит повторить: указатели не для оптимизации
+возвращаемых значений в коде. Позвольте вызывающей стороне самой выбрать, как
+она хочет использовать выход.

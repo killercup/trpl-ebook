@@ -1,53 +1,54 @@
-% Unsized Types
+% Безразмерные типы
 
-Most types have a particular size, in bytes, that is knowable at compile time.
-For example, an `i32` is thirty-two bits big, or four bytes. However, there are
-some types which are useful to express, but do not have a defined size. These are
-called ‘unsized’ or ‘dynamically sized’ types. One example is `[T]`. This type
-represents a certain number of `T` in sequence. But we don’t know how many
-there are, so the size is not known.
+Большинство типов имеют определённый размер в байтах. Этот размер обычно
+известен во время компиляции. Например, `i32` — это 32 бита, или 4 байта.
+Однако, существуют некоторые полезные типы, которые не имеют определённого
+размера. Они называются «безразмерными» или «типами динамического размера». Один
+из примеров таких типов — это `[T]`. Этот тип представляет собой
+последовательность из определённого числа элементов `T`. Но мы не знаем, как
+много этих элементов, поэтому размер неизвестен.
 
-Rust understands a few of these types, but they have some restrictions. There
-are three:
+Rust понимает несколько таких типов, но их использование несколько ограничено.
+Есть три ограничения:
 
-1. We can only manipulate an instance of an unsized type via a pointer. An
-   `&[T]` works just fine, but a `[T]` does not.
-2. Variables and arguments cannot have dynamically sized types.
-3. Only the last field in a `struct` may have a dynamically sized type; the
-   other fields must not. Enum variants must not have dynamically sized types as
-   data.
+1. Мы можем работать с экземпляром безразмерного типа только с помощью
+   указателя. `&[T]` будет работать, а `[T]` — нет.
+2. Переменные и аргументы не могут иметь тип динамического размера.
+3. Только последнее поле структуры может быть безразмерного типа; другие — нет.
+   Варианты перечислений не могут содержать типы динамического размера в
+   качестве данных.
 
-So why bother? Well, because `[T]` can only be used behind a pointer, if we
-didn’t have language support for unsized types, it would be impossible to write
-this:
+А зачем это всё? Поскольку мы можем использовать `[T]` только через указатель,
+если бы язык не поддерживал безразмерные типы, мы бы не смогли написать такой
+код:
 
 ```rust,ignore
 impl Foo for str {
 ```
 
-or
+или
 
 ```rust,ignore
 impl<T> Foo for [T] {
 ```
 
-Instead, you would have to write:
+Вместо этого, вам бы пришлось написать:
 
 ```rust,ignore
 impl Foo for &str {
 ```
 
-Meaning, this implementation would only work for [references][ref], and not
-other types of pointers. With the `impl for str`, all pointers, including (at
-some point, there are some bugs to fix first) user-defined custom smart
-pointers, can use this `impl`.
+Таким образом, данная реализация работала бы только для [ссылок][ref], и не
+поддерживала бы другие типы указателей. А реализацию для безразмерного типа
+смогут использовать любые указатели, включая определённые пользователем умные
+указатели (позже, когда будут исправлены некоторые ошибки).
 
 [ref]: references-and-borrowing.html
 
 # ?Sized
 
-If you want to write a function that accepts a dynamically sized type, you
-can use the special bound, `?Sized`:
+Если вы пишете функцию, принимающую тип динамического размера, вы можете
+использовать специальное ограничение `?Sized`:
 
 ```rust
 struct Foo<T: ?Sized> {
@@ -55,6 +56,9 @@ struct Foo<T: ?Sized> {
 }
 ```
 
-This `?`, read as “T may be `Sized`”,  means that this bound is special: it
-lets us match more kinds, not less. It’s almost like every `T` implicitly has
-`T: Sized`, and the `?` undoes this default.
+Этот `?` читается как «Т может быть размерным (`Sized`)». Он означает, что это
+ограничение особенное: оно разрешает использование некоторых типов, которые не
+могли бы быть использованы в его отсутствие. Таким образом, оно *расширяет*
+множество подходящих типов, а не сужает его. Это можно представить себе как если
+бы все типы `T` неявно были размерными (`T: Sized`), а `?` отменял это
+ограничение по-умолчанию.

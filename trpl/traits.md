@@ -1,12 +1,13 @@
-% Traits
+% Типажи
 
-A trait is a language feature that tells the Rust compiler about
-functionality a type must provide.
+Типаж --- это возможность объяснить компилятору, что данный тип должен
+предоставлять определённую функциональность.
 
-Do you remember the `impl` keyword, used to call a function with [method
-syntax][methodsyntax]?
+Вы помните ключевое слово `impl`, используемое для вызова функции через
+синтаксис метода?
 
 ```rust
+# #![feature(core)]
 struct Circle {
     x: f64,
     y: f64,
@@ -20,12 +21,12 @@ impl Circle {
 }
 ```
 
-[methodsyntax]: method-syntax.html
-
-Traits are similar, except that we define a trait with just the method
-signature, then implement the trait for that struct. Like this:
+Типажи схожи, за исключением того, что мы определяем типаж, содержащий лишь
+сигнатуру метода, а затем реализуем этот типаж для нужной структуры. Например,
+как показано ниже:
 
 ```rust
+# #![feature(core)]
 struct Circle {
     x: f64,
     y: f64,
@@ -43,15 +44,13 @@ impl HasArea for Circle {
 }
 ```
 
-As you can see, the `trait` block looks very similar to the `impl` block,
-but we don’t define a body, just a type signature. When we `impl` a trait,
-we use `impl Trait for Item`, rather than just `impl Item`.
+Как вы можете видеть, блок `trait` очень похож на блок `impl`. Различие состоит
+лишь в том, что тело метода не определяется, а определяется только его
+сигнатура. Когда мы реализуем типаж, мы используем `impl Trait for Item`, а не
+просто `impl Item`.
 
-## Traits bounds for generic functions
-
-Traits are useful because they allow a type to make certain promises about its
-behavior. Generic functions can exploit this to constrain the types they
-accept. Consider this function, which does not compile:
+Мы можем использовать типажи для ограничения обобщённых типов. Рассмотрим
+похожую функцию, которая также не компилируется, и выводит ошибку:
 
 ```rust,ignore
 fn print_area<T>(shape: T) {
@@ -59,15 +58,15 @@ fn print_area<T>(shape: T) {
 }
 ```
 
-Rust complains:
+Rust выводит:
 
 ```text
-error: no method named `area` found for type `T` in the current scope
+error: type `T` does not implement any method in scope named `area`
 ```
 
-Because `T` can be any type, we can’t be sure that it implements the `area`
-method. But we can add a ‘trait constraint’ to our generic `T`, ensuring
-that it does:
+Поскольку `T` может быть любого типа, мы не можем быть уверены, что он реализует
+метод `area`. Но мы можем добавить «ограничение по типажу» к нашему обобщённому
+типу `T`, гарантируя, что он будет соответствовать требованиям:
 
 ```rust
 # trait HasArea {
@@ -78,13 +77,14 @@ fn print_area<T: HasArea>(shape: T) {
 }
 ```
 
-The syntax `<T: HasArea>` means “any type that implements the `HasArea` trait.”
-Because traits define function type signatures, we can be sure that any type
-which implements `HasArea` will have an `.area()` method.
+Синтаксис `<T: HasArea>` означает «любой тип, реализующий типаж `HasArea`».
+Так как типажи определяют сигнатуры типов функций, мы можем быть уверены, что
+любой тип, который реализует `HasArea`, будет иметь метод `.area()`.
 
-Here’s an extended example of how this works:
+Вот расширенный пример того, как это работает:
 
 ```rust
+# #![feature(core)]
 trait HasArea {
     fn area(&self) -> f64;
 }
@@ -114,7 +114,7 @@ impl HasArea for Square {
 }
 
 fn print_area<T: HasArea>(shape: T) {
-    println!("This shape has an area of {}", shape.area());
+    println!("Площадь этой фигуры равна {}", shape.area());
 }
 
 fn main() {
@@ -135,86 +135,30 @@ fn main() {
 }
 ```
 
-This program outputs:
+Ниже показан вывод программы:
 
 ```text
-This shape has an area of 3.141593
-This shape has an area of 1
+Площадь этой фигуры равна 3.141593
+Площадь этой фигуры равна 1
 ```
 
-As you can see, `print_area` is now generic, but also ensures that we have
-passed in the correct types. If we pass in an incorrect type:
+Как вы можете видеть, теперь `print_area` не только является обобщённой
+функцией, но и гарантирует, что будет получен корректный тип. Если же мы
+передадим некорректный тип:
 
 ```rust,ignore
 print_area(5);
 ```
 
-We get a compile-time error:
+Мы получим ошибку времени компиляции:
 
 ```text
 error: the trait `HasArea` is not implemented for the type `_` [E0277]
 ```
 
-## Traits bounds for generic structs
-
-Your generic structs can also benefit from trait constraints. All you need to
-do is append the constraint when you declare type parameters. Here is a new
-type `Rectangle<T>` and its operation `is_square()`:
-
-```rust
-struct Rectangle<T> {
-    x: T,
-    y: T,
-    width: T,
-    height: T,
-}
-
-impl<T: PartialEq> Rectangle<T> {
-    fn is_square(&self) -> bool {
-        self.width == self.height
-    }
-}
-
-fn main() {
-    let mut r = Rectangle {
-        x: 0,
-        y: 0,
-        width: 47,
-        height: 47,
-    };
-
-    assert!(r.is_square());
-
-    r.height = 42;
-    assert!(!r.is_square());
-}
-```
-
-`is_square()` needs to check that the sides are equal, so the sides must be of
-a type that implements the [`core::cmp::PartialEq`][PartialEq] trait:
-
-```ignore
-impl<T: PartialEq> Rectangle<T> { ... }
-```
-
-Now, a rectangle can be defined in terms of any type that can be compared for
-equality.
-
-[PartialEq]: ../core/cmp/trait.PartialEq.html
-
-Here we defined a new struct `Rectangle` that accepts numbers of any
-precision—really, objects of pretty much any type—as long as they can be
-compared for equality. Could we do the same for our `HasArea` structs, `Square`
-and `Circle`? Yes, but they need multiplication, and to work with that we need
-to know more about [operator traits][operators-and-overloading].
-
-[operators-and-overloading]: operators-and-overloading.html
-
-# Rules for implementing traits
-
-So far, we’ve only added trait implementations to structs, but you can
-implement a trait for any type. So technically, we _could_ implement `HasArea`
-for `i32`:
+До сих пор мы добавляли реализации типажей лишь для структур, но реализовать
+типаж можно для любого типа. Технически, мы _могли бы_ реализовать `HasArea` для
+`i32`:
 
 ```rust
 trait HasArea {
@@ -223,7 +167,7 @@ trait HasArea {
 
 impl HasArea for i32 {
     fn area(&self) -> f64 {
-        println!("this is silly");
+        println!("это нелепо");
 
         *self as f64
     }
@@ -232,26 +176,25 @@ impl HasArea for i32 {
 5.area();
 ```
 
-It is considered poor style to implement methods on such primitive types, even
-though it is possible.
+Хотя технически это возможно, реализация методов для примитивных типов считается
+плохим стилем программирования.
 
-This may seem like the Wild West, but there are two restrictions around
-implementing traits that prevent this from getting out of hand. The first is
-that if the trait isn’t defined in your scope, it doesn’t apply. Here’s an
-example: the standard library provides a [`Write`][write] trait which adds
-extra functionality to `File`s, for doing file I/O. By default, a `File`
-won’t have its methods:
+Может показаться, что такой подход легко приводит к бардаку в коде, однако
+есть два ограничения, связанные с реализацией типажей, которые мешают коду выйти
+из-под контроля. Во-первых, если типаж не определён в нашей области видимости,
+он не применяется. Например, стандартная библиотека предоставляет типаж
+[`Write`][write], который добавляет типу `File` функциональность ввода-вывода.
+По умолчанию у `File` не будет этих методов:
 
-[write]: ../std/io/trait.Write.html
-
+[write]: https://doc.rust-lang.org/stable/std/io/trait.Write.html
 ```rust,ignore
-let mut f = std::fs::File::open("foo.txt").ok().expect("Couldn’t open foo.txt");
-let buf = b"whatever"; // byte string literal. buf: &[u8; 8]
+let mut f = std::fs::File::open("foo.txt").ok().expect("Не могу открыть foo.txt");
+let buf = b"whatever"; // литерал строки байт. buf: &[u8; 8]
 let result = f.write(buf);
-# result.unwrap(); // ignore the error
+# result.unwrap(); // игнорируем ошибку
 ```
 
-Here’s the error:
+Вот ошибка:
 
 ```text
 error: type `std::fs::File` does not implement any method in scope named `write`
@@ -259,37 +202,40 @@ let result = f.write(buf);
                ^~~~~~~~~~
 ```
 
-We need to `use` the `Write` trait first:
+Сначала мы должны сделать `use` для типажа `Write`:
 
 ```rust,ignore
 use std::io::Write;
 
-let mut f = std::fs::File::open("foo.txt").ok().expect("Couldn’t open foo.txt");
+let mut f = std::fs::File::open("foo.txt").ok().expect("Не могу открыть foo.txt");
 let buf = b"whatever";
 let result = f.write(buf);
-# result.unwrap(); // ignore the error
+# result.unwrap(); // игнорируем ошибку
 ```
 
-This will compile without error.
+Это скомпилируется без ошибки.
 
-This means that even if someone does something bad like add methods to `i32`,
-it won’t affect you, unless you `use` that trait.
+Благодаря такой логике работы, даже если кто-то сделает что-то страшное —
+например, добавит методы `i32`, это не коснётся вас, пока вы не импортируете
+типаж.
 
-There’s one more restriction on implementing traits: either the trait, or the
-type you’re writing the `impl` for, must be defined by you. So, we could
-implement the `HasArea` type for `i32`, because `HasArea` is in our code. But
-if we tried to implement `ToString`, a trait provided by Rust, for `i32`, we could
-not, because neither the trait nor the type are in our code.
+Второе ограничение реализации типажей --- это то, что или типаж, или тип, для
+которого вы реализуете типаж, должен быть реализован вами. Мы могли бы
+определить `HasArea` для `i32`, потому что `HasArea` — это наш код. Но если бы
+мы попробовали реализовать для `i32` `ToString` — типаж, предоставляемый Rust —
+мы бы не смогли сделать это, потому что ни типаж, ни тип не реализован нами.
 
-One last thing about traits: generic functions with a trait bound use
-‘monomorphization’ (mono: one, morph: form), so they are statically dispatched.
-What’s that mean? Check out the chapter on [trait objects][to] for more details.
+Последнее, что нужно сказать о типажах: обобщённые функции с ограничением по
+типажам используют *мономорфизацию* (*mono*: один, *morph*: форма), поэтому они
+диспетчеризуются статически. Что это значит? Посмотрите главу
+[Типажи-объекты][to], чтобы получить больше информации.
 
 [to]: trait-objects.html
 
-# Multiple trait bounds
+# Множественные ограничения по типажам
 
-You’ve seen that you can bound a generic type parameter with a trait:
+Вы уже видели, как можно ограничить обобщённый параметр типа определённым
+типажом:
 
 ```rust
 fn foo<T: Clone>(x: T) {
@@ -297,7 +243,7 @@ fn foo<T: Clone>(x: T) {
 }
 ```
 
-If you need more than one bound, you can use `+`:
+Если вам нужно больше одного ограничения, вы можете использовать `+`:
 
 ```rust
 use std::fmt::Debug;
@@ -308,13 +254,13 @@ fn foo<T: Clone + Debug>(x: T) {
 }
 ```
 
-`T` now needs to be both `Clone` as well as `Debug`.
+Теперь тип `T` должен реализовавать как типаж `Clone`, так и типаж `Debug`.
 
-# Where clause
+# Утверждение where
 
-Writing functions with only a few generic types and a small number of trait
-bounds isn’t too bad, but as the number increases, the syntax gets increasingly
-awkward:
+Написание функций с несколькими обобщёнными типами и небольшим количеством
+ограничений по типажам выглядит не так уж плохо, но, с увеличением количества
+зависимостей, синтаксис получается более неуклюжим:
 
 ```rust
 use std::fmt::Debug;
@@ -326,10 +272,10 @@ fn foo<T: Clone, K: Clone + Debug>(x: T, y: K) {
 }
 ```
 
-The name of the function is on the far left, and the parameter list is on the
-far right. The bounds are getting in the way.
+Имя функции находится слева, а список параметров — далеко справа. Ограничения
+загромождают место.
 
-Rust has a solution, and it’s called a ‘`where` clause’:
+Есть решение и для этой проблемы, и оно называется «утверждение `where`»:
 
 ```rust
 use std::fmt::Debug;
@@ -347,15 +293,15 @@ fn bar<T, K>(x: T, y: K) where T: Clone, K: Clone + Debug {
 }
 
 fn main() {
-    foo("Hello", "world");
-    bar("Hello", "world");
+    foo("Привет", "мир");
+    bar("Привет", "мир");
 }
 ```
 
-`foo()` uses the syntax we showed earlier, and `bar()` uses a `where` clause.
-All you need to do is leave off the bounds when defining your type parameters,
-and then add `where` after the parameter list. For longer lists, whitespace can
-be added:
+`foo()` использует синтаксис, показанный ранее, а `bar()` использует утверждение
+`where`. Все, что нам нужно сделать, это убрать ограничения при определении
+типов параметров, а затем добавить `where` после списка параметров. В более
+длинных списках можно использовать пробелы:
 
 ```rust
 use std::fmt::Debug;
@@ -370,9 +316,10 @@ fn bar<T, K>(x: T, y: K)
 }
 ```
 
-This flexibility can add clarity in complex situations.
+Такая гибкость может добавить ясности в сложных ситуациях.
 
-`where` is also more powerful than the simpler syntax. For example:
+На самом деле `where` не только упрощает написание, это более мощная
+возможность. Например:
 
 ```rust
 trait ConvertTo<Output> {
@@ -383,27 +330,28 @@ impl ConvertTo<i64> for i32 {
     fn convert(&self) -> i64 { *self as i64 }
 }
 
-// can be called with T == i32
+// может быть вызван с T == i32
 fn normal<T: ConvertTo<i64>>(x: &T) -> i64 {
     x.convert()
 }
 
-// can be called with T == i64
+// может быть вызван с T == i64
 fn inverse<T>() -> T
-        // this is using ConvertTo as if it were "ConvertTo<i64>"
+        // использует ConvertTo как если бы это было «ConvertFrom<i32>»
         where i32: ConvertTo<T> {
-    42.convert()
+    1i32.convert()
 }
 ```
 
-This shows off the additional feature of `where` clauses: they allow bounds
-where the left-hand side is an arbitrary type (`i32` in this case), not just a
-plain type parameter (like `T`).
+Этот код демонстрирует дополнительные преимущества использования утверждения
+`where`: оно позволяет задавать ограничение, где с левой стороны располагается
+произвольный тип (в данном случае `i32`), а не только простой параметр типа
+(вроде `T`).
 
-# Default methods
+# Методы по умолчанию
 
-If you already know how a typical implementor will define a method, you can
-let your trait supply a default:
+Есть еще одна особенность типажей, о которой стоит поговорить: методы по
+умолчанию. Проще всего показать это на примере:
 
 ```rust
 trait Foo {
@@ -413,9 +361,9 @@ trait Foo {
 }
 ```
 
-Implementors of the `Foo` trait need to implement `is_valid()`, but they don’t
-need to implement `is_invalid()`. They’ll get this default behavior. They can
-override the default if they so choose:
+В типах, реализующих типаж `Foo`, нужно реализовать метод `is_valid()`, а
+`is_invalid()` будет реализован по-умолчанию. Его поведение можно
+переопределить:
 
 ```rust
 # trait Foo {
@@ -427,7 +375,7 @@ struct UseDefault;
 
 impl Foo for UseDefault {
     fn is_valid(&self) -> bool {
-        println!("Called UseDefault.is_valid.");
+        println!("Вызван UseDefault.is_valid.");
         true
     }
 }
@@ -436,26 +384,27 @@ struct OverrideDefault;
 
 impl Foo for OverrideDefault {
     fn is_valid(&self) -> bool {
-        println!("Called OverrideDefault.is_valid.");
+        println!("Вызван OverrideDefault.is_valid.");
         true
     }
 
     fn is_invalid(&self) -> bool {
-        println!("Called OverrideDefault.is_invalid!");
-        true // this implementation is a self-contradiction!
+        println!("Вызван OverrideDefault.is_invalid!");
+        true // эта реализация противоречит сама себе!
     }
 }
 
 let default = UseDefault;
-assert!(!default.is_invalid()); // prints "Called UseDefault.is_valid."
+assert!(!default.is_invalid()); // печатает «Вызван UseDefault.is_valid.»
 
 let over = OverrideDefault;
-assert!(over.is_invalid()); // prints "Called OverrideDefault.is_invalid!"
+assert!(over.is_invalid()); // печатает «Вызван OverrideDefault.is_invalid!»
 ```
 
-# Inheritance
+# Наследование
 
-Sometimes, implementing a trait requires implementing another trait:
+Иногда чтобы реализовать один типаж, нужно реализовать типажи, от которых он
+зависит:
 
 ```rust
 trait Foo {
@@ -467,7 +416,7 @@ trait FooBar : Foo {
 }
 ```
 
-Implementors of `FooBar` must also implement `Foo`, like this:
+Типы, реализующие `FooBar`, должны реализовывать `Foo`:
 
 ```rust
 # trait Foo {
@@ -487,7 +436,7 @@ impl FooBar for Baz {
 }
 ```
 
-If we forget to implement `Foo`, Rust will tell us:
+Если мы забудем реализовать `Foo`, компилятор скажет нам об этом:
 
 ```text
 error: the trait `main::Foo` is not implemented for the type `main::Baz` [E0277]

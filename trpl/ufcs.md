@@ -1,6 +1,6 @@
-% Universal Function Call Syntax
+% Универсальный синтаксис вызова функций (universal function call syntax)
 
-Sometimes, functions can have the same names. Consider this code:
+Иногда, функции могут иметь одинаковые имена. Рассмотрим этот код:
 
 ```rust
 trait Foo {
@@ -24,7 +24,7 @@ impl Bar for Baz {
 let b = Baz;
 ```
 
-If we were to try to call `b.f()`, we’d get an error:
+Если мы попытаемся вызвать `b.f()`, то получим ошибку:
 
 ```text
 error: multiple applicable methods in scope [E0034]
@@ -41,8 +41,9 @@ note: candidate #2 is defined in an impl of the trait `main::Bar` for the type
 
 ```
 
-We need a way to disambiguate which method we need. This feature is called
-‘universal function call syntax’, and it looks like this:
+Нам нужен способ указать, какой конкретно метод нужен, чтобы устранить
+неоднозначность. Эта возможность называется «универсальный синтаксис вызова
+функций», и выглядит это так:
 
 ```rust
 # trait Foo {
@@ -63,49 +64,50 @@ Foo::f(&b);
 Bar::f(&b);
 ```
 
-Let’s break it down.
+Давайте разберемся.
 
 ```rust,ignore
 Foo::
 Bar::
 ```
 
-These halves of the invocation are the types of the two traits: `Foo` and
-`Bar`. This is what ends up actually doing the disambiguation between the two:
-Rust calls the one from the trait name you use.
+Эти части вызова задают один из двух видов типажей: `Foo` и `Bar`. Это то, что
+на самом деле устраняет неоднозначность между двумя методами: Rust вызывает
+метод того типажа, имя которого вы используете.
 
 ```rust,ignore
 f(&b)
 ```
 
-When we call a method like `b.f()` using [method syntax][methodsyntax], Rust
-will automatically borrow `b` if `f()` takes `&self`. In this case, Rust will
-not, and so we need to pass an explicit `&b`.
+Когда мы вызываем метод, используя [синтаксис вызова метода][methodsyntax], как
+например `b.f()`, Rust автоматически заимствует `b`, если `f()` принимает в
+качестве аргумента `&self`. В этом же случае, Rust не будет использовать
+автоматическое заимствование, и поэтому мы должны явно передать `&b`.
 
 [methodsyntax]: method-syntax.html
 
-# Angle-bracket Form
+# Форма с угловыми скобками
 
-The form of UFCS we just talked about:
+Форма UFCS, о которой мы только что говорили:
 
 ```rust,ignore
 Trait::method(args);
 ```
 
-Is a short-hand. There’s an expanded form of this that’s needed in some
-situations:
+Это сокращенная форма записи. Ниже представлена расширенная форма записи,
+которая требуется в некоторых ситуациях:
 
 ```rust,ignore
 <Type as Trait>::method(args);
 ```
 
-The `<>::` syntax is a means of providing a type hint. The type goes inside
-the `<>`s. In this case, the type is `Type as Trait`, indicating that we want
-`Trait`’s version of `method` to be called here. The `as Trait` part is
-optional if it’s not ambiguous. Same with the angle brackets, hence the
-shorter form.
+Синтаксис `<>::` является средством предоставления подсказки типа. Тип
+располагается внутри `<>`. В этом случае типом является `Type as Trait`,
+указывающий, что мы хотим здесь вызвать `Trait` версию метода. Часть `as Trait`
+является необязательной, если вызов не является неоднозначным. То же самое что с
+угловыми скобками, отсюда и короткая форма.
 
-Here’s an example of using the longer form.
+Вот пример использования длинной формы записи.
 
 ```rust
 trait Foo {
@@ -124,4 +126,4 @@ impl Foo for Bar {
 }
 ```
 
-This will call the `Clone` trait’s `clone()` method, rather than `Foo`’s.
+Этот код вызывает метод `clone()` типажа `Clone`, а не типажа `Foo`.

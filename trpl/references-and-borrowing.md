@@ -1,48 +1,52 @@
-% References and Borrowing
+% Ссылки и заимствование
 
-This guide is one of three presenting Rust’s ownership system. This is one of
-Rust’s most unique and compelling features, with which Rust developers should
-become quite acquainted. Ownership is how Rust achieves its largest goal,
-memory safety. There are a few distinct concepts, each with its own
-chapter:
+Эта глава является одной из трёх, описывающих систему владения ресурсами Rust.
+Эта система представляет собой наиболее уникальную и привлекательную особенность
+Rust, о которой разработчики должны иметь полное представление. Владение — это
+то, как Rust достигает своей главной цели — безопасности памяти. Система
+владения включает в себя несколько различных концепций, каждая из которых
+рассматривается в своей собственной главе:
 
-* [ownership][ownership], the key concept
-* borrowing, which you’re reading now
-* [lifetimes][lifetimes], an advanced concept of borrowing
+* [владение][ownership], ключевая концепция
+* заимствование, её вы читаете сейчас
+* [время жизни][lifetimes], расширение понятия заимствования
 
-These three chapters are related, and in order. You’ll need all three to fully
-understand the ownership system.
+Эти три главы взаимосвязаны, и их порядок важен. Вы должны будете освоить все
+три главы, чтобы полностью понять систему владения.
 
 [ownership]: ownership.html
 [lifetimes]: lifetimes.html
 
-# Meta
+# Мета
 
-Before we get to the details, two important notes about the ownership system.
+Прежде чем перейти к подробностям, отметим два важных момента в системе
+владения.
 
-Rust has a focus on safety and speed. It accomplishes these goals through many
-‘zero-cost abstractions’, which means that in Rust, abstractions cost as little
-as possible in order to make them work. The ownership system is a prime example
-of a zero cost abstraction. All of the analysis we’ll talk about in this guide
-is _done at compile time_. You do not pay any run-time cost for any of these
-features.
+Rust сфокусирован на безопасности и скорости. Это достигается за счёт
+«абстракций с нулевой стоимостью» (zero-cost abstractions). Это значит, что в
+Rust стоимость абстракций должна быть настолько малой, насколько это возможно
+без ущерба для работоспособности. Система владения ресурсами — это яркий пример
+абстракции с нулевой стоимостью. Весь анализ, о котором мы будем говорить в этом
+руководстве, выполняется _во время компиляции_. Во время исполнения вы не
+платите за какую-либо из возможностей ничего.
 
-However, this system does have a certain cost: learning curve. Many new users
-to Rust experience something we like to call ‘fighting with the borrow
-checker’, where the Rust compiler refuses to compile a program that the author
-thinks is valid. This often happens because the programmer’s mental model of
-how ownership should work doesn’t match the actual rules that Rust implements.
-You probably will experience similar things at first. There is good news,
-however: more experienced Rust developers report that once they work with the
-rules of the ownership system for a period of time, they fight the borrow
-checker less and less.
+Тем не менее, эта система всё же имеет определённую стоимость: кривая обучения.
+Многие новые пользователи Rust «борются с проверкой заимствования» — компилятор
+Rust отказывается компилировать программу, которая по мнению автора является
+абсолютно правильной. Это часто происходит потому, что мысленное представление
+программиста о том, как должно работать владение, не совпадает с реальными
+правилами, которыми оперирует Rust. Вы, наверное, поначалу также будете
+испытывать подобные трудности. Однако существует и хорошая новость: более
+опытные разработчики на Rust говорят, что чем больше они работают с правилами
+системы владения, тем меньше они борются с компилятором.
 
-With that in mind, let’s learn about borrowing.
+Имея это в виду, давайте перейдём к изучению системы владения.
 
-# Borrowing
+<a name="borrowing"></a>
+# Заимствование
 
-At the end of the [ownership][ownership] section, we had a nasty function that looked
-like this:
+В конце главы [Владение][ownership] у нас была убогая функция, которая выглядела
+так:
 
 ```rust
 fn foo(v1: Vec<i32>, v2: Vec<i32>) -> (Vec<i32>, Vec<i32>, i32) {
@@ -58,8 +62,8 @@ let v2 = vec![1, 2, 3];
 let (v1, v2, answer) = foo(v1, v2);
 ```
 
-This is not idiomatic Rust, however, as it doesn’t take advantage of borrowing. Here’s
-the first step:
+Однако, этот код не является идиоматичным с точки зрения Rust, так как он не
+использует заимствование. Вот первый шаг:
 
 ```rust
 fn foo(v1: &Vec<i32>, v2: &Vec<i32>) -> i32 {
@@ -77,15 +81,15 @@ let answer = foo(&v1, &v2);
 // we can use v1 and v2 here!
 ```
 
-Instead of taking `Vec<i32>`s as our arguments, we take a reference:
-`&Vec<i32>`. And instead of passing `v1` and `v2` directly, we pass `&v1` and
-`&v2`. We call the `&T` type a ‘reference’, and rather than owning the resource,
-it borrows ownership. A binding that borrows something does not deallocate the
-resource when it goes out of scope. This means that after the call to `foo()`,
-we can use our original bindings again.
+Вместо того, чтобы принимать `Vec<i32>` в качестве аргументов, мы будем
+принимать ссылки: `&Vec<i32>`. И вместо передачи `v1` и `v2` напрямую, мы будем
+передавать `&v1` и `&v2`. Мы называем тип `&T` «ссылка», и вместо того, чтобы
+забирать владение ресурсом, она его заимствует. Имена, которые заимствуют что-
+то, не освобождают ресурс, когда они выходят из области видимости. Это означает,
+что, после вызова `foo()`, мы снова можем использовать наши исходные имена.
 
-References are immutable, just like bindings. This means that inside of `foo()`,
-the vectors can’t be changed at all:
+Ссылки являются неизменяемыми, как и имена. Это означает, что внутри `foo()`
+векторы не могут быть изменены:
 
 ```rust,ignore
 fn foo(v: &Vec<i32>) {
@@ -97,7 +101,7 @@ let v = vec![];
 foo(&v);
 ```
 
-errors with:
+выдаёт ошибку:
 
 ```text
 error: cannot borrow immutable borrowed content `*v` as mutable
@@ -105,12 +109,13 @@ v.push(5);
 ^
 ```
 
-Pushing a value mutates the vector, and so we aren’t allowed to do it.
+Добавление значения изменяет вектор, и поэтому компилятор не позволил нам это
+сделать.
 
-# &mut references
+# Ссылки &mut
 
-There’s a second kind of reference: `&mut T`. A ‘mutable reference’ allows you
-to mutate the resource you’re borrowing. For example:
+Вот второй вид ссылок: `&mut T`. Это «изменяемая ссылка», которая позволяет
+изменять ресурс, который вы заимствуете. Например:
 
 ```rust
 let mut x = 5;
@@ -121,18 +126,17 @@ let mut x = 5;
 println!("{}", x);
 ```
 
-This will print `6`. We make `y` a mutable reference to `x`, then add one to
-the thing `y` points at. You’ll notice that `x` had to be marked `mut` as well,
-if it wasn’t, we couldn’t take a mutable borrow to an immutable value.
+Этот код напечатает `6`. Мы создали `y`, изменяемую ссылку на `x`, а затем
+добавили единицу к значению, на которое указывает `y`. Следует отметить, что `x`
+также должно быть помечено как `mut`. Если бы этого не было, то мы не могли бы
+получить изменяемую ссылку неизменяемого значения.
 
-You'll also notice we added an asterisk (`*`) in front of `y`, making it `*y`,
-this is because `y` is an `&mut` reference. You'll also need to use them for
-accessing the contents of a reference as well.
-
-Otherwise, `&mut` references are just like references. There _is_ a large
-difference between the two, and how they interact, though. You can tell
-something is fishy in the above example, because we need that extra scope, with
-the `{` and `}`. If we remove them, we get an error:
+Во всем остальном изменяемые ссылки (`&mut`) такие же, как и неизменяемые (`&`).
+Однако, существует большая разница между этими двумя концепциями, и тем, как они
+взаимодействуют. Вы можете сказать, что в приведённом выше примере есть что-то
+подозрительное, потому что нам зачем-то понадобилась дополнительная область
+видимости, созданная с помощью `{` и `}`. Если мы уберем эти скобки, то получим
+ошибку:
 
 ```text
 error: cannot borrow `x` as immutable because it is also borrowed as mutable
@@ -149,37 +153,38 @@ fn main() {
 ^
 ```
 
-As it turns out, there are rules.
+Оказывается, есть определённые правила создания ссылок.
 
-# The Rules
+# Правила
 
-Here’s the rules about borrowing in Rust:
+Вот правила заимствования в Rust.
 
-First, any borrow must last for a scope no greater than that of the owner.
-Second, you may have one or the other of these two kinds of borrows, but not
-both at the same time:
+Во-первых, область видимости любой ссылки должна находиться в пределах области
+видимости владельца. Во-вторых, одновременно у вас может быть только один из
+двух перечисленных ниже видов заимствования, но не оба сразу:
 
-* one or more references (`&T`) to a resource,
-* exactly one mutable reference (`&mut T`).
+* одна или более неизменяемых ссылок (`&T`) на ресурс;
+* ровно одна изменяемая ссылка (`&mut T`) на ресурс.
 
+Вы можете заметить, что это похоже, хотя и не соответствует точно, определению
+состояния гонки данных:
 
-You may notice that this is very similar, though not exactly the same as,
-to the definition of a data race:
+> Состояние «гонки данных» возникает, когда два или более указателей
+> осуществляют доступ к одной и той же области памяти одновременно, по крайней
+> мере один из них производит запись, и операции не синхронизированы.
 
-> There is a ‘data race’ when two or more pointers access the same memory
-> location at the same time, where at least one of them is writing, and the
-> operations are not synchronized.
+Что касается неизменяемых ссылок, то вы можете иметь их столько, сколько хотите,
+так как ни одна из них не производит запись. Если же вы производите запись, и
+вам нужно два или больше указателей на одну и ту же область памяти, то вы можете
+иметь только одну `&mut` одновременно. Так Rust предотвращает возникновение
+состояния гонки данных во время компиляции: мы получим ошибку компиляции, если
+нарушим эти правила.
 
-With references, you may have as many as you’d like, since none of them are
-writing. If you are writing, you need two or more pointers to the same memory,
-and you can only have one `&mut` at a time. This is how Rust prevents data
-races at compile time: we’ll get errors if we break the rules.
+Имея это в виду, давайте рассмотрим наш пример еще раз.
 
-With this in mind, let’s consider our example again.
+## Осмысливаем области видимости (Thinking in scopes)
 
-## Thinking in scopes
-
-Here’s the code:
+Вот код:
 
 ```rust,ignore
 let mut x = 5;
@@ -190,7 +195,7 @@ let y = &mut x;
 println!("{}", x);
 ```
 
-This code gives us this error:
+Этот код выдает нам такую ошибку:
 
 ```text
 error: cannot borrow `x` as immutable because it is also borrowed as mutable
@@ -198,9 +203,9 @@ error: cannot borrow `x` as immutable because it is also borrowed as mutable
                    ^
 ```
 
-This is because we’ve violated the rules: we have a `&mut T` pointing to `x`,
-and so we aren’t allowed to create any `&T`s. One or the other. The note
-hints at how to think about this problem:
+Это потому, что мы нарушили правила: у нас есть изменяемая ссылка `&mut T`,
+указывающая на `x`, и поэтому мы не можем создать какую-либо `&T`. Одно из двух.
+Примечание подсказывает как следует рассматривать эту проблему:
 
 ```text
 note: previous borrow ends here
@@ -210,50 +215,54 @@ fn main() {
 ^
 ```
 
-In other words, the mutable borrow is held through the rest of our example. What
-we want is for the mutable borrow to end _before_ we try to call `println!` and
-make an immutable borrow. In Rust, borrowing is tied to the scope that the
-borrow is valid for. And our scopes look like this:
+Другими словами, изменяемая ссылка сохраняется до конца нашего примера. А мы
+хотим, чтобы изменяемое заимствование заканчивалось _до_ того, как мы пытаемся
+вызвать `println!` и создать неизменяемое заимствование. В Rust заимствование
+привязано к области видимости, в которой оно является действительным. И эти
+области видимости выглядят следующим образом:
 
 ```rust,ignore
 let mut x = 5;
 
-let y = &mut x;    // -+ &mut borrow of x starts here
+let y = &mut x;    // -+ заимствование x через &mut начинается здесь
                    //  |
 *y += 1;           //  |
                    //  |
-println!("{}", x); // -+ - try to borrow x here
-                   // -+ &mut borrow of x ends here
+println!("{}", x); // -+ - пытаемся позаимствовать x здесь
+                   // -+ заимствование x через &mut заканчивается здесь
 ```
 
-The scopes conflict: we can’t make an `&x` while `y` is in scope.
+Конфликт областей видимости: мы не можем создать `&x` до тех пор, пока `y`
+находится в области видимости.
 
-So when we add the curly braces:
+Поэтому, когда мы добавляем фигурные скобки:
 
 ```rust
 let mut x = 5;
 
 {                   
-    let y = &mut x; // -+ &mut borrow starts here
+    let y = &mut x; // -+ заимствование через &mut начинается здесь
     *y += 1;        //  |
-}                   // -+ ... and ends here
+}                   // -+ ... и заканчивается здесь
 
-println!("{}", x);  // <- try to borrow x here
+println!("{}", x);  // <- пытаемся позаимствовать x здесь
 ```
 
-There’s no problem. Our mutable borrow goes out of scope before we create an
-immutable one. But scope is the key to seeing how long a borrow lasts for.
+Никаких проблем нет. Наша изменяемая ссылка выходит из области видимости до
+создания неизменяемой. Но область видимости является ключом к определению того,
+как долго длится заимствование.
 
-## Issues borrowing prevents
+## Проблемы, которые предотвращает заимствование
 
-Why have these restrictive rules? Well, as we noted, these rules prevent data
-races. What kinds of issues do data races cause? Here’s a few.
+Почему нужны эти ограничивающие правила? Ну, как мы уже отметили, эти правила
+предотвращают гонки данных. Какие виды проблем могут привести к состоянию гонки
+данных? Вот некоторые из них.
 
-### Iterator invalidation
+### Недействительный итератор
 
-One example is ‘iterator invalidation’, which happens when you try to mutate a
-collection that you’re iterating over. Rust’s borrow checker prevents this from
-happening:
+Одним из примеров является «недействительный итератор». Такое может произойти,
+когда вы пытаетесь изменить коллекцию, которую в данный момент обходите.
+Проверка заимствования Rust предотвращает это:
 
 ```rust
 let mut v = vec![1, 2, 3];
@@ -263,9 +272,9 @@ for i in &v {
 }
 ```
 
-This prints out one through three. As we iterate through the vectors, we’re
-only given references to the elements. And `v` is itself borrowed as immutable,
-which means we can’t change it while we’re iterating:
+Этот код печатает числа от одного до трёх. Когда мы обходим вектор, мы получаем
+лишь ссылки на элементы. И сам `v` заимствован как неизменяемый, что означает,
+что мы не можем изменить его в процессе обхода:
 
 ```rust,ignore
 let mut v = vec![1, 2, 3];
@@ -276,7 +285,7 @@ for i in &v {
 }
 ```
 
-Here’s the error:
+Вот ошибка:
 
 ```text
 error: cannot borrow `v` as mutable because it is also borrowed as immutable
@@ -294,19 +303,19 @@ for i in &v {
 ^
 ```
 
-We can’t modify `v` because it’s borrowed by the loop.
+Мы не можем изменить `v`, потому что он уже заимствован в цикле.
 
-### use after free
+### Использование после освобождения (use after free)
 
-References must not live longer than the resource they refer to. Rust will
-check the scopes of your references to ensure that this is true.
+Ссылки должны жить так же долго, как и ресурс, на который они ссылаются. Rust
+проверяет области видимости ваших ссылок, чтобы удостовериться, что это правда.
 
-If Rust didn’t check this property, we could accidentally use a reference
-which was invalid. For example:
+Если Rust не будет проверять это свойство, то мы можем случайно использовать
+ссылку, которая будет недействительна. Например:
 
 ```rust,ignore
 let y: &i32;
-{ 
+{
     let x = 5;
     y = &x;
 }
@@ -314,7 +323,7 @@ let y: &i32;
 println!("{}", y);
 ```
 
-We get this error:
+Мы получим следующую ошибку:
 
 ```text
 error: `x` does not live long enough
@@ -323,7 +332,7 @@ error: `x` does not live long enough
 note: reference must be valid for the block suffix following statement 0 at
 2:16...
 let y: &i32;
-{ 
+{
     let x = 5;
     y = &x;
 }
@@ -335,14 +344,15 @@ statement 0 at 4:18
 }
 ```
 
-In other words, `y` is only valid for the scope where `x` exists. As soon as
-`x` goes away, it becomes invalid to refer to it. As such, the error says that
-the borrow ‘doesn’t live long enough’ because it’s not valid for the right
-amount of time.
+Другими словами, `y` действителен только для той области видимости, где
+существует `x`. Как только `x` выходит из области видимости, ссылка на него
+становится недействительной. Таким образом, ошибка сообщает, что заимствование
+«не живет достаточно долго» («does not live long enough»), потому что оно не
+является действительным столько времени, сколько требуется.
 
-The same problem occurs when the reference is declared _before_ the variable it
-refers to. This is because resources within the same scope are freed in the
-opposite order they were declared:
+Такая же проблема возникает, когда ссылка объявлена _перед_ значением, на
+которое она ссылается. Это происходит потому что ресурсы в одном блоке
+освобождаются в порядке, противоположном порядку их объявления:
 
 ```rust,ignore
 let y: &i32;
@@ -352,7 +362,7 @@ y = &x;
 println!("{}", y);
 ```
 
-We get this error:
+Мы получим такую ошибку:
 
 ```text
 error: `x` does not live long enough
@@ -363,7 +373,7 @@ note: reference must be valid for the block suffix following statement 0 at
     let y: &i32;
     let x = 5;
     y = &x;
-    
+
     println!("{}", y);
 }
 
@@ -371,10 +381,9 @@ note: ...but borrowed value is only valid for the block suffix following
 statement 1 at 3:14
     let x = 5;
     y = &x;
-    
+
     println!("{}", y);
 }
 ```
 
-In the above example, `y` is declared before `x`, meaning that `y` lives longer
-than `x`, which is not allowed.
+В примере выше `y` объявлена перед `x`, т.е. живёт дольше `x`, а это запрещено.

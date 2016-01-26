@@ -1,54 +1,56 @@
-% if
+% Конструкция `if`
 
-Rust’s take on `if` is not particularly complex, but it’s much more like the
-`if` you’ll find in a dynamically typed language than in a more traditional
-systems language. So let’s talk about it, to make sure you grasp the nuances.
+`if` в Rust не сильно сложен и больше похож на `if` в динамически типизированных
+языках, чем на более традиционный из системных. Давайте поговорим о нём, чтобы
+вы поняли некоторые его нюансы.
 
-`if` is a specific form of a more general concept, the ‘branch’. The name comes
-from a branch in a tree: a decision point, where depending on a choice,
-multiple paths can be taken.
+`if` является одной из форм более общего понятия, именуемого *ветвлением*. Это
+название произошло от ветвей деревьев: конечный результат зависит от того, какой
+из нескольких вариантов будет выбран.
 
-In the case of `if`, there is one choice that leads down two paths:
+`if` содержит одно условие, в зависимости от которого будет выполняться одна из
+двух ветвей:
 
 ```rust
 let x = 5;
 
 if x == 5 {
-    println!("x is five!");
+    println!("x равняется пяти!");
 }
 ```
 
-If we changed the value of `x` to something else, this line would not print.
-More specifically, if the expression after the `if` evaluates to `true`, then
-the block is executed. If it’s `false`, then it is not.
+При изменении значения `x` на какое-либо другое, эта строчка не будет выведена
+на экран. Если подробнее, то когда условие будет иметь значение `true`,
+следующий после него блок кода выполнится. В противном случае — нет.
 
-If you want something to happen in the `false` case, use an `else`:
+Бывает нужно что-то выполнить, если условие не выполнится (выражение будет иметь 
+значение false). В таком случае можно использовать `else`:
 
 ```rust
 let x = 5;
 
 if x == 5 {
-    println!("x is five!");
+    println!("x равняется пяти!");
 } else {
-    println!("x is not five :(");
+    println!("x это не пять :(");
 }
 ```
 
-If there is more than one case, use an `else if`:
+Когда необходимо больше одного выбора, можно использовать `else if`:
 
 ```rust
 let x = 5;
 
 if x == 5 {
-    println!("x is five!");
+    println!("x равняется пяти!");
 } else if x == 6 {
-    println!("x is six!");
+    println!("x это шесть!");
 } else {
-    println!("x is not five or six :(");
+    println!("x это ни пять, ни шесть :(");
 }
 ```
 
-This is all pretty standard. However, you can also do this:
+Всё это довольно прозаично. Однако, вы также можете сделать такую штуку:
 
 ```rust
 let x = 5;
@@ -60,7 +62,7 @@ let y = if x == 5 {
 }; // y: i32
 ```
 
-Which we can (and probably should) write like this:
+Которую мы можем (и должны) записать примерно следующим образом:
 
 ```rust
 let x = 5;
@@ -68,6 +70,6 @@ let x = 5;
 let y = if x == 5 { 10 } else { 15 }; // y: i32
 ```
 
-This works because `if` is an expression. The value of the expression is the
-value of the last expression in whichever branch was chosen. An `if` without an
-`else` always results in `()` as the value.
+Это работает, потому что `if` является выражением. Его значением является
+значение последнего выражения из выбранной ветви. `if` без `else` всегда
+возвращает `()` в качестве значения.

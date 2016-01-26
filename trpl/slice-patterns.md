@@ -1,7 +1,8 @@
-% Slice patterns
+% Шаблоны `match` для срезов
 
-If you want to match against a slice or array, you can use `&` with the
-`slice_patterns` feature:
+Если вы хотите в качестве шаблона для сопоставления использовать срез или
+массив, то вы можете использовать `&` и активировать возможность
+`slice_patterns`:
 
 ```rust
 #![feature(slice_patterns)]
@@ -16,10 +17,10 @@ fn main() {
 }
 ```
 
-The `advanced_slice_patterns` gate lets you use `..` to indicate any number of
-elements inside a pattern matching a slice. This wildcard can only be used once
-for a given array. If there's an identifier before the `..`, the result of the
-slice will be bound to that name. For example:
+Отключаемая возможность `advanced_slice_patterns` позволяет использовать `..`,
+чтобы обозначить любое число элементов в шаблоне. Этот символ подстановки можно
+использовать в массиве один раз. Если перед `..` есть идентификатор, результат
+среза будет связан с этим именем. Например:
 
 ```rust
 #![feature(advanced_slice_patterns, slice_patterns)]

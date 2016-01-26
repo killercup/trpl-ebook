@@ -1,20 +1,24 @@
-% Loops
+% Циклы
 
-Rust currently provides three approaches to performing some kind of iterative activity. They are: `loop`, `while` and `for`. Each approach has its own set of uses.
+На данный момент в Rust есть три способа организовать циклическое исполнение
+кода. Это `loop`, `while` и `for`. У каждого подхода своё применения.
 
-## loop
+## Циклы `loop`
 
-The infinite `loop` is the simplest form of loop available in Rust. Using the keyword `loop`, Rust provides a way to loop indefinitely until some terminating statement is reached. Rust's infinite `loop`s look like this:
+Бесконечный цикл (`loop`) — простейшая форма цикла в Rust. С помощью этого
+ключевого слова можно организовать цикл, который продолжается, пока не
+выполнится какой-либо оператор, прерывающий его. Бесконечный цикл в Rust
+выглядит так:
 
 ```rust,ignore
 loop {
-    println!("Loop forever!");
+    println!("Зациклились!");
 }
 ```
 
-## while
+## Циклы `while`
 
-Rust also has a `while` loop. It looks like this:
+Цикл `while` — это ещё один вид конструкции цикла в Rust. Выглядит он так:
 
 ```rust
 let mut x = 5; // mut x: i32
@@ -31,32 +35,34 @@ while !done {
 }
 ```
 
-`while` loops are the correct choice when you’re not sure how many times
-you need to loop.
+Он применяется, если неизвестно, сколько раз нужно выполнить тело цикла, чтобы
+получить результат. При каждой итерации цикла проверяется условие, и если оно
+истинно, то запускается следующая итерация. Иначе цикл `while` завершается.
 
-If you need an infinite loop, you may be tempted to write this:
+Если вам нужен бесконечный цикл, то можете сделать условие всегда истинным:
 
 ```rust,ignore
 while true {
 ```
 
-However, `loop` is far better suited to handle this case:
+Однако, для такого случая в Rust имеется ключевое слово `loop`:
 
 ```rust,ignore
 loop {
 ```
 
-Rust’s control-flow analysis treats this construct differently than a `while
-true`, since we know that it will always loop. In general, the more information
-we can give to the compiler, the better it can do with safety and code
-generation, so you should always prefer `loop` when you plan to loop
-infinitely.
+В Rust анализатор потока управления обрабатывает конструкцию `loop` иначе, чем
+`while true`, хотя для нас это одно и тоже. На данном этапе изучения Rust нам не
+важно знать в чем именно различие между этими конструкциями, но если вы хотите
+сделать бесконечный цикл, то используйте конструкцию `loop`. Компилятор
+сможет транслировать ваш код в более эффективный и безопасный машинный код.
 
-## for
+<a name="for"></a>
+## Циклы `for`
 
-The `for` loop is used to loop a particular number of times. Rust’s `for` loops
-work a bit differently than in other systems languages, however. Rust’s `for`
-loop doesn’t look like this “C-style” `for` loop:
+Цикл `for` нужен для повторения блока кода определённое количество раз. Циклы
+`for` в Rust работают немного иначе, чем в других языках программирования.
+Например в Си-подобном языке цикл `for` выглядит так:
 
 ```c
 for (x = 0; x < 10; x++) {
@@ -64,7 +70,7 @@ for (x = 0; x < 10; x++) {
 }
 ```
 
-Instead, it looks like this:
+Однако, этот код в Rust будет выглядеть следующим образом:
 
 ```rust
 for x in 0..10 {
@@ -72,58 +78,61 @@ for x in 0..10 {
 }
 ```
 
-In slightly more abstract terms,
+Можно представить цикл более абстрактно:
 
 ```ignore
-for var in expression {
-    code
+for переменная in выражение {
+    тело_цикла
 }
 ```
 
-The expression is an [iterator][iterator]. The iterator gives back a series of
-elements. Each element is one iteration of the loop. That value is then bound
-to the name `var`, which is valid for the loop body. Once the body is over, the
-next value is fetched from the iterator, and we loop another time. When there
-are no more values, the `for` loop is over.
+Выражение — это [итератор][iterator]. Их мы будем рассматривать позже в этом
+руководстве. Итератор возвращает серию элементов, где каждый элемент будет
+являться одной итерацией цикла. Значение этого элемента затем присваивается
+`переменной`, которая будет доступна в теле цикла. После окончания тела цикла,
+берётся следующее значение итератора и снова выполняется тело цикла. Когда в
+итераторе закончатся значения, цикл `for` завершается.
 
 [iterator]: iterators.html
 
-In our example, `0..10` is an expression that takes a start and an end position,
-and gives an iterator over those values. The upper bound is exclusive, though,
-so our loop will print `0` through `9`, not `10`.
+В нашем примере, `0..10` — это выражение, которое задаёт начальное и конечное
+значение, и возвращает итератор. Обратите внимание, что конечное значение не
+включается в него. В нашем примере будут напечатаны числа от `0` до `9`, но не
+будет напечатано `10`.
 
-Rust does not have the “C-style” `for` loop on purpose. Manually controlling
-each element of the loop is complicated and error prone, even for experienced C
-developers.
+В Rust намеренно нет цикла `for` в стиле C. Управлять каждым элементом цикла
+вручную сложно, и это может приводить к ошибкам даже у опытных программистов на
+C.
 
-### Enumerate
+### Перечисление
 
-When you need to keep track of how many times you already looped, you can use the `.enumerate()` function.
+Если вы хотите отслеживать число прошедших итераций, используйте функцию
+`.enumerate()`.
 
-#### On ranges:
+#### С интервалами
 
 ```rust
 for (i,j) in (5..10).enumerate() {
-    println!("i = {} and j = {}", i, j);
+    println!("i = {} и j = {}", i, j);
 }
 ```
 
-Outputs:
+Выводит:
 
 ```text
-i = 0 and j = 5
-i = 1 and j = 6
-i = 2 and j = 7
-i = 3 and j = 8
-i = 4 and j = 9
+i = 0 и j = 5
+i = 1 и j = 6
+i = 2 и j = 7
+i = 3 и j = 8
+i = 4 и j = 9
 ```
 
-Don't forget to add the parentheses around the range.
+Не забудьте написать скобки вокруг интервала.
 
-#### On iterators:
+#### С итераторами
 
 ```rust
-# let lines = "hello\nworld".lines();
+# let lines = "привет\nмир\nhello\nworld".lines();
 for (linenumber, line) in lines.enumerate() {
     println!("{}: {}", linenumber, line);
 }
@@ -132,15 +141,15 @@ for (linenumber, line) in lines.enumerate() {
 Outputs:
 
 ```text
-0: Content of line one
-1: Content of line two
-2: Content of line three
-3: Content of line four
+0: привет
+1: мир
+2: hello
+3: world
 ```
 
-## Ending iteration early
+## Раннее прерывание цикла
 
-Let’s take a look at that `while` loop we had earlier:
+Давайте ещё раз посмотрим на цикл `while`:
 
 ```rust
 let mut x = 5;
@@ -157,11 +166,12 @@ while !done {
 }
 ```
 
-We had to keep a dedicated `mut` boolean variable binding, `done`, to know
-when we should exit out of the loop. Rust has two keywords to help us with
-modifying iteration: `break` and `continue`.
+В этом примере в условии для выхода из цикла используется изменяемое имя `done`
+логического типа. В Rust имеются два ключевых слова, которые помогают работать с
+итерациями цикла: `break` и `continue`.
 
-In this case, we can write the loop in a better way with `break`:
+Мы можем переписать цикл с помощью `break`, чтобы избавиться от переменной
+`done`:
 
 ```rust
 let mut x = 5;
@@ -175,10 +185,11 @@ loop {
 }
 ```
 
-We now loop forever with `loop` and use `break` to break out early. Issuing an explicit `return` statement will also serve to terminate the loop early.
+Теперь мы используем бесконечный цикл `loop` и `break` для выхода из цикла.
+Использование явного `return` также остановит выполнение цикла.
 
-`continue` is similar, but instead of ending the loop, goes to the next
-iteration. This will only print the odd numbers:
+`continue` похож на `break`, но вместо выхода из цикла переходит к следующей
+итерации. Следующий пример отобразит только нечётные числа:
 
 ```rust
 for x in 0..10 {
@@ -188,21 +199,19 @@ for x in 0..10 {
 }
 ```
 
-## Loop labels
+## Метки циклов
 
-You may also encounter situations where you have nested loops and need to
-specify which one your `break` or `continue` statement is for. Like most
-other languages, by default a `break` or `continue` will apply to innermost
-loop. In a situation where you would like to a `break` or `continue` for one
-of the outer loops, you can use labels to specify which loop the `break` or
- `continue` statement applies to. This will only print when both `x` and `y` are
- odd:
+Когда у вас много вложенных циклов, вы можете захотеть указать, к какому именно
+циклу относится `break` или `continue`. Как и во многих других языках, по
+умолчанию эти операторы будут относиться к самому внутреннему циклу. Если вы
+хотите прервать внешний цикл, вы можете использовать метку. Так, этот код будет
+печатать на экране только когда и `x`, и `y` нечётны:
 
 ```rust
 'outer: for x in 0..10 {
     'inner: for y in 0..10 {
-        if x % 2 == 0 { continue 'outer; } // continues the loop over x
-        if y % 2 == 0 { continue 'inner; } // continues the loop over y
+        if x % 2 == 0 { continue 'outer; } // продолжает цикл по x
+        if y % 2 == 0 { continue 'inner; } // продолжает цикл по y
         println!("x: {}, y: {}", x, y);
     }
 }

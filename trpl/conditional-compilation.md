@@ -1,7 +1,7 @@
-% Conditional Compilation
+% Условная компиляция
 
-Rust has a special attribute, `#[cfg]`, which allows you to compile code
-based on a flag passed to the compiler. It has two forms:
+В Rust есть специальный атрибут, `#[cfg]`, который позволяет компилировать код в
+зависимости от флагов, переданных компилятору. Он имеет две формы:
 
 ```rust
 #[cfg(foo)]
@@ -11,7 +11,7 @@ based on a flag passed to the compiler. It has two forms:
 # fn bar() {}
 ```
 
-They also have some helpers:
+Над атрибутами конфигурации определены логические операции:
 
 ```rust
 #[cfg(any(unix, windows))]
@@ -24,35 +24,37 @@ They also have some helpers:
 # fn not_foo() {}
 ```
 
-These can nest arbitrarily:
+Они могут быть как угодно вложены:
 
 ```rust
 #[cfg(any(not(unix), all(target_os="macos", target_arch = "powerpc")))]
 # fn foo() {}
 ```
 
-As for how to enable or disable these switches, if you’re using Cargo,
-they get set in the [`[features]` section][features] of your `Cargo.toml`:
+Что же касается того, как включить или отключить эти флаги: если вы используете
+Cargo, то они устанавливаются в [разделе `[features]`][features] вашего
+`Cargo.toml`:
 
-[features]: http://doc.crates.io/manifest.html#the-%5Bfeatures%5D-section
+[features]: http://doc.crates.io/manifest.html#the-[features]-section
 
 ```toml
 [features]
-# no features by default
+# по умолчанию, никаких дополнительных возможностей
 default = []
 
-# The “secure-password” feature depends on the bcrypt package.
+# возможность «secure-password» зависит от пакета bcrypt
 secure-password = ["bcrypt"]
 ```
 
-When you do this, Cargo passes along a flag to `rustc`:
+Если вы определите такие возможности, Cargo передаст флаг в `rustc`:
 
 ```text
 --cfg feature="${feature_name}"
 ```
 
-The sum of these `cfg` flags will determine which ones get activated, and
-therefore, which code gets compiled. Let’s take this code:
+Совокупность этих флагов конфигурации (`cfg`) будет определять, какие из них
+будут активны, и, следовательно, какой код будет скомпилирован. Давайте
+рассмотрим такой код:
 
 ```rust
 #[cfg(feature = "foo")]
@@ -60,26 +62,29 @@ mod foo {
 }
 ```
 
-If we compile it with `cargo build --features "foo"`, it will send the `--cfg
-feature="foo"` flag to `rustc`, and the output will have the `mod foo` in it.
-If we compile it with a regular `cargo build`, no extra flags get passed on,
-and so, no `foo` module will exist.
+Если скомпилировать его с помощью `cargo build --features "foo"`, то в `rustc`
+будет передан флаг `--cfg feature="foo"`, и результат будет содержать
+модуль `mod foo`. Если скомпилировать его с помощью обычной команды `cargo
+build`, то никаких дополнительных флагов передано не будет, и поэтому, модуль
+`mod foo` будет отсутствовать.
 
 # cfg_attr
 
-You can also set another attribute based on a `cfg` variable with `cfg_attr`:
+Вы также можете установить другой атрибут в зависимости от переменной `cfg` с
+помощью атрибута `cfg_attr`:
 
 ```rust
 #[cfg_attr(a, b)]
 # fn foo() {}
 ```
 
-Will be the same as `#[b]` if `a` is set by `cfg` attribute, and nothing otherwise.
+Этот код будет равносилен атрибуту `#[b]`, если в атрибуте `cfg` установлен флаг
+`a`, или «без атрибута» в противном случае.
 
 # cfg!
 
-The `cfg!` [syntax extension][compilerplugins] lets you use these kinds of flags
-elsewhere in your code, too:
+[Расширение синтаксиса][compilerplugins] `cfg!` позволяет использовать данные
+виды флагов и в другом месте в коде:
 
 ```rust
 if cfg!(target_os = "macos") || cfg!(target_os = "ios") {
@@ -89,5 +94,5 @@ if cfg!(target_os = "macos") || cfg!(target_os = "ios") {
 
 [compilerplugins]: compiler-plugins.html
 
-These will be replaced by a `true` or `false` at compile-time, depending on the
-configuration settings.
+Значение флага будет заменено на `true` или `false` во время компиляции, в
+зависимости от настройки конфигурации.

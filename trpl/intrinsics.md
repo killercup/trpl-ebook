@@ -1,17 +1,17 @@
-% Intrinsics
+% Внутренние средства (intrinsics)
 
-> **Note**: intrinsics will forever have an unstable interface, it is
-> recommended to use the stable interfaces of libcore rather than intrinsics
-> directly.
+> **Примечание**: внутренние средства всегда будут иметь нестабильный интерфейс,
+> рекомендуется использовать стабильные интерфейсы libcore, а не внутренние
+> напрямую.
 
-These are imported as if they were FFI functions, with the special
-`rust-intrinsic` ABI. For example, if one was in a freestanding
-context, but wished to be able to `transmute` between types, and
-perform efficient pointer arithmetic, one would import those functions
-via a declaration like
+Они импортируются как если бы они были FFI функциями, со специальным `rust-
+intrinsic` ABI. Например, если, находясь в отдельном (автономном) контексте,
+хочется иметь возможность `transmute` между типами, а также использовать
+эффективную арифметику указателей, то можно импортировать эти функции через
+объявление, такое как
 
 ```rust
-#![feature(intrinsics)]
+# #![feature(intrinsics)]
 # fn main() {}
 
 extern "rust-intrinsic" {
@@ -21,5 +21,5 @@ extern "rust-intrinsic" {
 }
 ```
 
-As with any other FFI functions, these are always `unsafe` to call.
-
+Как и с любыми другими FFI функциями, их вызов всегда небезопасен и помечен как
+`unsafe`.

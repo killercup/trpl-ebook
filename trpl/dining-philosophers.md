@@ -1,52 +1,47 @@
-% Dining Philosophers
+% Обедающие философы
 
-For our second project, let’s look at a classic concurrency problem. It’s
-called ‘the dining philosophers’. It was originally conceived by Dijkstra in
-1965, but we’ll use a lightly adapted version from [this paper][paper] by Tony
-Hoare in 1985.
+Для нашего второго проекта мы выбрали классическую задачу с параллелизмом. Она
+называется «Обедающие философы». Задача была сформулирована в 1965 году Эдсгером
+Дейкстрой, но мы будем использовать версию задачи, [адаптированную][paper] в
+1985 году Ричардом Хоаром.
 
 [paper]: http://www.usingcsp.com/cspbook.pdf
 
-> In ancient times, a wealthy philanthropist endowed a College to accommodate
-> five eminent philosophers. Each philosopher had a room in which they could
-> engage in their professional activity of thinking; there was also a common
-> dining room, furnished with a circular table, surrounded by five chairs, each
-> labelled by the name of the philosopher who was to sit in it. They sat
-> anticlockwise around the table. To the left of each philosopher there was
-> laid a golden fork, and in the centre stood a large bowl of spaghetti, which
-> was constantly replenished. A philosopher was expected to spend most of
-> their time thinking; but when they felt hungry, they went to the dining
-> room, sat down in their own chair, picked up their own fork on their left,
-> and plunged it into the spaghetti. But such is the tangled nature of
-> spaghetti that a second fork is required to carry it to the mouth. The
-> philosopher therefore had also to pick up the fork on their right. When
-> they were finished they would put down both their forks, get up from their
-> chair, and continue thinking. Of course, a fork can be used by only one
-> philosopher at a time. If the other philosopher wants it, they just have
-> to wait until the fork is available again.
+>В древние времена богатые филантропы пригласили погостить пятерых выдающихся
+философов. Им выделили каждому по комнате, в которой они могли заниматься своей
+профессиональной деятельностью — мышлением. Также была общая столовая, где стоял
+большой круглый стол, а вокруг него пять стульев. Каждый стул имел табличку с
+именем философа, который должен был сидеть на нем. Слева от каждого философа
+лежала золотая вилка, а в центре стола стояла большая миска со спагетти, которая
+постоянно пополнялась. Как подобает философам, они большую часть своего времени
+проводили в раздумьях. Но однажды они почувствовали голод и отправились в
+столовую. Каждый сел на свой стул, взял по вилке и воткнул её в миску со
+спагетти. Но сущность запутанных спагетти такова, что необходима вторая вилка,
+чтобы отправлять спагетти в рот. То есть философу требовалась еще и вилка справа
+от него. Философы положили свои вилки и встали из-за стола, продолжая думать.
+Ведь вилка может быть использована только одним философом одновременно. Если
+другой философ захочет её взять, то ему придется ждать когда она освободится.
 
-This classic problem shows off a few different elements of concurrency. The
-reason is that it's actually slightly tricky to implement: a simple
-implementation can deadlock. For example, let's consider a simple algorithm
-that would solve this problem:
+Эта классическая задача показывает различные элементы параллелизма. Сложность
+реализации задачи состоит в том, что простая реализация может зайти в
+безвыходное состояние. Давайте рассмотрим простой пример решения этой проблемы:
 
-1. A philosopher picks up the fork on their left.
-2. They then pick up the fork on their right.
-3. They eat.
-4. They return the forks.
+1. Философ берет вилку в свою левую руку.
+2. Затем берет вилку в свою правую руку.
+3. Ест.
+4. Кладет вилки на место.
 
-Now, let’s imagine this sequence of events:
+Теперь представим это как последовательность действий философов:
 
-1. Philosopher 1 begins the algorithm, picking up the fork on their left.
-2. Philosopher 2 begins the algorithm, picking up the fork on their left.
-3. Philosopher 3 begins the algorithm, picking up the fork on their left.
-4. Philosopher 4 begins the algorithm, picking up the fork on their left.
-5. Philosopher 5 begins the algorithm, picking up the fork on their left.
-6. ... ? All the forks are taken, but nobody can eat!
+1. Философ 1 начинает выполнять алгоритм, берет вилку в левую руку.
+2. Философ 2 начинает выполнять алгоритм, берет вилку в левую руку.
+3. Философ 3 начинает выполнять алгоритм, берет вилку в левую руку.
+4. Философ 4 начинает выполнять алгоритм, берет вилку в левую руку.
+5. Философ 5 начинает выполнять алгоритм, берет вилку в левую руку.
+6. ...? Все вилки заняты и никто не может начать есть! Безвыходное состояние.
 
-There are different ways to solve this problem. We’ll get to our solution in
-the tutorial itself. For now, let’s get started modelling the problem itself.
-We’ll start with the philosophers:
+Есть различные пути решения этой задачи. Мы в этом руководстве покажем свое
+решение. Сначала давайте начнем с моделирования задачи. Начнем с философов:
 
 ```rust
 struct Philosopher {
@@ -62,23 +57,23 @@ impl Philosopher {
 }
 
 fn main() {
-    let p1 = Philosopher::new("Judith Butler");
-    let p2 = Philosopher::new("Gilles Deleuze");
-    let p3 = Philosopher::new("Karl Marx");
-    let p4 = Philosopher::new("Emma Goldman");
-    let p5 = Philosopher::new("Michel Foucault");
+    let p1 = Philosopher::new("Джудит Батлер");
+    let p2 = Philosopher::new("Рая Дунаевская");
+    let p3 = Philosopher::new("Зарубина Наталья");
+    let p4 = Philosopher::new("Эмма Гольдман");
+    let p5 = Philosopher::new("Анна Шмидт");
 }
 ```
 
-Here, we make a [`struct`][struct] to represent a philosopher. For now,
-a name is all we need. We choose the [`String`][string] type for the name,
-rather than `&str`. Generally speaking, working with a type which owns its
-data is easier than working with one that uses references.
+Здесь мы создаем [`struct`][struct], представляющую философа. На данный момент
+нам нужно всего лишь имя. Мы выбрали тип [`String`][string], а не `&str` для
+хранения имени. Обычно проще работать с типом, владеющим данными, чем с типом,
+использующим ссылки.
 
 [struct]: structs.html
 [string]: strings.html
 
-Let’s continue:
+Продолжим:
 
 ```rust
 # struct Philosopher {
@@ -93,8 +88,9 @@ impl Philosopher {
 }
 ```
 
-This `impl` block lets us define things on `Philosopher` structs. In this case,
-we define an ‘associated function’ called `new`. The first line looks like this:
+Этот блок `impl` позволяет объявить что-либо для структуры `Philosopher`. В
+нашем случае мы объявляем «статическую функцию» `new`. Первая строка этой
+функции выглядит так:
 
 ```rust
 # struct Philosopher {
@@ -109,8 +105,8 @@ fn new(name: &str) -> Philosopher {
 # }
 ```
 
-We take one argument, a `name`, of type `&str`. This is a reference to another
-string. It returns an instance of our `Philosopher` struct.
+Она принимает один аргумент, `name`, типа `&str`. Это ссылка на другую строку.
+Она возвращает новый экземпляр нашей структуры `Philosopher`.
 
 ```rust
 # struct Philosopher {
@@ -125,33 +121,35 @@ Philosopher {
 # }
 ```
 
-This creates a new `Philosopher`, and sets its `name` to our `name` argument.
-Not just the argument itself, though, as we call `.to_string()` on it. This
-will create a copy of the string that our `&str` points to, and give us a new
-`String`, which is the type of the `name` field of `Philosopher`.
+Этот код создаёт новый экземпляр `Philosopher` и присваивает его полю `name`
+значение переданного аргумента `name`. Но используется не сам аргумент, а
+результат вызова его метода `.to_string()`. Этот вызов создаёт копию строки, на
+которую указывает наш `&str`, и возвращает новый экземпляр `String`, который и
+будет присвоен полю `name` структуры `Philosopher`.
 
-Why not accept a `String` directly? It’s nicer to call. If we took a `String`,
-but our caller had a `&str`, they’d have to call this method themselves. The
-downside of this flexibility is that we _always_ make a copy. For this small
-program, that’s not particularly important, as we know we’ll just be using
-short strings anyway.
+Почему бы сразу не передавать строку типа `String` напрямую? Так легче ее
+вызывать. Если бы мы принимали тип `String`, а тот, кто вызывает функцию, имел
+бы ссылку на строку, `&str`, то ему пришлось бы приводить ее к типу `String`
+перед каждым вызовом. Это уменьшит гибкость кода, и мы будем вынуждены _каждый
+раз_ создавать копию строки. Для этой небольшой программы это не очень важно,
+так как мы знаем, что будем использовать только короткие строки.
 
-One last thing you’ll notice: we just define a `Philosopher`, and seemingly
-don’t do anything with it. Rust is an ‘expression based’ language, which means
-that almost everything in Rust is an expression which returns a value. This is
-true of functions as well, the last expression is automatically returned. Since
-we create a new `Philosopher` as the last expression of this function, we end
-up returning it.
+И последнее на что следует обратить внимание: мы просто объявляем структуру
+`Philosopher` и кажется, что ничего больше не делаем. Rust — это язык
+программирования, «ориентированный на выражения», что означает, что каждое
+выражение возвращает значение. Это верно и для функций, у которых автоматически
+возвращается последнее выражение. Так как в нашем примере в последнем выражении
+функции мы создаем структуру `Philosopher`, то она и будет возвращена функцией.
 
-This name, `new()`, isn’t anything special to Rust, but it is a convention for
-functions that create new instances of structs. Before we talk about why, let’s
-look at `main()` again:
+Имя функции `new()` не регламентируется Rust. Это просто соглашение об
+именовании функций, которые возвращают новые экземпляры структур. Давайте снова
+посмотрим на функцию `main()`:
 
 ```rust
 # struct Philosopher {
 #     name: String,
 # }
-#
+# 
 # impl Philosopher {
 #     fn new(name: &str) -> Philosopher {
 #         Philosopher {
@@ -159,65 +157,66 @@ look at `main()` again:
 #         }
 #     }
 # }
-#
+# 
 fn main() {
-    let p1 = Philosopher::new("Judith Butler");
-    let p2 = Philosopher::new("Gilles Deleuze");
-    let p3 = Philosopher::new("Karl Marx");
-    let p4 = Philosopher::new("Emma Goldman");
-    let p5 = Philosopher::new("Michel Foucault");
+    let p1 = Philosopher::new("Джудит Батлер");
+    let p2 = Philosopher::new("Рая Дунаевская");
+    let p3 = Philosopher::new("Зарубина Наталья");
+    let p4 = Philosopher::new("Эмма Гольдман");
+    let p5 = Philosopher::new("Анна Шмидт");
 }
 ```
 
-Here, we create five variable bindings with five new philosophers. These are my
-favorite five, but you can substitute anyone you want. If we _didn’t_ define
-that `new()` function, it would look like this:
+Здесь мы связываем пять имен переменных с пятью новыми философами. Здесь указаны
+имена некоторых известных философов, но вы можете указать любые другие. Если бы
+мы _не объявили_ свою реализацию функции `new()`, то наш код выглядел бы так:
 
 ```rust
 # struct Philosopher {
 #     name: String,
 # }
 fn main() {
-    let p1 = Philosopher { name: "Judith Butler".to_string() };
-    let p2 = Philosopher { name: "Gilles Deleuze".to_string() };
-    let p3 = Philosopher { name: "Karl Marx".to_string() };
-    let p4 = Philosopher { name: "Emma Goldman".to_string() };
-    let p5 = Philosopher { name: "Michel Foucault".to_string() };
+    let p1 = Philosopher { name: "Джудит Батлер".to_string() };
+    let p2 = Philosopher { name: "Рая Дунаевская".to_string() };
+    let p3 = Philosopher { name: "Зарубина Наталья".to_string() };
+    let p4 = Philosopher { name: "Эмма Гольдман".to_string() };
+    let p5 = Philosopher { name: "Анна Шмидт".to_string() };
 }
 ```
 
-That’s much noisier. Using `new` has other advantages too, but even in
-this simple case, it ends up being nicer to use.
+Этот код выглядит не слишком изящно. Использование статической функции `new`
+имеет и другие преимущества, но даже в этом простом случае, её использование
+было оправдано.
 
-Now that we’ve got the basics in place, there’s a number of ways that we can
-tackle the broader problem here. I like to start from the end first: let’s
-set up a way for each philosopher to finish eating. As a tiny step, let’s make
-a method, and then loop through all the philosophers, calling it:
+Теперь у нас уже есть каркас программы, и можно заняться решением задачи с
+обедающими философами. Начнем с конца: сделаем так, чтобы философ сообщал нам,
+когда он закончит есть. Для этого потребуется метод, сообщающий нам об окончании
+приема пищи, и цикл, запускающий этот метод для каждого философа.
 
 ```rust
 struct Philosopher {
     name: String,
-}
+}   
 
-impl Philosopher {
+impl Philosopher { 
     fn new(name: &str) -> Philosopher {
         Philosopher {
             name: name.to_string(),
         }
     }
-
+    
     fn eat(&self) {
-        println!("{} is done eating.", self.name);
+        println!("{} закончила есть.", self.name);
     }
 }
 
 fn main() {
     let philosophers = vec![
-        Philosopher::new("Judith Butler"),
-        Philosopher::new("Gilles Deleuze"),
-        Philosopher::new("Karl Marx"),
-        Philosopher::new("Emma Goldman"),
-        Philosopher::new("Michel Foucault"),
+        Philosopher::new("Джудит Батлер"),
+        Philosopher::new("Рая Дунаевская"),
+        Philosopher::new("Зарубина Наталья"),
+        Philosopher::new("Эмма Гольдман"),
+        Philosopher::new("Анна Шмидт"),
     ];
 
     for p in &philosophers {
@@ -226,72 +225,70 @@ fn main() {
 }
 ```
 
-Let’s look at `main()` first. Rather than have five individual variable
-bindings for our philosophers, we make a `Vec<T>` of them instead. `Vec<T>` is
-also called a ‘vector’, and it’s a growable array type. We then use a
-[`for`][for] loop to iterate through the vector, getting a reference to each
-philosopher in turn.
+Давайте сначала рассмотрим функцию `main()`. Вместо того чтобы создавать пять
+отдельных связанных имен для философов, мы создаем для них `Vec<T>`. `Vec<T>`
+называют «вектор», он является расширяемой версией массива. Затем в цикле
+[`for`][for] мы перебираем вектор, получая ссылку на очередного философа на
+каждой итерации.
 
-[for]: for-loops.html
+[for]: loops.html#for
 
-In the body of the loop, we call `p.eat()`, which is defined above:
+В теле цикла мы вызываем метод `p.eat()`, который объявлен выше:
 
 ```rust,ignore
 fn eat(&self) {
-    println!("{} is done eating.", self.name);
+    println!("{} закончила есть.", self.name);
 }
 ```
 
-In Rust, methods take an explicit `self` parameter. That’s why `eat()` is a
-method, but `new` is an associated function: `new()` has no `self`. For our
-first version of `eat()`, we just print out the name of the philosopher, and
-mention they’re done eating. Running this program should give you the following
-output:
+В Rust методы явно получают параметр `self`. Вот почему `eat()` является
+методом, а `new` — статической функцией: `new()` не получает параметр `self`.
+Для нашей первой версии метода `eat()` мы выводим только имя философа и
+сообщение о том, что он закончил есть. Запустив эту программу вы получите:
 
 ```text
-Judith Butler is done eating.
-Gilles Deleuze is done eating.
-Karl Marx is done eating.
-Emma Goldman is done eating.
-Michel Foucault is done eating.
+Джудит Батлер закончила есть.
+Рая Дунаевская закончила есть.
+Зарубина Наталья закончила есть.
+Эмма Гольдман закончила есть.
+Анна Шмидт закончила есть.
 ```
 
-Easy enough, they’re all done! We haven’t actually implemented the real problem
-yet, though, so we’re not done yet!
+Это было не сложно! Осталось чуть-чуть и приступим к самой задаче.
 
-Next, we want to make our philosophers not just finish eating, but actually
-eat. Here’s the next version:
+Дальше нам нужно сделать так, чтобы философы не только заканчивали, но и
+начинали есть. Это новая версия программы:
 
 ```rust
 use std::thread;
 
 struct Philosopher {
     name: String,
-}
+}   
 
-impl Philosopher {
+impl Philosopher { 
     fn new(name: &str) -> Philosopher {
         Philosopher {
             name: name.to_string(),
         }
     }
-
+    
     fn eat(&self) {
-        println!("{} is eating.", self.name);
+        println!("{} начала есть.", self.name);
 
         thread::sleep_ms(1000);
 
-        println!("{} is done eating.", self.name);
+        println!("{} закончила есть.", self.name);
     }
 }
 
 fn main() {
     let philosophers = vec![
-        Philosopher::new("Judith Butler"),
-        Philosopher::new("Gilles Deleuze"),
-        Philosopher::new("Karl Marx"),
-        Philosopher::new("Emma Goldman"),
-        Philosopher::new("Michel Foucault"),
+        Philosopher::new("Джудит Батлер"),
+        Philosopher::new("Рая Дунаевская"),
+        Philosopher::new("Зарубина Наталья"),
+        Philosopher::new("Эмма Гольдман"),
+        Philosopher::new("Анна Шмидт"),
     ];
 
     for p in &philosophers {
@@ -300,57 +297,60 @@ fn main() {
 }
 ```
 
-Just a few changes. Let’s break it down.
+Появились некоторые небольшие изменения. Давайте посмотрим, что же изменилось:
 
 ```rust,ignore
 use std::thread;
 ```
 
-`use` brings names into scope. We’re going to start using the `thread` module
-from the standard library, and so we need to `use` it.
+Конструкция `use` предоставляет доступ к области видимости модуля `thread` из
+стандартной библиотеки. Мы собираемся использовать этот модуль далее в коде, и
+поэтому нам нужно объявить о его использовании.
 
 ```rust,ignore
     fn eat(&self) {
-        println!("{} is eating.", self.name);
+        println!("{} начала есть.", self.name);
 
         thread::sleep_ms(1000);
 
-        println!("{} is done eating.", self.name);
+        println!("{} закончила есть.", self.name);
     }
 ```
 
-We now print out two messages, with a `sleep_ms()` in the middle. This will
-simulate the time it takes a philosopher to eat.
+Здесь мы выводим на экран два сообщения и вызываем функцию `sleep_ms` между
+ними. Эта функция останавливает рабочий поток на 1000 миллисекунд, что
+симулирует процесс приема пищи философа.
 
-If you run this program, you should see each philosopher eat in turn:
+Если вы запустите программу теперь, то увидите, что каждый философ, по очереди,
+начинает есть, ест какое-то время и заканчивает есть:
 
 ```text
-Judith Butler is eating.
-Judith Butler is done eating.
-Gilles Deleuze is eating.
-Gilles Deleuze is done eating.
-Karl Marx is eating.
-Karl Marx is done eating.
-Emma Goldman is eating.
-Emma Goldman is done eating.
-Michel Foucault is eating.
-Michel Foucault is done eating.
+Джудит Батлер начала есть.
+Джудит Батлер закончила есть.
+Рая Дунаевская начала есть.
+Рая Дунаевская закончила есть.
+Зарубина Наталья начала есть.
+Зарубина Наталья закончила есть.
+Эмма Гольдман начала есть.
+Эмма Гольдман закончила есть.
+Анна Шмидт начала есть.
+Анна Шмидт закончила есть.
 ```
 
-Excellent! We’re getting there. There’s just one problem: we aren’t actually
-operating in a concurrent fashion, which is a core part of the problem!
+Превосходно! Теперь у нас осталась только одна проблема: наши философы едят по
+очереди, а не одновременно, то есть мы пока не решили задачу параллелизма.
 
-To make our philosophers eat concurrently, we need to make a small change.
-Here’s the next iteration:
+Для того, чтобы наши философы начали есть одновременно, нам нужно внести
+некоторые изменения в код:
 
 ```rust
 use std::thread;
 
 struct Philosopher {
     name: String,
-}
+}   
 
-impl Philosopher {
+impl Philosopher { 
     fn new(name: &str) -> Philosopher {
         Philosopher {
             name: name.to_string(),
@@ -358,21 +358,21 @@ impl Philosopher {
     }
 
     fn eat(&self) {
-        println!("{} is eating.", self.name);
+        println!("{} начала есть.", self.name);
 
         thread::sleep_ms(1000);
 
-        println!("{} is done eating.", self.name);
+        println!("{} закончила есть.", self.name);
     }
 }
 
 fn main() {
     let philosophers = vec![
-        Philosopher::new("Judith Butler"),
-        Philosopher::new("Gilles Deleuze"),
-        Philosopher::new("Karl Marx"),
-        Philosopher::new("Emma Goldman"),
-        Philosopher::new("Michel Foucault"),
+        Philosopher::new("Джудит Батлер"),
+        Philosopher::new("Рая Дунаевская"),
+        Philosopher::new("Зарубина Наталья"),
+        Philosopher::new("Эмма Гольдман"),
+        Philosopher::new("Анна Шмидт"),
     ];
 
     let handles: Vec<_> = philosophers.into_iter().map(|p| {
@@ -387,8 +387,7 @@ fn main() {
 }
 ```
 
-All we’ve done is change the loop in `main()`, and added a second one! Here’s the
-first change:
+Мы добавили еще один цикл в функцию `main()`. Теперь она выглядит так:
 
 ```rust,ignore
 let handles: Vec<_> = philosophers.into_iter().map(|p| {
@@ -398,27 +397,28 @@ let handles: Vec<_> = philosophers.into_iter().map(|p| {
 }).collect();
 ```
 
-While this is only five lines, they’re a dense five. Let’s break it down.
+Тут добавились трудные к пониманию пять строк кода. Давайте разбираться.
 
 ```rust,ignore
-let handles: Vec<_> =
+let handles: Vec<_> = 
 ```
 
-We introduce a new binding, called `handles`. We’ve given it this name because
-we are going to make some new threads, and that will return some handles to those
-threads that let us control their operation. We need to explicitly annotate
-the type here, though, due to an issue we’ll talk about later. The `_` is
-a type placeholder. We’re saying “`handles` is a vector of something, but you
-can figure out what that something is, Rust.”
+Объявляем новое связанное имя `handles`. Мы задали такое имя, потому что
+собираемся создать несколько потоков, в результате чего получим для них
+дескрипторы, с помощью которых сможем контролировать их выполнение. Здесь нам
+нужно явно указать тип, а зачем это необходимо, мы расскажем чуть позже. `_` -
+это заполнитель типа. Мы говорим компилятору «`handles` — это вектор, содержащий
+элементы, тип которых Rust должен вывести самостоятельно».
 
 ```rust,ignore
 philosophers.into_iter().map(|p| {
 ```
 
-We take our list of philosophers and call `into_iter()` on it. This creates an
-iterator that takes ownership of each philosopher. We need to do this to pass
-them to our threads. We take that iterator and call `map` on it, which takes a
-closure as an argument and calls that closure on each element in turn.
+Мы берем наш список философов и вызываем метод `into_iter()`. Этот метод создаёт
+итератор, который при каждой итерации забирает право владения на соответствующий
+элемент. Это нужно для передачи элемента вектора в поток. Мы берем этот итератор
+и вызываем метод `map`, который принимает замыкание в качестве аргумента и
+вызывает это замыкание для каждого из элементов итератора.
 
 ```rust,ignore
     thread::spawn(move || {
@@ -426,13 +426,17 @@ closure as an argument and calls that closure on each element in turn.
     })
 ```
 
-Here’s where the concurrency happens. The `thread::spawn` function takes a closure
-as an argument and executes that closure in a new thread. This closure needs
-an extra annotation, `move`, to indicate that the closure is going to take
-ownership of the values it’s capturing. Primarily, the `p` variable of the
-`map` function.
+Вот здесь происходит сам параллелизм. Функция `thread::spawn` принимает в
+качестве аргумента замыкание и исполняет это замыкание в новом потоке. Это
+замыкание дополнительно нуждается в указании ключевого слова `move`, которое
+сообщает, что это замыкание получает владение переменными, которые оно
+захватывает. В данном случае — переменной `p` функции `map`.
 
-Inside the thread, all we do is call `eat()` on `p`. Also note that the call to `thread::spawn` lacks a trailing semicolon, making this an expression. This distinction is important, yielding the correct return value. For more details, read [Expressions vs. Statements][es].
+Внутри потока мы всего лишь вызываем метод `eat()` переменной `p`. Также
+обратите внимание, что вызов `thread::spawn` не оканчивается точкой с запятой,
+что превращает его в выражение. Этот нюанс важен, так как возвращается
+правильное значение. Для получения более подробной информации, прочитайте главу
+[Выражения и операторы][es].
 
 [es]: functions.html#expressions-vs.-statements
 
@@ -440,11 +444,12 @@ Inside the thread, all we do is call `eat()` on `p`. Also note that the call to 
 }).collect();
 ```
 
-Finally, we take the result of all those `map` calls and collect them up.
-`collect()` will make them into a collection of some kind, which is why we
-needed to annotate the return type: we want a `Vec<T>`. The elements are the
-return values of the `thread::spawn` calls, which are handles to those threads.
-Whew!
+По завершении мы получаем результат вызова `map` и собираем полученный результат
+в коллекцию с помощью метода `collect()`. Метод `collect()` создаёт коллекцию
+какого-то типа, и для того, чтобы Rust понял, коллекцию какого типа мы хотим
+получить, мы указали для `handle` тип принимаемого значения `Vec<T>`. Элементами
+коллекции будут возвращаемые из методов `thread::spawn` значения, которые
+являются дескрипторами этих потоков. Вот так!
 
 ```rust,ignore
 for h in handles {
@@ -452,29 +457,30 @@ for h in handles {
 }
 ```
 
-At the end of `main()`, we loop through the handles and call `join()` on them,
-which blocks execution until the thread has completed execution. This ensures
-that the threads complete their work before the program exits.
+В конце функции `main()` мы в цикле перебираем каждый дескриптор и вызываем для
+него метод `join()`, который блокирует дальнейшее исполнение основного потока,
+пока не завершится дочерний поток. Это позволяет нам быть уверенными, что потоки
+завершат работу до того как произойдет выход из программы.
 
-If you run this program, you’ll see that the philosophers eat out of order!
-We have multi-threading!
+Если вы запустите эту программу, то вы увидите, что философы едят не дожидаясь
+своей очереди! У нас многопоточность!
 
 ```text
-Judith Butler is eating.
-Gilles Deleuze is eating.
-Karl Marx is eating.
-Emma Goldman is eating.
-Michel Foucault is eating.
-Judith Butler is done eating.
-Gilles Deleuze is done eating.
-Karl Marx is done eating.
-Emma Goldman is done eating.
-Michel Foucault is done eating.
+Джудит Батлер начала есть.
+Рая Дунаевская начала есть.
+Зарубина Наталья начала есть.
+Эмма Гольдман начала есть.
+Анна Шмидт начала есть.
+Джудит Батлер закончила есть.
+Рая Дунаевская закончила есть.
+Зарубина Наталья закончила есть.
+Эмма Гольдман закончила есть.
+Анна Шмидт закончила есть.
 ```
 
-But what about the forks? We haven’t modeled them at all yet.
+Но как же быть с вилками? Их мы пока ещё не смоделировали.
 
-To do that, let’s make a new `struct`:
+Давайте же начнем. Сначала сделаем новую структуру:
 
 ```rust
 use std::sync::Mutex;
@@ -484,12 +490,14 @@ struct Table {
 }
 ```
 
-This `Table` has a vector of `Mutex`es. A mutex is a way to control
-concurrency: only one thread can access the contents at once. This is exactly
-the property we need with our forks. We use an empty tuple, `()`, inside the
-mutex, since we’re not actually going to use the value, just hold onto it.
+Структура `Table` содержит вектор мьютексов (`Mutex`). Мьютекс — способ
+управления доступом к данным для параллельно выполняющихся потоков: только один
+поток может получить доступ к данным в конкретный момент времени. Это именно то
+свойство, которое нужно для реализации наших вилок. В коде мы используем пустой
+кортеж, `()`, внутри мьютекса, так как не собираемся использовать это значение,
+а мьютекс используется только для организации доступа.
 
-Let’s modify the program to use the `Table`:
+Давайте изменим программу, используя структуру `Table`:
 
 ```rust
 use std::thread;
@@ -514,11 +522,11 @@ impl Philosopher {
         let _left = table.forks[self.left].lock().unwrap();
         let _right = table.forks[self.right].lock().unwrap();
 
-        println!("{} is eating.", self.name);
+        println!("{} начала есть.", self.name);
 
         thread::sleep_ms(1000);
 
-        println!("{} is done eating.", self.name);
+        println!("{} закончила есть.", self.name);
     }
 }
 
@@ -536,11 +544,11 @@ fn main() {
     ]});
 
     let philosophers = vec![
-        Philosopher::new("Judith Butler", 0, 1),
-        Philosopher::new("Gilles Deleuze", 1, 2),
-        Philosopher::new("Karl Marx", 2, 3),
-        Philosopher::new("Emma Goldman", 3, 4),
-        Philosopher::new("Michel Foucault", 0, 4),
+        Philosopher::new("Джудит Батлер", 0, 1),
+        Philosopher::new("Рая Дунаевская", 1, 2),
+        Philosopher::new("Зарубина Наталья", 2, 3),
+        Philosopher::new("Эмма Гольдман", 3, 4),
+        Philosopher::new("Анна Шмидт", 0, 4),
     ];
 
     let handles: Vec<_> = philosophers.into_iter().map(|p| {
@@ -557,15 +565,15 @@ fn main() {
 }
 ```
 
-Lots of changes! However, with this iteration, we’ve got a working program.
-Let’s go over the details:
+Много изменений! Однако, с этими изменениями мы получили корректно работающую
+программу. Приступим к рассмотрению:
 
 ```rust,ignore
 use std::sync::{Mutex, Arc};
 ```
 
-We’re going to use another structure from the `std::sync` package: `Arc<T>`.
-We’ll talk more about it when we use it.
+Нам далее понадобится структура `Arc<T>` из модуля стандартной библиотеки
+`std::sync`. Мы поговорим о ней чуть позже.
 
 ```rust,ignore
 struct Philosopher {
@@ -575,11 +583,11 @@ struct Philosopher {
 }
 ```
 
-We need to add two more fields to our `Philosopher`. Each philosopher is going
-to have two forks: the one on their left, and the one on their right.
-We’ll use the `usize` type to indicate them, as it’s the type that you index
-vectors with. These two values will be the indexes into the `forks` our `Table`
-has.
+Нам понадобилось добавить еще два поля в нашу структуру `Philosopher`. Каждый
+философ должен иметь две вилки: одну — для левой руки, другую — для правой руки.
+Мы используем тип `usize` для идентификации каждой вилки. Мы используем его при
+создании философа, передавая идентификаторы двух вилок. Эти два значения будут
+использоваться полем `forks` структуры `Table`.
 
 ```rust,ignore
 fn new(name: &str, left: usize, right: usize) -> Philosopher {
@@ -591,43 +599,45 @@ fn new(name: &str, left: usize, right: usize) -> Philosopher {
 }
 ```
 
-We now need to construct those `left` and `right` values, so we add them to
-`new()`.
+Мы используем функцию `new()` для задания значений `left` и `right`.
 
 ```rust,ignore
 fn eat(&self, table: &Table) {
     let _left = table.forks[self.left].lock().unwrap();
     let _right = table.forks[self.right].lock().unwrap();
 
-    println!("{} is eating.", self.name);
+    println!("{} начала есть.", self.name);
 
     thread::sleep_ms(1000);
 
-    println!("{} is done eating.", self.name);
+    println!("{} закончила есть.", self.name);
 }
 ```
 
-We have two new lines. We’ve also added an argument, `table`. We access the
-`Table`’s list of forks, and then use `self.left` and `self.right` to access
-the fork at that particular index. That gives us access to the `Mutex` at that
-index, and we call `lock()` on it. If the mutex is currently being accessed by
-someone else, we’ll block until it becomes available.
+Здесь появились две новые строки. Мы также добавили один аргумент, `table`. Мы
+получаем доступ к списку вилок через структуру `Table`. Затем используем
+идентификаторы вилок `self.left` и `self.right` для получения доступа к вилке по
+определенному индексу. В результате чего мы получаем `Mutex`, который регулирует
+доступ к вилке, и вызываем для него метод `lock()`, блокируя доступ к вилке.
+Если в настоящее время доступ к вилке уже предоставлен кому-то еще, то мы будем
+блокированы, пока вилка не станет доступной.
 
-The call to `lock()` might fail, and if it does, we want to crash. In this
-case, the error that could happen is that the mutex is [‘poisoned’][poison],
-which is what happens when the thread panics while the lock is held. Since this
-shouldn’t happen, we just use `unwrap()`.
+Вызов метода `lock()` может потерпеть неудачу, и если это случается, то мы
+аварийно завершаем работу программы. Может возникнуть ситуация, когда поток
+аварийно завершит свою работу, а мьютекс при этом останется заблокированным.
+Такой мьютекс называется «[отравленным (poisoned)][poison]». Но в нашем случае
+это не может произойти, потому как мы просто используем метод `unwrap()`.
 
-[poison]: ../std/sync/struct.Mutex.html#poisoning
+[poison]: https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html#poisoning
 
-One other odd thing about these lines: we’ve named the results `_left` and
-`_right`. What’s up with that underscore? Well, we aren’t planning on
-_using_ the value inside the lock. We just want to acquire it. As such,
-Rust will warn us that we never use the value. By using the underscore,
-we tell Rust that this is what we intended, and it won’t throw a warning.
+Результаты выполнения этих двух строк имеют имена `_left` и `_right`
+соответственно. Зачем мы используем знаки подчеркивания в начале имён? Это для
+того, чтобы сказать компилятору, что мы хотим получить значения, которые далее
+_не планируем использовать_. Таким образом Rust не будет выводить предупреждение
+о неиспользуемых именах.
 
-What about releasing the lock? Well, that will happen when `_left` and
-`_right` go out of scope, automatically.
+Когда же мьютекс будет освобождён? Это произойдет автоматически, когда `_left` и
+`_right` выйдут из области видимости, то есть по окончании работы функции.
 
 ```rust,ignore
     let table = Arc::new(Table { forks: vec![
@@ -639,28 +649,30 @@ What about releasing the lock? Well, that will happen when `_left` and
     ]});
 ```
 
-Next, in `main()`, we make a new `Table` and wrap it in an `Arc<T>`.
-‘arc’ stands for ‘atomic reference count’, and we need that to share
-our `Table` across multiple threads. As we share it, the reference
-count will go up, and when each thread ends, it will go back down.
-
+Далее в `main()` мы создаем новый экземпляр структуры `Table` и оборачиваем его
+в `Arc<T>`. Это «атомарный счетчик ссылок» (atomic reference count). Он нужен
+для обеспечения доступа к нашей структуре `Table` из нескольких потоков. Когда
+он передается в новый поток, то счетчик увеличивается, а когда этот поток
+завершает работу, то счетчик уменьшается.
 
 ```rust,ignore
 let philosophers = vec![
-    Philosopher::new("Judith Butler", 0, 1),
-    Philosopher::new("Gilles Deleuze", 1, 2),
-    Philosopher::new("Karl Marx", 2, 3),
-    Philosopher::new("Emma Goldman", 3, 4),
-    Philosopher::new("Michel Foucault", 0, 4),
+    Philosopher::new("Джудит Батлер", 0, 1),
+    Philosopher::new("Рая Дунаевская", 1, 2),
+    Philosopher::new("Зарубина Наталья", 2, 3),
+    Philosopher::new("Эмма Гольдман", 3, 4),
+    Philosopher::new("Анна Шмидт", 0, 4),
 ];
 ```
 
-We need to pass in our `left` and `right` values to the constructors for our
-`Philosopher`s. But there’s one more detail here, and it’s _very_ important. If
-you look at the pattern, it’s all consistent until the very end. Monsieur
-Foucault should have `4, 0` as arguments, but instead, has `0, 4`. This is what
-prevents deadlock, actually: one of our philosophers is left handed! This is
-one way to solve the problem, and in my opinion, it’s the simplest.
+Мы добавили наши значения `left` и `right` при создании структуры `Philosopher`.
+Здесь есть _очень важная_ деталь, на которую следует обратить внимание.
+Посмотрите на последнюю строку создания `Philosopher`. Конструктор Анны Шмидт
+должен был бы принимать в качестве аргументов значения `4` и `0`, но вместо
+этого он принимает значения `0` и `4`. Это помешает нашей программе попасть в
+безвыходное состояние, если каждый возьмет по одной вилке одновременно. Так что
+давайте представим, что один из философов у нас левша! Это один из способов
+решить данную проблему, и, на мой взгляд, самый простой.
 
 ```rust,ignore
 let handles: Vec<_> = philosophers.into_iter().map(|p| {
@@ -672,30 +684,32 @@ let handles: Vec<_> = philosophers.into_iter().map(|p| {
 }).collect();
 ```
 
-Finally, inside of our `map()`/`collect()` loop, we call `table.clone()`. The
-`clone()` method on `Arc<T>` is what bumps up the reference count, and when it
-goes out of scope, it decrements the count. This is needed so that we know how
-many references to `table` exist across our threads. If we didn’t have a count,
-we wouldn’t know how to deallocate it.
+Внутри нашего цикла `map()`/`collect()` мы вызываем метод `table.clone()`. Метод
+`clone()` структуры `Arc<T>` клонирует значение и инкрементирует счетчик,
+который автоматически декрементируется, когда клонированное значение покинет
+область видимости. Это необходимо для того, чтобы мы знали, как много ссылок на
+`table` существуют в рамках наших потоков на данный момент времени. Если бы у
+нас не было подсчета ссылок, то мы бы не знали, как и когда освободить хранимое
+значение.
 
-You’ll notice we can introduce a new binding to `table` here, and it will
-shadow the old one. This is often used so that you don’t need to come up with
-two unique names.
+Вы можете заметить, что здесь мы выполняем новое связывание с именем `table`,
+затеняя старое связанное имя `table`. Это позволяет нам не вводить новое
+уникальное имя.
 
-With this, our program works! Only two philosophers can eat at any one time,
-and so you’ll get some output like this:
+Теперь наша программа работает! Только два философа могут обедать одновременно.
+После запуска программы вы можете получить такой результат.
 
 ```text
-Gilles Deleuze is eating.
-Emma Goldman is eating.
-Emma Goldman is done eating.
-Gilles Deleuze is done eating.
-Judith Butler is eating.
-Karl Marx is eating.
-Judith Butler is done eating.
-Michel Foucault is eating.
-Karl Marx is done eating.
-Michel Foucault is done eating.
+Рая Дунаевская начала есть.
+Эмма Гольдман начала есть.
+Эмма Гольдман закончила есть.
+Рая Дунаевская закончила есть.
+Джудит Батлер начала есть.
+Зарубина Наталья начала есть.
+Джудит Батлер закончила есть.
+Анна Шмидт начала есть.
+Зарубина Наталья закончила есть.
+Анна Шмидт закончила есть.
 ```
 
-Congrats! You’ve implemented a classic concurrency problem in Rust.
+Поздравляем! Вы реализовали классическую задачу параллелизма на языке Rust.

@@ -1,19 +1,18 @@
-% Lang items
+% Элементы языка (lang items)
 
-> **Note**: lang items are often provided by crates in the Rust distribution,
-> and lang items themselves have an unstable interface. It is recommended to use
-> officially distributed crates instead of defining your own lang items.
+> **Замечание**: многие элементы языка предоставляются контейнерами в
+> стандартной поставке Rust, а у самих элементов языка нестабильный
+> интерфейс. Рекомендуется использовать официально распространяемые контейнеры,
+> вместо того, чтобы определять свои собственные элементы языка.
 
-The `rustc` compiler has certain pluggable operations, that is,
-functionality that isn't hard-coded into the language, but is
-implemented in libraries, with a special marker to tell the compiler
-it exists. The marker is the attribute `#[lang = "..."]` and there are
-various different values of `...`, i.e. various different 'lang
-items'.
+У компилятора `rustc` есть некоторые подключаемые операции, т.е. функционал, не
+встроенный жёстко в язык, а реализованный в библиотеках и специально помеченный
+как элемент языка. Метка — это атрибут `#[lang="..."]`. Есть различные значения
+`...`, т.е.  разные «элементы языка».
 
-For example, `Box` pointers require two lang items, one for allocation
-and one for deallocation. A freestanding program that uses the `Box`
-sugar for dynamic allocations via `malloc` and `free`:
+Например, для указателей `Box` нужны два элемента языка — для выделения памяти и
+для освобождения. Вот программа, не использующая стандартную библиотеку, и
+реализующая `Box` через `malloc` и `free`:
 
 ```rust
 #![feature(lang_items, box_syntax, start, no_std, libc)]
@@ -28,18 +27,18 @@ extern {
 #[lang = "owned_box"]
 pub struct Box<T>(*mut T);
 
-#[lang = "exchange_malloc"]
+#[lang="exchange_malloc"]
 unsafe fn allocate(size: usize, _align: usize) -> *mut u8 {
     let p = libc::malloc(size as libc::size_t) as *mut u8;
 
-    // malloc failed
+    // malloc завершился ошибкой
     if p as usize == 0 {
         abort();
     }
 
     p
 }
-#[lang = "exchange_free"]
+#[lang="exchange_free"]
 unsafe fn deallocate(ptr: *mut u8, _size: usize, _align: usize) {
     libc::free(ptr as *mut libc::c_void)
 }
@@ -51,29 +50,27 @@ fn main(argc: isize, argv: *const *const u8) -> isize {
     0
 }
 
+#[lang = "stack_exhausted"] extern fn stack_exhausted() {}
 #[lang = "eh_personality"] extern fn eh_personality() {}
 #[lang = "panic_fmt"] fn panic_fmt() -> ! { loop {} }
-# #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
 ```
 
-Note the use of `abort`: the `exchange_malloc` lang item is assumed to
-return a valid pointer, and so needs to do the check internally.
+Заметьте, что `exchange_malloc` должен возвращать допустимый указатель, поэтому
+он производит проверку внутри и делает `abort`, если она не прошла.
 
-Other features provided by lang items include:
+Ниже перечислены другие возможности, предоставляемые элементами языка:
 
-- overloadable operators via traits: the traits corresponding to the
-  `==`, `<`, dereferencing (`*`) and `+` (etc.) operators are all
-  marked with lang items; those specific four are `eq`, `ord`,
-  `deref`, and `add` respectively.
-- stack unwinding and general failure; the `eh_personality`, `fail`
-  and `fail_bounds_checks` lang items.
-- the traits in `std::marker` used to indicate types of
-  various kinds; lang items `send`, `sync` and `copy`.
-- the marker types and variance indicators found in
-  `std::marker`; lang items `covariant_type`,
-  `contravariant_lifetime`, etc.
+- перегружаемые операторы через типажи: типажи, соответствующие `==`, `<`,
+  разыменованию (`*`), `+` и другим операторам, помечены как элементы языка;
+  конкретно эти типажи помечены как `eq`, `ord`, `deref` и `add`;
+- раскрутка стека и общая ошибка; это элементы `eh_personality`, `fail` и
+  `fail_bounds_check`;
+- типажи в модуле `std::marker`, используемые чтобы помечать различные типы;
+  элементы `send`, `sync` и `copy`;
+- типы-метки и индикаторы вариантности из `std::marker`; это элементы
+  `covariant_type`, `contravariant_lifetime` и другие.
 
-Lang items are loaded lazily by the compiler; e.g. if one never uses
-`Box` then there is no need to define functions for `exchange_malloc`
-and `exchange_free`. `rustc` will emit an error when an item is needed
-but not found in the current crate or any that it depends on.
+Элементы языка загружаются компилятором лениво, т.е. если программа не
+использует `Box`, вам не нужно определять элементы `exchange_malloc` и
+`exchange_free`. `rustc` выдаст ошибку, если элемент языка необходим, но не
+найден ни в текущем контейнере, ни в его зависимостях.

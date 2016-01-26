@@ -1,9 +1,10 @@
-% Learn Rust
+% Изучение Rust
 
-Welcome! This section has a few tutorials that teach you Rust through building
-projects. You’ll get a high-level overview, but we’ll skim over the details.
+Добро пожаловать! Этот раздел книги содержит несколько глав, которые научат вас
+создавать проекты на Rust. Вы также получите поверхностное представление о языке
+- мы не будем сильно углубляться в детали.
 
-If you’d prefer a more ‘from the ground up’-style experience, check
-out [Syntax and Semantics][ss].
+Если вы хотите более основательно изучить язык, читайте раздел
+«[Синтаксис и семантика][ss]».
 
 [ss]: syntax-and-semantics.html

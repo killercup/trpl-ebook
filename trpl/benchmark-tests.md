@@ -1,7 +1,8 @@
-% Benchmark tests
+% Тесты производительности
 
-Rust supports benchmark tests, which can test the performance of your
-code. Let's make our `src/lib.rs` look like this (comments elided):
+Rust поддерживает тесты производительности, которые помогают измерить
+производительность вашего кода. Давайте изменим наш `src/lib.rs`, чтобы он
+выглядел следующим образом (комментарии опущены):
 
 ```rust,ignore
 #![feature(test)]
@@ -29,15 +30,18 @@ mod tests {
 }
 ```
 
-Note the `test` feature gate, which enables this unstable feature.
+Обратите внимание на включение возможности (feature gate) `test`, что включает
+эту нестабильную возможность.
 
-We've imported the `test` crate, which contains our benchmarking support.
-We have a new function as well, with the `bench` attribute. Unlike regular
-tests, which take no arguments, benchmark tests take a `&mut Bencher`. This
-`Bencher` provides an `iter` method, which takes a closure. This closure
-contains the code we'd like to benchmark.
+Мы импортировали контейнер `test`, который включает поддержку измерения
+производительности. У нас есть новая функция, аннотированная с помощью атрибута
+`bench`. В отличие от обычных тестов, которые не принимают никаких аргументов,
+тесты производительности в качестве аргумента принимают `&mut Bencher`.
+`Bencher` предоставляет метод `iter`, который в качестве аргумента принимает
+замыкание. Это замыкание содержит код, производительность которого мы хотели бы
+протестировать.
 
-We can run benchmark tests with `cargo bench`:
+Запуск тестов производительности осуществляется командой `cargo bench`:
 
 ```bash
 $ cargo bench
@@ -51,31 +55,35 @@ test tests::bench_add_two ... bench:         1 ns/iter (+/- 0)
 test result: ok. 0 passed; 0 failed; 1 ignored; 1 measured
 ```
 
-Our non-benchmark test was ignored. You may have noticed that `cargo bench`
-takes a bit longer than `cargo test`. This is because Rust runs our benchmark
-a number of times, and then takes the average. Because we're doing so little
-work in this example, we have a `1 ns/iter (+/- 0)`, but this would show
-the variance if there was one.
+Все тесты, не относящиеся к тестам производительности, были проигнорированы. Вы,
+наверное, заметили, что выполнение `cargo bench` занимает немного больше времени
+чем `cargo test`. Это происходит потому, что Rust запускает наш тест несколько
+раз, а затем выдает среднее значение. Так как мы выполняем слишком мало полезной
+работы в этом примере, у нас получается `1 ns/iter (+/- 0)`, но была бы выведена
+дисперсия, если бы был один.
 
-Advice on writing benchmarks:
+Советы по написанию тестов производительности:
 
 
-* Move setup code outside the `iter` loop; only put the part you want to measure inside
-* Make the code do "the same thing" on each iteration; do not accumulate or change state
-* Make the outer function idempotent too; the benchmark runner is likely to run
-  it many times
-*  Make the inner `iter` loop short and fast so benchmark runs are fast and the
-   calibrator can adjust the run-length at fine resolution
-* Make the code in the `iter` loop do something simple, to assist in pinpointing
-  performance improvements (or regressions)
+* Внутри `iter` цикла пишите только тот код, производительность которого вы
+  хотите измерить; инициализацию выполняйте за пределами `iter` цикла
+* Внутри `iter` цикла пишите код, который будет идемпотентным (будет делать «то
+  же самое» на каждой итерации); не накапливайте и не изменяйте состояние
+* Вне `iter` цикла пишите код который также будет идемпотентным; скорее всего,
+  он будет запущен много раз во время теста
+* Внутри `iter` цикла пишите код, который будет коротким и быстрым, так чтобы
+  запуски тестов происходили быстро и калибратор мог настроить длину пробега с
+  точным разрешением
+* Внутри `iter` цикла пишите код, делающий что-то простое, чтобы помочь в
+  выявлении улучшения (или уменьшения) производительности
 
-## Gotcha: optimizations
+## Особенности оптимизации
 
-There's another tricky part to writing benchmarks: benchmarks compiled with
-optimizations activated can be dramatically changed by the optimizer so that
-the benchmark is no longer benchmarking what one expects. For example, the
-compiler might recognize that some calculation has no external effects and
-remove it entirely.
+А вот другой сложный момент, относящийся к написанию тестов производительности:
+тесты, скомпилированные с оптимизацией, могут быть значительно изменены
+оптимизатором, после чего тест будет мерить производительность не так, как мы
+этого ожидаем. Например, компилятор может определить, что некоторые выражения не
+оказывают каких-либо внешних эффектов и просто удалит их полностью.
 
 ```rust,ignore
 #![feature(test)]
@@ -91,7 +99,7 @@ fn bench_xor_1000_ints(b: &mut Bencher) {
 }
 ```
 
-gives the following results
+выведет следующие результаты
 
 ```text
 running 1 test
@@ -100,11 +108,12 @@ test bench_xor_1000_ints ... bench:         0 ns/iter (+/- 0)
 test result: ok. 0 passed; 0 failed; 0 ignored; 1 measured
 ```
 
-The benchmarking runner offers two ways to avoid this. Either, the closure that
-the `iter` method receives can return an arbitrary value which forces the
-optimizer to consider the result used and ensures it cannot remove the
-computation entirely. This could be done for the example above by adjusting the
-`b.iter` call to
+Движок для запуска тестов производительности оставляет две возможности,
+позволяющие этого избежать. Либо использовать замыкание, передаваемое в метод
+`iter`, которое возвращает какое-либо значение; тогда это заставит оптимизатор
+думать, что возвращаемое значение будет использовано, из-за чего удалить
+вычисления полностью будет не возможно. Для примера выше этого можно достигнуть,
+изменив вызова `b.iter`
 
 ```rust
 # struct X;
@@ -115,9 +124,9 @@ b.iter(|| {
 });
 ```
 
-Or, the other option is to call the generic `test::black_box` function, which
-is an opaque "black box" to the optimizer and so forces it to consider any
-argument as used.
+Либо использовать вызов функции `test::black_box`, которая представляет собой
+«черный ящик», непрозрачный для оптимизатора, тем самым заставляя его
+рассматривать любой аргумент как используемый.
 
 ```rust
 #![feature(test)]
@@ -135,11 +144,12 @@ b.iter(|| {
 # }
 ```
 
-Neither of these read or modify the value, and are very cheap for small values.
-Larger values can be passed indirectly to reduce overhead (e.g.
-`black_box(&huge_struct)`).
+В этом примере не происходит ни чтения, ни изменения значения, что очень дешево
+для малых значений. Большие значения могут быть переданы косвенно для уменьшения
+издержек (например, `black_box(&huge_struct)`).
 
-Performing either of the above changes gives the following benchmarking results
+Выполнение одного из вышеперечисленных изменений дает следующие результаты
+измерения производительности
 
 ```text
 running 1 test
@@ -148,5 +158,5 @@ test bench_xor_1000_ints ... bench:       131 ns/iter (+/- 3)
 test result: ok. 0 passed; 0 failed; 0 ignored; 1 measured
 ```
 
-However, the optimizer can still modify a testcase in an undesirable manner
-even when using either of the above.
+Тем не менее, оптимизатор все еще может вносить нежелательные изменения в
+определенных случаях, даже при использовании любого из вышеописанных приемов.

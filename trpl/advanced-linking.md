@@ -1,16 +1,15 @@
-% Advanced Linking
+% Продвинутое руководстве по компоновке (advanced linking)
 
-The common cases of linking with Rust have been covered earlier in this book,
-but supporting the range of linking possibilities made available by other
-languages is important for Rust to achieve seamless interaction with native
-libraries.
+Распространённые ситуации, в которых требовалась компоновка с кодом на Rust, уже
+были рассмотрены в предыдущих главах книги. Однако для поддержки прозрачного
+взаимодействия с нативными библиотеками требуется более широкая поддержка разных
+вариантов компоновки.
 
-# Link args
+# Аргументы компоновки (link args)
 
-There is one other way to tell `rustc` how to customize linking, and that is via
-the `link_args` attribute. This attribute is applied to `extern` blocks and
-specifies raw flags which need to get passed to the linker when producing an
-artifact. An example usage would be:
+Есть только один способ тонкой настройки компоновки — атрибут `link_args`.
+Этот атрибут применяется к блокам `extern`, и указывает сырые аргументы, которые
+должны быть переданы компоновщику при создании артефакта. Например:
 
 ``` no_run
 #![feature(link_args)]
@@ -20,37 +19,37 @@ extern {}
 # fn main() {}
 ```
 
-Note that this feature is currently hidden behind the `feature(link_args)` gate
-because this is not a sanctioned way of performing linking. Right now `rustc`
-shells out to the system linker (`gcc` on most systems, `link.exe` on MSVC),
-so it makes sense to provide extra command line
-arguments, but this will not always be the case. In the future `rustc` may use
-LLVM directly to link native libraries, in which case `link_args` will have no
-meaning. You can achieve the same effect as the `link-args` attribute with the
-`-C link-args` argument to `rustc`.
+Обратите внимание, что эта возможность скрыта за `feature(link_args)`, так как
+это нештатный способ компоновки. В данный момент `rustc` вызывает системный
+компоновщик (на большинстве систем это `gcc`, на Windows — `link.exe`),
+поэтому передача аргументов командной строки имеет смысл. Но реализация не
+всегда будет такой — в будущем `rustc` может напрямую использовать LLVM для
+связывания с нативными библиотеками, и тогда `link_args` станет бессмысленным.
+Того же эффекта можно достигнуть с пощощью передачи `rustc` аргумента `-C
+link-args`.
 
-It is highly recommended to *not* use this attribute, and rather use the more
-formal `#[link(...)]` attribute on `extern` blocks instead.
+Крайне рекомендуется *не* использовать этот атрибут, и пользоваться вместо него
+более точно определённым атрибутом `#link(...)` для блоков `extern`.
 
-# Static linking
+# Статическое связывание
 
-Static linking refers to the process of creating output that contains all
-required libraries and so doesn't need libraries installed on every system where
-you want to use your compiled project. Pure-Rust dependencies are statically
-linked by default so you can use created binaries and libraries without
-installing Rust everywhere. By contrast, native libraries
-(e.g. `libc` and `libm`) are usually dynamically linked, but it is possible to
-change this and statically link them as well.
+Статическое связывание — это процесс создания артефакта, который содержит все
+нужные библиотеки, и потому не потребует установленных библиотек на целевой
+системе. Библиотеки на Rust по умолчанию связываются статически, поэтому
+приложения и библиотеки на Rust можно использовать без установки Rust повсюду.
+Напротив, нативные библиотеки (например, `libc` и `libm`) обычно связываются
+динамически, но это можно изменить, и сделать чтобы они также связывались
+статически.
 
-Linking is a very platform-dependent topic, and static linking may not even be
-possible on some platforms! This section assumes some basic familiarity with
-linking on your platform of choice.
+Компоновка — это процесс, который реализуется по-разному на разных платформах.
+На некоторых из них статическое связывание вообще не возможно! Этот раздел
+предполагает знакомство с процессом компоновки на вашей платформе.
 
 ## Linux
 
-By default, all Rust programs on Linux will link to the system `libc` along with
-a number of other libraries. Let's look at an example on a 64-bit Linux machine
-with GCC and `glibc` (by far the most common `libc` on Linux):
+По умолчанию, программы на Rust для Linux компонуются с системной `libc` и ещё
+некоторыми библиотеками. Давайте посмотрим на пример на 64-битной машине с
+Linux, GCC и `glibc` (самой популярной `libc` на Linux):
 
 ``` text
 $ cat example.rs
@@ -67,43 +66,46 @@ $ ldd example
         libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fa817b93000)
 ```
 
-Dynamic linking on Linux can be undesirable if you wish to use new library
-features on old systems or target systems which do not have the required
-dependencies for your program to run.
+Иногда динамическое связывание на Linux нежелательно: например, если вы хотите
+использовать возможности из новых библиотек на старых системах или на целевых
+системах нет таких библиотек.
 
-Static linking is supported via an alternative `libc`, `musl`. You can compile
-your own version of Rust with `musl` enabled and install it into a custom
-directory with the instructions below:
+Статическое связывание возможно с альтернативной `libc`, `musl`. Вы можете
+скомпилировать свою версию Rust, которая будет использовать `musl`, и установить
+её в отдельную директорию, с помощью инструкции, приведённой ниже:
 
 ```text
 $ mkdir musldist
 $ PREFIX=$(pwd)/musldist
 $
 $ # Build musl
-$ curl -O http://www.musl-libc.org/releases/musl-1.1.10.tar.gz
+$ wget http://www.musl-libc.org/releases/musl-1.1.10.tar.gz
+[...]
 $ tar xf musl-1.1.10.tar.gz
 $ cd musl-1.1.10/
 musl-1.1.10 $ ./configure --disable-shared --prefix=$PREFIX
+[...]
 musl-1.1.10 $ make
+[...]
 musl-1.1.10 $ make install
+[...]
 musl-1.1.10 $ cd ..
 $ du -h musldist/lib/libc.a
 2.2M    musldist/lib/libc.a
 $
 $ # Build libunwind.a
-$ curl -O http://llvm.org/releases/3.7.0/llvm-3.7.0.src.tar.xz
-$ tar xf llvm-3.7.0.src.tar.xz
-$ cd llvm-3.7.0.src/projects/
-llvm-3.7.0.src/projects $ curl http://llvm.org/releases/3.7.0/libcxxabi-3.7.0.src.tar.xz | tar xJf -
-llvm-3.7.0.src/projects $ mv libcxxabi-3.7.0.src libcxxabi
-llvm-3.7.0.src/projects $ curl http://llvm.org/releases/3.7.0/libunwind-3.7.0.src.tar.xz | tar xJf -
-llvm-3.7.0.src/projects $ mv libunwind-3.7.0.src libunwind
-llvm-3.7.0.src/projects $ mkdir libunwind/build
-llvm-3.7.0.src/projects $ cd libunwind/build
-llvm-3.7.0.src/projects/libunwind/build $ cmake -DLLVM_PATH=../../.. -DLIBUNWIND_ENABLE_SHARED=0 ..
-llvm-3.7.0.src/projects/libunwind/build $ make
-llvm-3.7.0.src/projects/libunwind/build $ cp lib/libunwind.a $PREFIX/lib/
-llvm-3.7.0.src/projects/libunwind/build $ cd ../../../../
+$ wget http://llvm.org/releases/3.6.1/llvm-3.6.1.src.tar.xz
+$ tar xf llvm-3.6.1.src.tar.xz
+$ cd llvm-3.6.1.src/projects/
+llvm-3.6.1.src/projects $ svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk/ libcxxabi
+llvm-3.6.1.src/projects $ svn co http://llvm.org/svn/llvm-project/libunwind/trunk/ libunwind
+llvm-3.6.1.src/projects $ sed -i 's#^\(include_directories\).*$#\0\n\1(../libcxxabi/include)#' libunwind/CMakeLists.txt
+llvm-3.6.1.src/projects $ mkdir libunwind/build
+llvm-3.6.1.src/projects $ cd libunwind/build
+llvm-3.6.1.src/projects/libunwind/build $ cmake -DLLVM_PATH=../../.. -DLIBUNWIND_ENABLE_SHARED=0 ..
+llvm-3.6.1.src/projects/libunwind/build $ make
+llvm-3.6.1.src/projects/libunwind/build $ cp lib/libunwind.a $PREFIX/lib/
+llvm-3.6.1.src/projects/libunwind/build $ cd cd ../../../../
 $ du -h musldist/lib/libunwind.a
 164K    musldist/lib/libunwind.a
 $
@@ -118,16 +120,16 @@ $ du -h musldist/bin/rustc
 12K     musldist/bin/rustc
 ```
 
-You now have a build of a `musl`-enabled Rust! Because we've installed it to a
-custom prefix we need to make sure our system can find the binaries and appropriate
-libraries when we try and run it:
+Теперь у вас есть сборка Rust с `musl`! Поскольку мы установили её в отдельную
+корневую директорию, надо удостовериться в том, что система может найти
+исполняемые файлы и библиотеки:
 
 ```text
 $ export PATH=$PREFIX/bin:$PATH
 $ export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 ```
 
-Let's try it out!
+Давайте попробуем!
 
 ```text
 $ echo 'fn main() { println!("hi!"); panic!("failed"); }' > example.rs
@@ -139,9 +141,9 @@ hi!
 thread '<main>' panicked at 'failed', example.rs:1
 ```
 
-Success! This binary can be copied to almost any Linux machine with the same
-machine architecture and run without issues.
+Успех! Эта программа может быть скопирована на почти любую машину с Linux с той
+же архитектурой процессора и будет работать без проблем.
 
-`cargo build` also permits the `--target` option so you should be able to build
-your crates as normal. However, you may need to recompile your native libraries
-against `musl` before they can be linked against.
+`cargo build` также принимает опцию `--target`, так что вы можете собирать
+контейнеры как обычно. Однако, возможно вам придётся пересобрать нативные
+библиотеки с `musl`, чтобы иметь возможность скомпоноваться с ними.

@@ -1,27 +1,28 @@
-% Comments
+% Комментарии
 
-Now that we have some functions, it’s a good idea to learn about comments.
-Comments are notes that you leave to other programmers to help explain things
-about your code. The compiler mostly ignores them.
+Теперь, когда у нас есть несколько функций, неплохо бы узнать о комментариях.
+Комментарии — это заметки, которые вы оставляете для других программистов, чтобы
+помочь объяснить некоторые вещи в вашем коде. Компилятор в основном игнорирует
+их («в основном», потому что есть документирующие комментарии и примеры в
+документации).
 
-Rust has two kinds of comments that you should care about: *line comments*
-and *doc comments*.
+В Rust есть два вида комментариев: *строчные комментарии* и *doc-комментарии*.
 
 ```rust
-// Line comments are anything after ‘//’ and extend to the end of the line.
+// Строчные комментарии — это всё что угодно после '//' и до конца строки.
 
-let x = 5; // this is also a line comment.
+let x = 5; // это тоже строчный комментарий.
 
-// If you have a long explanation for something, you can put line comments next
-// to each other. Put a space between the // and your comment so that it’s
-// more readable.
+// Если у вас длинное объяснение для чего-либо, вы можете расположить строчные
+// комментарии один за другим. Поместите пробел между '//' и вашим комментарием,
+// так как это более читаемо.
 ```
 
-The other kind of comment is a doc comment. Doc comments use `///` instead of
-`//`, and support Markdown notation inside:
+Другое применение комментария — это doc-комментарий. Doc-комментарий использует
+`///` вместо `//`, и поддерживает Markdown-разметку внутри:
 
 ```rust
-/// Adds one to the number given.
+/// Прибавляем единицу к заданному числу.
 ///
 /// # Examples
 ///
@@ -29,31 +30,19 @@ The other kind of comment is a doc comment. Doc comments use `///` instead of
 /// let five = 5;
 ///
 /// assert_eq!(6, add_one(5));
-/// # fn add_one(x: i32) -> i32 {
-/// #     x + 1
-/// # }
 /// ```
 fn add_one(x: i32) -> i32 {
     x + 1
 }
 ```
 
-There is another style of doc comment, `//!`, to comment containing items (e.g.
-crates, modules or functions), instead of the items following it. Commonly used
-inside crates root (lib.rs) or modules root (mod.rs):
+При написании doc-комментария очень полезно добавлять разделы для аргументов,
+возвращаемых значений и привести некоторые примеры использования. Заметьте, что
+здесь мы использовали новый макрос: `assert_eq!`. Он сравнивает два значения и
+вызывает `panic!`, если они не равны. Для документации такие примеры очень
+полезны. Так же есть и другой макрос, `assert!`, который вызывает `panic!` когда
+значение равно `false`.
 
-```
-//! # The Rust Standard Library
-//!
-//! The Rust Standard Library provides the essential runtime
-//! functionality for building portable Rust software.
-```
-
-When writing doc comments, providing some examples of usage is very, very
-helpful. You’ll notice we’ve used a new macro here: `assert_eq!`. This compares
-two values, and `panic!`s if they’re not equal to each other. It’s very helpful
-in documentation. There’s another macro, `assert!`, which `panic!`s if the
-value passed to it is `false`.
-
-You can use the [`rustdoc`](documentation.html) tool to generate HTML documentation
-from these doc comments, and also to run the code examples as tests!
+Вы можете использовать [`rustdoc`](documentation.html) для генерации HTML-
+документации из этих doc-комментариев, а так же запуска кода из примеров как
+тестов.
