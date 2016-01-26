@@ -8,5 +8,6 @@ documentclass: book
 links-as-notes: true
 verbatim-in-note: true
 toc-depth: 2
-monofont: "DejaVu Sans Mono"
+mainfont: "DejaVu LGC Serif"
+monofont: "DejaVu LGC Sans Mono"
 ...
