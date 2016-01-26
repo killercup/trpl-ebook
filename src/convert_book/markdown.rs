@@ -85,7 +85,7 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
         put!(".");
 
         book.push_str("\n\n");
-        book.push_str("# Introduction");
+        book.push_str("# Введение");
         book.push_str("\n\n");
         book.push_str(&content);
     }
