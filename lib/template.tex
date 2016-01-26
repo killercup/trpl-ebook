@@ -7,12 +7,12 @@ $else$
   \usepackage{lmodern}
 $endif$
 
-$if(lang)$
+$if(language)$
 \ifxetex
   \usepackage{polyglossia}
-  \setmainlanguage{$lang$}
+  \setmainlanguage{$language$}
 \else
-  \usepackage[shorthands=off,$lang$]{babel}
+  \usepackage[shorthands=off,$language$]{babel}
 \fi
 $endif$
 
