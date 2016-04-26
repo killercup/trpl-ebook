@@ -41,7 +41,7 @@ If a [pattern][patterns] matches successfully, it binds any appropriate parts of
 the value to the identifiers in the pattern, then evaluates the expression. If
 the pattern doesn’t match, nothing happens.
 
-If you’d rather to do something else when the pattern does not match, you can
+If you want to do something else when the pattern does not match, you can
 use `else`:
 
 ```rust
@@ -58,14 +58,14 @@ if let Some(x) = option {
 ## `while let`
 
 In a similar fashion, `while let` can be used when you want to conditionally
-loop as long as a value matches a certain pattern. It turns code like this:
+loop  as long as a value matches a certain pattern. It turns code like this:
 
 ```rust
-# let option: Option<i32> = None;
+let mut v = vec![1, 3, 5, 7, 11];
 loop {
-    match option {
-        Some(x) => println!("{}", x),
-        _ => break,
+    match v.pop() {
+        Some(x) =>  println!("{}", x),
+        None => break,
     }
 }
 ```
@@ -73,8 +73,8 @@ loop {
 Into code like this:
 
 ```rust
-# let option: Option<i32> = None;
-while let Some(x) = option {
+let mut v = vec![1, 3, 5, 7, 11];
+while let Some(x) = v.pop() {
     println!("{}", x);
 }
 ```

@@ -1,6 +1,6 @@
 % Lifetimes
 
-This guide is one of three presenting Rust’s ownership system. This is one of
+This guide is three of three presenting Rust’s ownership system. This is one of
 Rust’s most unique and compelling features, with which Rust developers should
 become quite acquainted. Ownership is how Rust achieves its largest goal,
 memory safety. There are a few distinct concepts, each with its own chapter:
@@ -43,11 +43,11 @@ With that in mind, let’s learn about lifetimes.
 Lending out a reference to a resource that someone else owns can be
 complicated. For example, imagine this set of operations:
 
-- I acquire a handle to some kind of resource.
-- I lend you a reference to the resource.
-- I decide I’m done with the resource, and deallocate it, while you still have
+1. I acquire a handle to some kind of resource.
+2. I lend you a reference to the resource.
+3. I decide I’m done with the resource, and deallocate it, while you still have
   your reference.
-- You decide to use the resource.
+4. You decide to use the resource.
 
 Uh oh! Your reference is pointing to an invalid resource. This is called a
 dangling pointer or ‘use after free’, when the resource is memory.
@@ -70,8 +70,11 @@ fn bar<'a>(x: &'a i32) {
 ```
 
 The `'a` reads ‘the lifetime a’. Technically, every reference has some lifetime
-associated with it, but the compiler lets you elide them in common cases.
+associated with it, but the compiler lets you elide (i.e. omit, see
+["Lifetime Elision"][lifetime-elision] below) them in common cases.
 Before we get to that, though, let’s break the explicit example down:
+
+[lifetime-elision]: #lifetime-elision
 
 ```rust,ignore
 fn bar<'a>(...)
@@ -81,7 +84,7 @@ We previously talked a little about [function syntax][functions], but we didn’
 discuss the `<>`s after a function’s name. A function can have ‘generic
 parameters’ between the `<>`s, of which lifetimes are one kind. We’ll discuss
 other kinds of generics [later in the book][generics], but for now, let’s
-just focus on the lifetimes aspect.
+focus on the lifetimes aspect.
 
 [functions]: functions.html
 [generics]: generics.html
@@ -100,20 +103,21 @@ Then in our parameter list, we use the lifetimes we’ve named:
 ...(x: &'a i32)
 ```
 
-If we wanted an `&mut` reference, we’d do this:
+If we wanted a `&mut` reference, we’d do this:
 
 ```rust,ignore
 ...(x: &'a mut i32)
 ```
 
-If you compare `&mut i32` to `&'a mut i32`, they’re the same, it’s just that
+If you compare `&mut i32` to `&'a mut i32`, they’re the same, it’s that
 the lifetime `'a` has snuck in between the `&` and the `mut i32`. We read `&mut
 i32` as ‘a mutable reference to an `i32`’ and `&'a mut i32` as ‘a mutable
 reference to an `i32` with the lifetime `'a`’.
 
 # In `struct`s
 
-You’ll also need explicit lifetimes when working with [`struct`][structs]s:
+You’ll also need explicit lifetimes when working with [`struct`][structs]s that
+contain references:
 
 ```rust
 struct Foo<'a> {
@@ -171,7 +175,7 @@ fn main() {
 ```
 
 As you can see, we need to declare a lifetime for `Foo` in the `impl` line. We repeat
-`'a` twice, just like on functions: `impl<'a>` defines a lifetime `'a`, and `Foo<'a>`
+`'a` twice, like on functions: `impl<'a>` defines a lifetime `'a`, and `Foo<'a>`
 uses it.
 
 ## Multiple lifetimes
@@ -349,8 +353,8 @@ fn frob<'a, 'b>(s: &'a str, t: &'b str) -> &str; // Expanded: Output lifetime is
 fn get_mut(&mut self) -> &mut T; // elided
 fn get_mut<'a>(&'a mut self) -> &'a mut T; // expanded
 
-fn args<T:ToCStr>(&mut self, args: &[T]) -> &mut Command; // elided
-fn args<'a, 'b, T:ToCStr>(&'a mut self, args: &'b [T]) -> &'a mut Command; // expanded
+fn args<T: ToCStr>(&mut self, args: &[T]) -> &mut Command; // elided
+fn args<'a, 'b, T: ToCStr>(&'a mut self, args: &'b [T]) -> &'a mut Command; // expanded
 
 fn new(buf: &mut [u8]) -> BufWriter; // elided
 fn new<'a>(buf: &'a mut [u8]) -> BufWriter<'a>; // expanded

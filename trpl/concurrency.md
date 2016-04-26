@@ -35,9 +35,11 @@ channel connecting two threads, we would want to be able to send some data
 down the channel and to the other thread. Therefore, we'd ensure that `Send` was
 implemented for that type.
 
-In the opposite way, if we were wrapping a library with FFI that isn't
+In the opposite way, if we were wrapping a library with [FFI][ffi] that isn't
 threadsafe, we wouldn't want to implement `Send`, and so the compiler will help
 us enforce that it can't leave the current thread.
+
+[ffi]: ffi.html
 
 ### `Sync`
 
@@ -53,7 +55,7 @@ For sharing references across threads, Rust provides a wrapper type called
 `Arc<T>`. `Arc<T>` implements `Send` and `Sync` if and only if `T` implements
 both `Send` and `Sync`. For example, an object of type `Arc<RefCell<U>>` cannot
 be transferred across threads because
-[`RefCell`](choosing-your-guarantees.html#refcell%3Ct%3E) does not implement
+[`RefCell`](choosing-your-guarantees.html#refcellt) does not implement
 `Sync`, consequently `Arc<RefCell<U>>` would not implement `Send`.
 
 These two traits allow you to use the type system to make strong guarantees
@@ -119,6 +121,7 @@ languages. It will not compile:
 
 ```ignore
 use std::thread;
+use std::time::Duration;
 
 fn main() {
     let mut data = vec![1, 2, 3];
@@ -129,7 +132,7 @@ fn main() {
         });
     }
 
-    thread::sleep_ms(50);
+    thread::sleep(Duration::from_millis(50));
 }
 ```
 
@@ -148,7 +151,7 @@ owners!
 So, we need some type that lets us have more than one reference to a value and
 that we can share between threads, that is it must implement `Sync`.
 
-We'll use `Arc<T>`, rust's standard atomic reference count type, which
+We'll use `Arc<T>`, Rust's standard atomic reference count type, which
 wraps a value up with some extra runtime bookkeeping which allows us to
 share the ownership of the value between multiple references at the same time.
 
@@ -163,6 +166,7 @@ indivisible operations which can't have data races.
 ```ignore
 use std::thread;
 use std::sync::Arc;
+use std::time::Duration;
 
 fn main() {
     let mut data = Arc::new(vec![1, 2, 3]);
@@ -174,7 +178,7 @@ fn main() {
         });
     }
 
-    thread::sleep_ms(50);
+    thread::sleep(Duration::from_millis(50));
 }
 ```
 
@@ -195,7 +199,7 @@ our value if it's immutable, but we want to be able to mutate it, so we need
 something else to persuade the borrow checker we know what we're doing.
 
 It looks like we need some type that allows us to safely mutate a shared value,
-for example a type that that can ensure only one thread at a time is able to
+for example a type that can ensure only one thread at a time is able to
 mutate the value inside it at any one time.
 
 For that, we can use the `Mutex<T>` type!
@@ -205,6 +209,7 @@ Here's the working version:
 ```rust
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 fn main() {
     let data = Arc::new(Mutex::new(vec![1, 2, 3]));
@@ -217,7 +222,7 @@ fn main() {
         });
     }
 
-    thread::sleep_ms(50);
+    thread::sleep(Duration::from_millis(50));
 }
 ```
 
@@ -239,6 +244,7 @@ Let's examine the body of the thread more closely:
 ```rust
 # use std::sync::{Arc, Mutex};
 # use std::thread;
+# use std::time::Duration;
 # fn main() {
 #     let data = Arc::new(Mutex::new(vec![1, 2, 3]));
 #     for i in 0..3 {
@@ -248,12 +254,12 @@ thread::spawn(move || {
     data[i] += 1;
 });
 #     }
-#     thread::sleep_ms(50);
+#     thread::sleep(Duration::from_millis(50));
 # }
 ```
 
 First, we call `lock()`, which acquires the mutex's lock. Because this may fail,
-it returns an `Result<T, E>`, and because this is just an example, we `unwrap()`
+it returns a `Result<T, E>`, and because this is just an example, we `unwrap()`
 it to get a reference to the data. Real code would have more robust error handling
 here. We're then free to mutate it, since we have the lock.
 
@@ -280,6 +286,8 @@ use std::sync::mpsc;
 fn main() {
     let data = Arc::new(Mutex::new(0));
 
+    // `tx` is the "transmitter" or "sender"
+    // `rx` is the "receiver"
     let (tx, rx) = mpsc::channel();
 
     for _ in 0..10 {
@@ -289,20 +297,20 @@ fn main() {
             let mut data = data.lock().unwrap();
             *data += 1;
 
-            tx.send(());
+            tx.send(()).unwrap();
         });
     }
 
     for _ in 0..10 {
-        rx.recv();
+        rx.recv().unwrap();
     }
 }
 ```
 
-We use the `mpsc::channel()` method to construct a new channel. We just `send`
+We use the `mpsc::channel()` method to construct a new channel. We `send`
 a simple `()` down the channel, and then wait for ten of them to come back.
 
-While this channel is just sending a generic signal, we can send any data that
+While this channel is sending a generic signal, we can send any data that
 is `Send` over the channel!
 
 ```rust
@@ -318,7 +326,7 @@ fn main() {
         thread::spawn(move || {
             let answer = i * i;
 
-            tx.send(answer);
+            tx.send(answer).unwrap();
         });
     }
 

@@ -8,12 +8,12 @@ extend the compiler's behavior with new syntax extensions, lint checks, etc.
 A plugin is a dynamic library crate with a designated *registrar* function that
 registers extensions with `rustc`. Other crates can load these extensions using
 the crate attribute `#![plugin(...)]`.  See the
-[`rustc::plugin`](../rustc/plugin/index.html) documentation for more about the
+[`rustc_plugin`](../rustc_plugin/index.html) documentation for more about the
 mechanics of defining and loading a plugin.
 
 If present, arguments passed as `#![plugin(foo(... args ...))]` are not
 interpreted by rustc itself.  They are provided to the plugin through the
-`Registry`'s [`args` method](../rustc/plugin/registry/struct.Registry.html#method.args).
+`Registry`'s [`args` method](../rustc_plugin/registry/struct.Registry.html#method.args).
 
 In the vast majority of cases, a plugin should *only* be used through
 `#![plugin]` and not through an `extern crate` item.  Linking a plugin would
@@ -43,25 +43,33 @@ that implements Roman numeral integer literals.
 
 extern crate syntax;
 extern crate rustc;
+extern crate rustc_plugin;
 
 use syntax::codemap::Span;
 use syntax::parse::token;
-use syntax::ast::{TokenTree, TtToken};
+use syntax::ast::TokenTree;
 use syntax::ext::base::{ExtCtxt, MacResult, DummyResult, MacEager};
 use syntax::ext::build::AstBuilder;  // trait for expr_usize
-use rustc::plugin::Registry;
+use rustc_plugin::Registry;
 
 fn expand_rn(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree])
         -> Box<MacResult + 'static> {
 
-    static NUMERALS: &'static [(&'static str, u32)] = &[
+    static NUMERALS: &'static [(&'static str, usize)] = &[
         ("M", 1000), ("CM", 900), ("D", 500), ("CD", 400),
         ("C",  100), ("XC",  90), ("L",  50), ("XL",  40),
         ("X",   10), ("IX",   9), ("V",   5), ("IV",   4),
         ("I",    1)];
 
-    let text = match args {
-        [TtToken(_, token::Ident(s, _))] => s.to_string(),
+    if args.len() != 1 {
+        cx.span_err(
+            sp,
+            &format!("argument should be a single identifier, but got {} arguments", args.len()));
+        return DummyResult::any(sp);
+    }
+
+    let text = match args[0] {
+        TokenTree::Token(_, token::Ident(s, _)) => s.to_string(),
         _ => {
             cx.span_err(sp, "argument should be a single identifier");
             return DummyResult::any(sp);
@@ -83,7 +91,7 @@ fn expand_rn(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree])
         }
     }
 
-    MacEager::expr(cx.expr_u32(sp, total))
+    MacEager::expr(cx.expr_usize(sp, total))
 }
 
 #[plugin_registrar]
@@ -113,7 +121,7 @@ The advantages over a simple `fn(&str) -> u32` are:
 In addition to procedural macros, you can define new
 [`derive`](../reference.html#derive)-like attributes and other kinds of
 extensions.  See
-[`Registry::register_syntax_extension`](../rustc/plugin/registry/struct.Registry.html#method.register_syntax_extension)
+[`Registry::register_syntax_extension`](../rustc_plugin/registry/struct.Registry.html#method.register_syntax_extension)
 and the [`SyntaxExtension`
 enum](https://doc.rust-lang.org/syntax/ext/base/enum.SyntaxExtension.html).  For
 a more involved macro example, see
@@ -170,13 +178,26 @@ starting point for an improved quasiquote as an ordinary plugin library.
 
 Plugins can extend [Rust's lint
 infrastructure](../reference.html#lint-check-attributes) with additional checks for
-code style, safety, etc. You can see
-[`src/test/auxiliary/lint_plugin_test.rs`](https://github.com/rust-lang/rust/blob/master/src/test/auxiliary/lint_plugin_test.rs)
-for a full example, the core of which is reproduced here:
+code style, safety, etc. Now let's write a plugin [`lint_plugin_test.rs`](https://github.com/rust-lang/rust/blob/master/src/test/auxiliary/lint_plugin_test.rs)
+that warns about any item named `lintme`.
 
 ```ignore
-declare_lint!(TEST_LINT, Warn,
-              "Warn about items named 'lintme'");
+#![feature(plugin_registrar)]
+#![feature(box_syntax, rustc_private)]
+
+extern crate syntax;
+
+// Load rustc as a plugin to get macros
+#[macro_use]
+extern crate rustc;
+extern crate rustc_plugin;
+
+use rustc::lint::{EarlyContext, LintContext, LintPass, EarlyLintPass,
+                  EarlyLintPassObject, LintArray};
+use rustc_plugin::Registry;
+use syntax::ast;
+
+declare_lint!(TEST_LINT, Warn, "Warn about items named 'lintme'");
 
 struct Pass;
 
@@ -184,9 +205,11 @@ impl LintPass for Pass {
     fn get_lints(&self) -> LintArray {
         lint_array!(TEST_LINT)
     }
+}
 
-    fn check_item(&mut self, cx: &Context, it: &ast::Item) {
-        if it.ident.name == "lintme" {
+impl EarlyLintPass for Pass {
+    fn check_item(&mut self, cx: &EarlyContext, it: &ast::Item) {
+        if it.ident.name.as_str() == "lintme" {
             cx.span_lint(TEST_LINT, it.span, "item is named 'lintme'");
         }
     }
@@ -194,7 +217,7 @@ impl LintPass for Pass {
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-    reg.register_lint_pass(box Pass as LintPassObject);
+    reg.register_early_lint_pass(box Pass as EarlyLintPassObject);
 }
 ```
 
