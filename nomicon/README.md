@@ -2,7 +2,7 @@
 
 #### The Dark Arts of Advanced and Unsafe Rust Programming
 
-**NOTE: This is a draft document, and may contain serious errors**
+# NOTE: This is a draft document, and may contain serious errors
 
 > Instead of the programs I had hoped for, there came only a shuddering blackness
 and ineffable loneliness; and I saw at last a fearful truth which no one had

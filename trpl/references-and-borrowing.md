@@ -1,6 +1,6 @@
 % References and Borrowing
 
-This guide is one of three presenting Rust’s ownership system. This is one of
+This guide is two of three presenting Rust’s ownership system. This is one of
 Rust’s most unique and compelling features, with which Rust developers should
 become quite acquainted. Ownership is how Rust achieves its largest goal,
 memory safety. There are a few distinct concepts, each with its own
@@ -84,7 +84,7 @@ it borrows ownership. A binding that borrows something does not deallocate the
 resource when it goes out of scope. This means that after the call to `foo()`,
 we can use our original bindings again.
 
-References are immutable, just like bindings. This means that inside of `foo()`,
+References are immutable, like bindings. This means that inside of `foo()`,
 the vectors can’t be changed at all:
 
 ```rust,ignore
@@ -122,14 +122,14 @@ println!("{}", x);
 ```
 
 This will print `6`. We make `y` a mutable reference to `x`, then add one to
-the thing `y` points at. You’ll notice that `x` had to be marked `mut` as well,
-if it wasn’t, we couldn’t take a mutable borrow to an immutable value.
+the thing `y` points at. You’ll notice that `x` had to be marked `mut` as well.
+If it wasn’t, we couldn’t take a mutable borrow to an immutable value.
 
 You'll also notice we added an asterisk (`*`) in front of `y`, making it `*y`,
-this is because `y` is an `&mut` reference. You'll also need to use them for
+this is because `y` is a `&mut` reference. You'll also need to use them for
 accessing the contents of a reference as well.
 
-Otherwise, `&mut` references are just like references. There _is_ a large
+Otherwise, `&mut` references are like references. There _is_ a large
 difference between the two, and how they interact, though. You can tell
 something is fishy in the above example, because we need that extra scope, with
 the `{` and `}`. If we remove them, we get an error:
@@ -171,9 +171,9 @@ to the definition of a data race:
 > operations are not synchronized.
 
 With references, you may have as many as you’d like, since none of them are
-writing. If you are writing, you need two or more pointers to the same memory,
-and you can only have one `&mut` at a time. This is how Rust prevents data
-races at compile time: we’ll get errors if we break the rules.
+writing. However, as we can only have one `&mut` at a time, it is impossible to
+have a data race. This is how Rust prevents data races at compile time: we’ll
+get errors if we break the rules.
 
 With this in mind, let’s consider our example again.
 
@@ -233,7 +233,7 @@ So when we add the curly braces:
 ```rust
 let mut x = 5;
 
-{                   
+{
     let y = &mut x; // -+ &mut borrow starts here
     *y += 1;        //  |
 }                   // -+ ... and ends here
@@ -263,7 +263,7 @@ for i in &v {
 }
 ```
 
-This prints out one through three. As we iterate through the vectors, we’re
+This prints out one through three. As we iterate through the vector, we’re
 only given references to the elements. And `v` is itself borrowed as immutable,
 which means we can’t change it while we’re iterating:
 
@@ -306,7 +306,7 @@ which was invalid. For example:
 
 ```rust,ignore
 let y: &i32;
-{ 
+{
     let x = 5;
     y = &x;
 }
@@ -323,7 +323,7 @@ error: `x` does not live long enough
 note: reference must be valid for the block suffix following statement 0 at
 2:16...
 let y: &i32;
-{ 
+{
     let x = 5;
     y = &x;
 }
@@ -363,7 +363,7 @@ note: reference must be valid for the block suffix following statement 0 at
     let y: &i32;
     let x = 5;
     y = &x;
-    
+
     println!("{}", y);
 }
 
@@ -371,10 +371,11 @@ note: ...but borrowed value is only valid for the block suffix following
 statement 1 at 3:14
     let x = 5;
     y = &x;
-    
+
     println!("{}", y);
 }
 ```
 
 In the above example, `y` is declared before `x`, meaning that `y` lives longer
 than `x`, which is not allowed.
+

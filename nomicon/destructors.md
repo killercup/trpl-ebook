@@ -17,7 +17,7 @@ boilerplate" to drop children. If a struct has no special logic for being
 dropped other than dropping its children, then it means `Drop` doesn't need to
 be implemented at all!
 
-**There is no stable way to prevent this behaviour in Rust 1.0.**
+**There is no stable way to prevent this behavior in Rust 1.0.**
 
 Note that taking `&mut self` means that even if you could suppress recursive
 Drop, Rust will prevent you from e.g. moving fields out of self. For most types,
@@ -26,12 +26,11 @@ this is totally fine.
 For instance, a custom implementation of `Box` might write `Drop` like this:
 
 ```rust
-#![feature(alloc, heap_api, core_intrinsics, unique)]
+#![feature(alloc, heap_api, drop_in_place, unique)]
 
 extern crate alloc;
 
-use std::ptr::Unique;
-use std::intrinsics::drop_in_place;
+use std::ptr::{drop_in_place, Unique};
 use std::mem;
 
 use alloc::heap;
@@ -53,17 +52,16 @@ impl<T> Drop for Box<T> {
 
 and this works fine because when Rust goes to drop the `ptr` field it just sees
 a [Unique] that has no actual `Drop` implementation. Similarly nothing can
-use-after-free the `ptr` because when drop exits, it becomes inacessible.
+use-after-free the `ptr` because when drop exits, it becomes inaccessible.
 
 However this wouldn't work:
 
 ```rust
-#![feature(alloc, heap_api, core_intrinsics, unique)]
+#![feature(alloc, heap_api, drop_in_place, unique)]
 
 extern crate alloc;
 
-use std::ptr::Unique;
-use std::intrinsics::drop_in_place;
+use std::ptr::{drop_in_place, Unique};
 use std::mem;
 
 use alloc::heap;
@@ -101,7 +99,7 @@ After we deallocate the `box`'s ptr in SuperBox's destructor, Rust will
 happily proceed to tell the box to Drop itself and everything will blow up with
 use-after-frees and double-frees.
 
-Note that the recursive drop behaviour applies to all structs and enums
+Note that the recursive drop behavior applies to all structs and enums
 regardless of whether they implement Drop. Therefore something like
 
 ```rust
@@ -137,12 +135,11 @@ The classic safe solution to overriding recursive drop and allowing moving out
 of Self during `drop` is to use an Option:
 
 ```rust
-#![feature(alloc, heap_api, core_intrinsics, unique)]
+#![feature(alloc, heap_api, drop_in_place, unique)]
 
 extern crate alloc;
 
-use std::ptr::Unique;
-use std::intrinsics::drop_in_place;
+use std::ptr::{drop_in_place, Unique};
 use std::mem;
 
 use alloc::heap;

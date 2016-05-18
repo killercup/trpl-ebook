@@ -8,10 +8,27 @@ foreign code. Rust is currently unable to call directly into a C++ library, but
 snappy includes a C interface (documented in
 [`snappy-c.h`](https://github.com/google/snappy/blob/master/snappy-c.h)).
 
+## A note about libc
+
+Many of these examples use [the `libc` crate][libc], which provides various
+type definitions for C types, among other things. If you’re trying these
+examples yourself, you’ll need to add `libc` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+libc = "0.2.0"
+```
+
+[libc]: https://crates.io/crates/libc
+
+and add `extern crate libc;` to your crate root.
+
+## Calling foreign functions
+
 The following is a minimal example of calling a foreign function which will
 compile if snappy is installed:
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 use libc::size_t;
@@ -45,7 +62,7 @@ keeping the binding correct at runtime.
 
 The `extern` block can be extended to cover the entire snappy API:
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 use libc::{c_int, size_t};
@@ -81,7 +98,7 @@ vectors as pointers to memory. Rust's vectors are guaranteed to be a contiguous 
 length is number of elements currently contained, and the capacity is the total size in elements of
 the allocated memory. The length is less than or equal to the capacity.
 
-```rust,rust
+```rust
 # #![feature(libc)]
 # extern crate libc;
 # use libc::{c_int, size_t};
@@ -192,7 +209,7 @@ A basic example is:
 
 Rust code:
 
-```rust,no_run
+```no_run
 extern fn callback(a: i32) {
     println!("I'm called from C with value {0}", a);
 }
@@ -245,7 +262,7 @@ referenced Rust object.
 
 Rust code:
 
-```rust,no_run
+```no_run
 #[repr(C)]
 struct RustObject {
     a: i32,
@@ -350,7 +367,7 @@ artifact.
 A few examples of how this model can be used are:
 
 * A native build dependency. Sometimes some C/C++ glue is needed when writing
-  some Rust code, but distribution of the C/C++ code in a library format is just
+  some Rust code, but distribution of the C/C++ code in a library format is
   a burden. In this case, the code will be archived into `libfoo.a` and then the
   Rust crate would declare a dependency via `#[link(name = "foo", kind =
   "static")]`.
@@ -389,7 +406,7 @@ Foreign APIs often export a global variable which could do something like track
 global state. In order to access these variables, you declare them in `extern`
 blocks with the `static` keyword:
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 
@@ -408,7 +425,7 @@ Alternatively, you may need to alter global state provided by a foreign
 interface. To do this, statics can be declared with `mut` so we can mutate
 them.
 
-```rust,no_run
+```no_run
 # #![feature(libc)]
 extern crate libc;
 
@@ -461,6 +478,8 @@ are:
 * `aapcs`
 * `cdecl`
 * `fastcall`
+* `vectorcall`
+This is currently hidden behind the `abi_vectorcall` gate and is subject to change.
 * `Rust`
 * `rust-intrinsic`
 * `system`
@@ -473,7 +492,7 @@ interoperating with the target's libraries. For example, on win32 with a x86
 architecture, this means that the abi used would be `stdcall`. On x86_64,
 however, windows uses the `C` calling convention, so `C` would be used. This
 means that in our previous example, we could have used `extern "system" { ... }`
-to define a block for all windows systems, not just x86 ones.
+to define a block for all windows systems, not only x86 ones.
 
 # Interoperability with foreign code
 
@@ -499,8 +518,6 @@ module.
 The [`libc` crate on crates.io][libc] includes type aliases and function
 definitions for the C standard library in the `libc` module, and Rust links
 against `libc` and `libm` by default.
-
-[libc]: https://crates.io/crates/libc
 
 # The "nullable pointer optimization"
 
