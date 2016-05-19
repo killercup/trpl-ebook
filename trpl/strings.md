@@ -12,21 +12,47 @@ encoding of UTF-8 sequences. Additionally, unlike some systems languages,
 strings are not null-terminated and can contain null bytes.
 
 Rust has two main types of strings: `&str` and `String`. Let’s talk about
-`&str` first. These are called ‘string slices’. String literals are of the type
-`&'static str`:
+`&str` first. These are called ‘string slices’. A string slice has a fixed
+size, and cannot be mutated. It is a reference to a sequence of UTF-8 bytes.
 
 ```rust
 let greeting = "Hello there."; // greeting: &'static str
 ```
 
-This string is statically allocated, meaning that it’s saved inside our
-compiled program, and exists for the entire duration it runs. The `greeting`
-binding is a reference to this statically allocated string. String slices
-have a fixed size, and cannot be mutated.
+`"Hello there."` is a string literal and its type is `&'static str`. A string
+literal is a string slice that is statically allocated, meaning that it’s saved
+inside our compiled program, and exists for the entire duration it runs. The
+`greeting` binding is a reference to this statically allocated string. Any
+function expecting a string slice will also accept a string literal.
 
-A `String`, on the other hand, is a heap-allocated string. This string is
-growable, and is also guaranteed to be UTF-8. `String`s are commonly created by
-converting from a string slice using the `to_string` method.
+String literals can span multiple lines. There are two forms. The first will
+include the newline and the leading spaces:
+
+```rust
+let s = "foo
+    bar";
+
+assert_eq!("foo\n    bar", s);
+```
+
+The second, with a `\`, trims the spaces and the newline:
+
+```rust
+let s = "foo\
+    bar";
+
+assert_eq!("foobar", s);
+```
+
+Note that you normally cannot access a `str` directly, but only through a `&str`
+reference. This is because `str` is an unsized type which requires additional
+runtime information to be usable. For more information see the chapter on
+[unsized types][ut].
+
+Rust has more than only `&str`s though. A `String` is a heap-allocated string.
+This string is growable, and is also guaranteed to be UTF-8. `String`s are
+commonly created by converting from a string slice using the `to_string`
+method.
 
 ```rust
 let mut s = "Hello".to_string(); // mut s: String
@@ -68,7 +94,7 @@ Viewing a `String` as a `&str` is cheap, but converting the `&str` to a
 
 ## Indexing
 
-Because strings are valid UTF-8, strings do not support indexing:
+Because strings are valid UTF-8, they do not support indexing:
 
 ```rust,ignore
 let s = "hello";
@@ -102,8 +128,8 @@ println!("");
 This prints:
 
 ```text
-229, 191, 160, 231, 138, 172, 227, 131, 143, 227, 131, 129, 229, 133, 172, 
-忠, 犬, ハ, チ, 公, 
+229, 191, 160, 231, 138, 172, 227, 131, 143, 227, 131, 129, 229, 133, 172,
+忠, 犬, ハ, チ, 公,
 ```
 
 As you can see, there are more bytes than `char`s.
@@ -164,5 +190,6 @@ let hello_world = hello + &world;
 This is because `&String` can automatically coerce to a `&str`. This is a
 feature called ‘[`Deref` coercions][dc]’.
 
+[ut]: unsized-types.html
 [dc]: deref-coercions.html
 [connect]: ../std/net/struct.TcpStream.html#method.connect

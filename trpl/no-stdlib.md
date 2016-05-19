@@ -1,16 +1,15 @@
 % No stdlib
 
-By default, `std` is linked to every Rust crate. In some contexts,
-this is undesirable, and can be avoided with the `#![no_std]`
-attribute attached to the crate.
+Rust’s standard library provides a lot of useful functionality, but assumes
+support for various features of its host system: threads, networking, heap
+allocation, and others. There are systems that do not have these features,
+however, and Rust can work with those too! To do so, we tell Rust that we
+don’t want to use the standard library via an attribute: `#![no_std]`.
 
-```ignore
-// a minimal library
-#![crate_type="lib"]
-#![feature(no_std)]
-#![no_std]
-# // fn main() {} tricked you, rustdoc!
-```
+> Note: This feature is technically stable, but there are some caveats. For
+> one, you can build a `#![no_std]` _library_ on stable, but not a _binary_.
+> For details on libraries without the standard library, see [the chapter on
+> `#![no_std]`](using-rust-without-the-standard-library.html)
 
 Obviously there's more to life than just libraries: one can use
 `#[no_std]` with an executable, controlling the entry point is
@@ -21,7 +20,9 @@ The function marked `#[start]` is passed the command line parameters
 in the same format as C:
 
 ```rust
-#![feature(lang_items, start, no_std, libc)]
+# #![feature(libc)]
+#![feature(lang_items)]
+#![feature(start)]
 #![no_std]
 
 // Pull in the system libc library for what crt0.o likely requires
@@ -37,8 +38,10 @@ fn start(_argc: isize, _argv: *const *const u8) -> isize {
 // for a bare-bones hello world. These are normally
 // provided by libstd.
 #[lang = "eh_personality"] extern fn eh_personality() {}
-#[lang = "panic_fmt"] fn panic_fmt() -> ! { loop {} }
+#[lang = "panic_fmt"] extern fn panic_fmt() -> ! { loop {} }
 # #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
+# #[no_mangle] pub extern fn rust_eh_register_frames () {}
+# #[no_mangle] pub extern fn rust_eh_unregister_frames () {}
 # // fn main() {} tricked you, rustdoc!
 ```
 
@@ -47,11 +50,12 @@ with `#![no_main]` and then create the appropriate symbol with the
 correct ABI and the correct name, which requires overriding the
 compiler's name mangling too:
 
-```ignore
-#![feature(no_std)]
+```rust
+# #![feature(libc)]
+#![feature(lang_items)]
+#![feature(start)]
 #![no_std]
 #![no_main]
-#![feature(lang_items, start)]
 
 extern crate libc;
 
@@ -61,8 +65,10 @@ pub extern fn main(argc: i32, argv: *const *const u8) -> i32 {
 }
 
 #[lang = "eh_personality"] extern fn eh_personality() {}
-#[lang = "panic_fmt"] fn panic_fmt() -> ! { loop {} }
+#[lang = "panic_fmt"] extern fn panic_fmt() -> ! { loop {} }
 # #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
+# #[no_mangle] pub extern fn rust_eh_register_frames () {}
+# #[no_mangle] pub extern fn rust_eh_unregister_frames () {}
 # // fn main() {} tricked you, rustdoc!
 ```
 
@@ -71,92 +77,11 @@ The compiler currently makes a few assumptions about symbols which are available
 in the executable to call. Normally these functions are provided by the standard
 library, but without it you must define your own.
 
-The first of these two functions, `eh_personality`, is used by the
-failure mechanisms of the compiler. This is often mapped to GCC's
-personality function (see the
-[libstd implementation](../std/rt/unwind/index.html) for more
-information), but crates which do not trigger a panic can be assured
-that this function is never called. The second function, `panic_fmt`, is
-also used by the failure mechanisms of the compiler.
+The first of these two functions, `eh_personality`, is used by the failure
+mechanisms of the compiler. This is often mapped to GCC's personality function
+(see the [libstd implementation][unwind] for more information), but crates
+which do not trigger a panic can be assured that this function is never
+called. The second function, `panic_fmt`, is also used by the failure
+mechanisms of the compiler.
 
-## Using libcore
-
-> **Note**: the core library's structure is unstable, and it is recommended to
-> use the standard library instead wherever possible.
-
-With the above techniques, we've got a bare-metal executable running some Rust
-code. There is a good deal of functionality provided by the standard library,
-however, that is necessary to be productive in Rust. If the standard library is
-not sufficient, then [libcore](../core/index.html) is designed to be used
-instead.
-
-The core library has very few dependencies and is much more portable than the
-standard library itself. Additionally, the core library has most of the
-necessary functionality for writing idiomatic and effective Rust code.
-
-As an example, here is a program that will calculate the dot product of two
-vectors provided from C, using idiomatic Rust practices.
-
-```ignore
-#![feature(lang_items, start, no_std, core, libc)]
-#![no_std]
-
-# extern crate libc;
-extern crate core;
-
-use core::prelude::*;
-
-use core::mem;
-
-#[no_mangle]
-pub extern fn dot_product(a: *const u32, a_len: u32,
-                          b: *const u32, b_len: u32) -> u32 {
-    use core::raw::Slice;
-
-    // Convert the provided arrays into Rust slices.
-    // The core::raw module guarantees that the Slice
-    // structure has the same memory layout as a &[T]
-    // slice.
-    //
-    // This is an unsafe operation because the compiler
-    // cannot tell the pointers are valid.
-    let (a_slice, b_slice): (&[u32], &[u32]) = unsafe {
-        mem::transmute((
-            Slice { data: a, len: a_len as usize },
-            Slice { data: b, len: b_len as usize },
-        ))
-    };
-
-    // Iterate over the slices, collecting the result
-    let mut ret = 0;
-    for (i, j) in a_slice.iter().zip(b_slice.iter()) {
-        ret += (*i) * (*j);
-    }
-    return ret;
-}
-
-#[lang = "panic_fmt"]
-extern fn panic_fmt(args: &core::fmt::Arguments,
-                    file: &str,
-                    line: u32) -> ! {
-    loop {}
-}
-
-#[lang = "eh_personality"] extern fn eh_personality() {}
-# #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
-# #[start] fn start(argc: isize, argv: *const *const u8) -> isize { 0 }
-# fn main() {}
-```
-
-Note that there is one extra lang item here which differs from the examples
-above, `panic_fmt`. This must be defined by consumers of libcore because the
-core library declares panics, but it does not define it. The `panic_fmt`
-lang item is this crate's definition of panic, and it must be guaranteed to
-never return.
-
-As can be seen in this example, the core library is intended to provide the
-power of Rust in all circumstances, regardless of platform requirements. Further
-libraries, such as liballoc, add functionality to libcore which make other
-platform-specific assumptions, but continue to be more portable than the
-standard library itself.
-
+[unwind]: https://github.com/rust-lang/rust/blob/master/src/libstd/sys/common/unwind/gcc.rs
