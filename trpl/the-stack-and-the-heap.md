@@ -7,6 +7,14 @@ and a heap. If you’re familiar with how C-like languages use stack allocation,
 this chapter will be a refresher. If you’re not, you’ll learn about this more
 general concept, but with a Rust-y focus.
 
+As with most things, when learning about them, we’ll use a simplified model to
+start. This lets you get a handle on the basics, without getting bogged down
+with details which are, for now, irrelevant. The examples we’ll use aren’t 100%
+accurate, but are representative for the level we’re trying to learn at right
+now. Once you have the basics down, learning more about how allocators are
+implemented, virtual memory, and other advanced topics will reveal the leaks in
+this particular abstraction.
+
 # Memory management
 
 These two terms are about memory management. The stack and the heap are
@@ -36,13 +44,13 @@ values ‘go on the stack’. What does that mean?
 Well, when a function gets called, some memory gets allocated for all of its
 local variables and some other information. This is called a ‘stack frame’, and
 for the purpose of this tutorial, we’re going to ignore the extra information
-and just consider the local variables we’re allocating. So in this case, when
+and only consider the local variables we’re allocating. So in this case, when
 `main()` is run, we’ll allocate a single 32-bit integer for our stack frame.
 This is automatically handled for you, as you can see; we didn’t have to write
 any special Rust code or anything.
 
-When the function is over, its stack frame gets deallocated. This happens
-automatically, we didn’t have to do anything special here.
+When the function exits, its stack frame gets deallocated. This happens
+automatically as well.
 
 That’s all there is for this simple program. The key thing to understand here
 is that stack allocation is very, very fast. Since we know all the local
@@ -74,7 +82,9 @@ visualize what’s going on with memory. Your operating system presents a view o
 memory to your program that’s pretty simple: a huge list of addresses, from 0
 to a large number, representing how much RAM your computer has. For example, if
 you have a gigabyte of RAM, your addresses go from `0` to `1,073,741,823`. That
-number comes from 2<sup>30</sup>, the number of bytes in a gigabyte.
+number comes from 2<sup>30</sup>, the number of bytes in a gigabyte. [^gigabyte]
+
+[^gigabyte]: ‘Gigabyte’ can mean two things: 10^9, or 2^30. The SI standard resolved this by stating that ‘gigabyte’ is 10^9, and ‘gibibyte’ is 2^30. However, very few people use this terminology, and rely on context to differentiate. We follow in that tradition here.
 
 This memory is kind of like a giant array: addresses start at zero and go
 up to the final number. So here’s a diagram of our first stack frame:
@@ -97,9 +107,9 @@ Because `0` was taken by the first frame, `1` and `2` are used for `foo()`’s
 stack frame. It grows upward, the more functions we call.
 
 
-There’s some important things we have to take note of here. The numbers 0, 1,
+There are some important things we have to take note of here. The numbers 0, 1,
 and 2 are all solely for illustrative purposes, and bear no relationship to the
-actual numbers the computer will actually use. In particular, the series of
+address values the computer will use in reality. In particular, the series of
 addresses are in reality going to be separated by some number of bytes that
 separate each address, and that separation may even exceed the size of the
 value being stored.
@@ -120,24 +130,26 @@ on the stack is the first one you retrieve from it.
 Let’s try a three-deep example:
 
 ```rust
-fn bar() {
+fn italic() {
     let i = 6;
 }
 
-fn foo() {
+fn bold() {
     let a = 5;
     let b = 100;
     let c = 1;
 
-    bar();
+    italic();
 }
 
 fn main() {
     let x = 42;
 
-    foo();
+    bold();
 }
 ```
+
+We have some kooky function names to make the diagrams clearer.
 
 Okay, first, we call `main()`:
 
@@ -145,38 +157,38 @@ Okay, first, we call `main()`:
 |---------|------|-------|
 | 0       | x    | 42    |
 
-Next up, `main()` calls `foo()`:
+Next up, `main()` calls `bold()`:
 
 | Address | Name | Value |
 |---------|------|-------|
-| 3       | c    | 1     |
-| 2       | b    | 100   |
-| 1       | a    | 5     |
+| **3**   | **c**|**1**  |
+| **2**   | **b**|**100**|
+| **1**   | **a**| **5** |
 | 0       | x    | 42    |
 
-And then `foo()` calls `bar()`:
+And then `bold()` calls `italic()`:
 
 | Address | Name | Value |
 |---------|------|-------|
-| 4       | i    | 6     |
-| 3       | c    | 1     |
-| 2       | b    | 100   |
-| 1       | a    | 5     |
+| *4*     | *i*  | *6*   |
+| **3**   | **c**|**1**  |
+| **2**   | **b**|**100**|
+| **1**   | **a**| **5** |
 | 0       | x    | 42    |
 
 Whew! Our stack is growing tall.
 
-After `bar()` is over, its frame is deallocated, leaving just `foo()` and
+After `italic()` is over, its frame is deallocated, leaving only `bold()` and
 `main()`:
 
 | Address | Name | Value |
 |---------|------|-------|
-| 3       | c    | 1     |
-| 2       | b    | 100   |
-| 1       | a    | 5     |
+| **3**   | **c**|**1**  |
+| **2**   | **b**|**100**|
+| **1**   | **a**| **5** |
 | 0       | x    | 42    |
 
-And then `foo()` ends, leaving just `main()`:
+And then `bold()` ends, leaving only `main()`:
 
 | Address | Name | Value |
 |---------|------|-------|
@@ -224,7 +236,7 @@ like this:
 | 1                    | y    | 42                     |
 | 0                    | x    | → (2<sup>30</sup>) - 1 |
 
-We have (2<sup>30</sup>) - 1 in our hypothetical computer with 1GB of RAM. And since
+We have (2<sup>30</sup>) - 1 addresses in our hypothetical computer with 1GB of RAM. And since
 our stack grows from zero, the easiest place to allocate memory is from the
 other end. So our first value is at the highest place in memory. And the value
 of the struct at `x` has a [raw pointer][rawpointer] to the place we’ve
@@ -236,7 +248,7 @@ location we’ve asked for.
 We haven’t really talked too much about what it actually means to allocate and
 deallocate memory in these contexts. Getting into very deep detail is out of
 the scope of this tutorial, but what’s important to point out here is that
-the heap isn’t just a stack that grows from the opposite end. We’ll have an
+the heap isn’t a stack that grows from the opposite end. We’ll have an
 example of this later in the book, but because the heap can be allocated and
 freed in any order, it can end up with ‘holes’. Here’s a diagram of the memory
 layout of a program which has been running for a while now:
@@ -249,8 +261,7 @@ layout of a program which has been running for a while now:
 | (2<sup>30</sup>) - 3 |      |                        |
 | (2<sup>30</sup>) - 4 |      | 42                     |
 | ...                  | ...  | ...                    |
-| 3                    | y    | → (2<sup>30</sup>) - 4 |
-| 2                    | y    | 42                     |
+| 2                    | z    | → (2<sup>30</sup>) - 4 |
 | 1                    | y    | 42                     |
 | 0                    | x    | → (2<sup>30</sup>) - 1 |
 
@@ -321,13 +332,13 @@ What about when we call `foo()`, passing `y` as an argument?
 | 1       | y    | → 0    |
 | 0       | x    | 5      |
 
-Stack frames aren’t just for local bindings, they’re for arguments too. So in
+Stack frames aren’t only for local bindings, they’re for arguments too. So in
 this case, we need to have both `i`, our argument, and `z`, our local variable
 binding. `i` is a copy of the argument, `y`. Since `y`’s value is `0`, so is
 `i`’s.
 
 This is one reason why borrowing a variable doesn’t deallocate any memory: the
-value of a reference is just a pointer to a memory location. If we got rid of
+value of a reference is a pointer to a memory location. If we got rid of
 the underlying memory, things wouldn’t work very well.
 
 # A complex example
@@ -443,7 +454,7 @@ Next, `foo()` calls `bar()` with `x` and `z`:
 | 0                    | h    | 3                      |
 
 We end up allocating another value on the heap, and so we have to subtract one
-from (2<sup>30</sup>) - 1. It’s easier to just write that than `1,073,741,822`. In any
+from (2<sup>30</sup>) - 1. It’s easier to write that than `1,073,741,822`. In any
 case, we set up the variables as usual.
 
 At the end of `bar()`, it calls `baz()`:
@@ -454,7 +465,7 @@ At the end of `bar()`, it calls `baz()`:
 | (2<sup>30</sup>) - 2 |      | 5                      |
 | ...                  | ...  | ...                    |
 | 12                   | g    | 100                    |
-| 11                   | f    | → 9                    |
+| 11                   | f    | → (2<sup>30</sup>) - 2 |
 | 10                   | e    | → 9                    |
 | 9                    | d    | → (2<sup>30</sup>) - 2 |
 | 8                    | c    | 5                      |
@@ -528,7 +539,7 @@ instead.
 # Which to use?
 
 So if the stack is faster and easier to manage, why do we need the heap? A big
-reason is that Stack-allocation alone means you only have LIFO semantics for
+reason is that Stack-allocation alone means you only have 'Last In First Out (LIFO)' semantics for
 reclaiming storage. Heap-allocation is strictly more general, allowing storage
 to be taken from and returned to the pool in arbitrary order, but at a
 complexity cost.
@@ -539,12 +550,12 @@ has two big impacts: runtime efficiency and semantic impact.
 
 ## Runtime Efficiency
 
-Managing the memory for the stack is trivial: The machine just
+Managing the memory for the stack is trivial: The machine
 increments or decrements a single value, the so-called “stack pointer”.
 Managing memory for the heap is non-trivial: heap-allocated memory is freed at
 arbitrary points, and each block of heap-allocated memory can be of arbitrary
-size, the memory manager must generally work much harder to identify memory for
-reuse.
+size, so the memory manager must generally work much harder to
+identify memory for reuse.
 
 If you’d like to dive into this topic in greater detail, [this paper][wilson]
 is a great introduction.

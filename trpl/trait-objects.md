@@ -272,7 +272,7 @@ made more flexible.
 
 Suppose we’ve got some values that implement `Foo`. The explicit form of
 construction and use of `Foo` trait objects might look a bit like (ignoring the
-type mismatches: they’re all just pointers anyway):
+type mismatches: they’re all pointers anyway):
 
 ```rust,ignore
 let a: String = "foo".to_string();
@@ -306,7 +306,7 @@ let y = TraitObject {
 Not every trait can be used to make a trait object. For example, vectors implement
 `Clone`, but if we try to make a trait object:
 
-```ignore
+```rust,ignore
 let v = vec![1, 2, 3];
 let o = &v as &Clone;
 ```

@@ -1,11 +1,11 @@
 % Handling Zero-Sized Types
 
-It's time. We're going to fight the spectre that is zero-sized types. Safe Rust
+It's time. We're going to fight the specter that is zero-sized types. Safe Rust
 *never* needs to care about this, but Vec is very intensive on raw pointers and
 raw allocations, which are exactly the two things that care about
 zero-sized types. We need to be careful of two things:
 
-* The raw allocator API has undefined behaviour if you pass in 0 for an
+* The raw allocator API has undefined behavior if you pass in 0 for an
   allocation size.
 * raw pointer offsets are no-ops for zero-sized types, which will break our
   C-style pointer iterator.
@@ -140,8 +140,8 @@ impl<T> Iterator for RawValIter<T> {
                 self.start = if mem::size_of::<T>() == 0 {
                     (self.start as usize + 1) as *const _
                 } else {
-                    self.start.offset(1);
-                }
+                    self.start.offset(1)
+                };
                 Some(result)
             }
         }
@@ -164,8 +164,8 @@ impl<T> DoubleEndedIterator for RawValIter<T> {
                 self.end = if mem::size_of::<T>() == 0 {
                     (self.end as usize - 1) as *const _
                 } else {
-                    self.end.offset(-1);
-                }
+                    self.end.offset(-1)
+                };
                 Some(ptr::read(self.end))
             }
         }

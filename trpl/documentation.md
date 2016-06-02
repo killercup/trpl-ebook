@@ -45,7 +45,7 @@ Rust keeps track of these comments, and uses them when generating
 documentation. This is important when documenting things like enums:
 
 ```rust
-/// The `Option` type. See [the module level documentation](../) for more.
+/// The `Option` type. See [the module level documentation](index.html) for more.
 enum Option<T> {
     /// No value
     None,
@@ -57,7 +57,7 @@ enum Option<T> {
 The above works, but this does not:
 
 ```rust,ignore
-/// The `Option` type. See [the module level documentation](../) for more.
+/// The `Option` type. See [the module level documentation](index.html) for more.
 enum Option<T> {
     None, /// No value
     Some(T), /// Some value `T`
@@ -73,7 +73,7 @@ hello.rs:4 }
 ```
 
 This [unfortunate error](https://github.com/rust-lang/rust/issues/22547) is
-correct: documentation comments apply to the thing after them, and there's 
+correct; documentation comments apply to the thing after them, and there's
 nothing after that last comment.
 
 [rc-new]: https://doc.rust-lang.org/nightly/std/rc/struct.Rc.html#method.new
@@ -118,7 +118,7 @@ least. If your function has a non-trivial contract like this, that is
 detected/enforced by panics, documenting it is very important.
 
 ```rust
-/// # Failures
+/// # Errors
 # fn foo() {}
 ```
 
@@ -193,7 +193,7 @@ If you want something that's not Rust code, you can add an annotation:
 ```
 
 This will highlight according to whatever language you're showing off.
-If you're just showing plain text, choose `text`.
+If you're only showing plain text, choose `text`.
 
 It's important to choose the correct annotation here, because `rustdoc` uses it
 in an interesting way: It can be used to actually test your examples in a
@@ -213,8 +213,8 @@ Let's discuss our sample example documentation:
 ```
 
 You'll notice that you don't need a `fn main()` or anything here. `rustdoc` will
-automatically add a main() wrapper around your code, and in the right place.
-For example:
+automatically add a `main()` wrapper around your code, using heuristics to attempt
+to put it in the right place. For example:
 
 ```rust
 /// ```
@@ -234,7 +234,7 @@ fn main() {
 }
 ```
 
-Here's the full algorithm rustdoc uses to postprocess examples:
+Here's the full algorithm rustdoc uses to preprocess examples:
 
 1. Any leading `#![foo]` attributes are left intact as crate attributes.
 2. Some common `allow` attributes are inserted, including
@@ -242,11 +242,18 @@ Here's the full algorithm rustdoc uses to postprocess examples:
    `unused_attributes`, and `dead_code`. Small examples often trigger
    these lints.
 3. If the example does not contain `extern crate`, then `extern crate
-   <mycrate>;` is inserted.
-2. Finally, if the example does not contain `fn main`, the remainder of the
-   text is wrapped in `fn main() { your_code }`
+   <mycrate>;` is inserted (note the lack of `#[macro_use]`).
+4. Finally, if the example does not contain `fn main`, the remainder of the
+   text is wrapped in `fn main() { your_code }`.
 
-Sometimes, this isn't enough, though. For example, all of these code samples
+This generated `fn main` can be a problem! If you have `extern crate` or a `mod`
+statements in the example code that are referred to by `use` statements, they will
+fail to resolve unless you include at least `fn main() {}` to inhibit step 4.
+`#[macro_use] extern crate` also does not work except at the crate root, so when
+testing macros an explicit `main` is always required. It doesn't have to clutter
+up your docs, though -- keep reading!
+
+Sometimes this algorithm isn't enough, though. For example, all of these code samples
 with `///` we've been talking about? The raw text:
 
 ```text
@@ -266,10 +273,12 @@ be hidden from the output, but will be used when compiling your code. You
 can use this to your advantage. In this case, documentation comments need
 to apply to some kind of function, so if I want to show you just a
 documentation comment, I need to add a little function definition below
-it. At the same time, it's just there to satisfy the compiler, so hiding
+it. At the same time, it's only there to satisfy the compiler, so hiding
 it makes the example more clear. You can use this technique to explain
 longer examples in detail, while still preserving the testability of your
-documentation. For example, this code:
+documentation.
+
+For example, imagine that we wanted to document this code:
 
 ```rust
 let x = 5;
@@ -277,37 +286,11 @@ let y = 6;
 println!("{}", x + y);
 ```
 
-Here's an explanation, rendered:
-
-First, we set `x` to five:
-
-```rust
-let x = 5;
-# let y = 6;
-# println!("{}", x + y);
-```
-
-Next, we set `y` to six:
-
-```rust
-# let x = 5;
-let y = 6;
-# println!("{}", x + y);
-```
-
-Finally, we print the sum of `x` and `y`:
-
-```rust
-# let x = 5;
-# let y = 6;
-println!("{}", x + y);
-```
-
-Here's the same explanation, in raw text:
+We might want the documentation to end up looking like this:
 
 > First, we set `x` to five:
 >
-> ```text
+> ```rust
 > let x = 5;
 > # let y = 6;
 > # println!("{}", x + y);
@@ -315,7 +298,7 @@ Here's the same explanation, in raw text:
 >
 > Next, we set `y` to six:
 >
-> ```text
+> ```rust
 > # let x = 5;
 > let y = 6;
 > # println!("{}", x + y);
@@ -323,11 +306,41 @@ Here's the same explanation, in raw text:
 >
 > Finally, we print the sum of `x` and `y`:
 >
-> ```text
+> ```rust
 > # let x = 5;
 > # let y = 6;
 > println!("{}", x + y);
 > ```
+
+To keep each code block testable, we want the whole program in each block, but
+we don't want the reader to see every line every time.  Here's what we put in
+our source code:
+
+```text
+    First, we set `x` to five:
+
+    ```rust
+    let x = 5;
+    # let y = 6;
+    # println!("{}", x + y);
+    ```
+
+    Next, we set `y` to six:
+
+    ```rust
+    # let x = 5;
+    let y = 6;
+    # println!("{}", x + y);
+    ```
+
+    Finally, we print the sum of `x` and `y`:
+
+    ```rust
+    # let x = 5;
+    # let y = 6;
+    println!("{}", x + y);
+    ```
+```
 
 By repeating all parts of the example, you can ensure that your example still
 compiles, while only showing the parts that are relevant to that part of your
@@ -349,7 +362,7 @@ Here’s an example of documenting a macro:
 /// # }
 /// ```
 ///
-/// ```should_panic
+/// ```rust,should_panic
 /// # #[macro_use] extern crate foo;
 /// # fn main() {
 /// panic_unless!(true == false, “I’m broken.”);
@@ -364,12 +377,42 @@ macro_rules! panic_unless {
 
 You’ll note three things: we need to add our own `extern crate` line, so that
 we can add the `#[macro_use]` attribute. Second, we’ll need to add our own
-`main()` as well. Finally, a judicious use of `#` to comment out those two
-things, so they don’t show up in the output.
+`main()` as well (for reasons discussed above). Finally, a judicious use of
+`#` to comment out those two things, so they don’t show up in the output.
+
+Another case where the use of `#` is handy is when you want to ignore
+error handling. Lets say you want the following,
+
+```rust,ignore
+/// use std::io;
+/// let mut input = String::new();
+/// try!(io::stdin().read_line(&mut input));
+```
+
+The problem is that `try!` returns a `Result<T, E>` and test functions
+don't return anything so this will give a mismatched types error.
+
+```rust,ignore
+/// A doc test using try!
+///
+/// ```
+/// use std::io;
+/// # fn foo() -> io::Result<()> {
+/// let mut input = String::new();
+/// try!(io::stdin().read_line(&mut input));
+/// # Ok(())
+/// # }
+/// ```
+# fn foo() {}
+```
+
+You can get around this by wrapping the code in a function. This catches
+and swallows the `Result<T, E>` when running tests on the docs. This
+pattern appears regularly in the standard library.
 
 ### Running documentation tests
 
-To run the tests, either
+To run the tests, either:
 
 ```bash
 $ rustdoc --test path/to/my/crate/root.rs
@@ -386,7 +429,7 @@ There are a few more annotations that are useful to help `rustdoc` do the right
 thing when testing your code:
 
 ```rust
-/// ```ignore
+/// ```rust,ignore
 /// fn foo() {
 /// ```
 # fn foo() {}
@@ -398,7 +441,7 @@ with `text` if it's not code, or using `#`s to get a working example that
 only shows the part you care about.
 
 ```rust
-/// ```should_panic
+/// ```rust,should_panic
 /// assert!(false);
 /// ```
 # fn foo() {}
@@ -408,7 +451,7 @@ only shows the part you care about.
 not actually pass as a test.
 
 ```rust
-/// ```no_run
+/// ```rust,no_run
 /// loop {
 ///     println!("Hello, world");
 /// }
@@ -469,7 +512,7 @@ the documentation with comments. For example:
 # fn foo() {}
 ```
 
-is just
+is:
 
 ~~~markdown
 # Examples
@@ -494,7 +537,8 @@ This `%` line needs to be the very first line of the file.
 
 ## `doc` attributes
 
-At a deeper level, documentation comments are sugar for documentation attributes:
+At a deeper level, documentation comments are syntactic sugar for documentation
+attributes:
 
 ```rust
 /// this
@@ -509,7 +553,7 @@ are the same, as are these:
 ```rust
 //! this
 
-#![doc="/// this"]
+#![doc="this"]
 ```
 
 You won't often see this attribute used for writing documentation, but it
@@ -519,23 +563,55 @@ can be useful when changing some options, or when writing a macro.
 
 `rustdoc` will show the documentation for a public re-export in both places:
 
-```ignore
+```rust,ignore
 extern crate foo;
 
 pub use foo::bar;
 ```
 
-This will create documentation for bar both inside the documentation for the
+This will create documentation for `bar` both inside the documentation for the
 crate `foo`, as well as the documentation for your crate. It will use the same
 documentation in both places.
 
 This behavior can be suppressed with `no_inline`:
 
-```ignore
+```rust,ignore
 extern crate foo;
 
 #[doc(no_inline)]
 pub use foo::bar;
+```
+
+## Missing documentation
+
+Sometimes you want to make sure that every single public thing in your project
+is documented, especially when you are working on a library. Rust allows you to
+to generate warnings or errors, when an item is missing documentation.
+To generate warnings you use `warn`:
+
+```rust
+#![warn(missing_docs)]
+```
+
+And to generate errors you use `deny`:
+
+```rust,ignore
+#![deny(missing_docs)]
+```
+
+There are cases where you want to disable these warnings/errors to explicitly
+leave something undocumented. This is done by using `allow`:
+
+```rust
+#[allow(missing_docs)]
+struct Undocumented;
+```
+
+You might even want to hide items from the documentation completely:
+
+```rust
+#[doc(hidden)]
+struct Hidden;
 ```
 
 ### Controlling HTML
@@ -550,6 +626,18 @@ You can control a few aspects of the HTML that `rustdoc` generates through the
 ```
 
 This sets a few different options, with a logo, favicon, and a root URL.
+
+### Configuring documentation tests
+
+You can also configure the way that `rustdoc` tests your documentation examples
+through the `#![doc(test(..))]` attribute.
+
+```rust
+#![doc(test(attr(allow(unused_variables), deny(warnings))))]
+```
+
+This allows unused variables within the examples, but will fail the test for any
+other lint warning thrown.
 
 ## Generation options
 

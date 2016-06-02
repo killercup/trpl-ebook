@@ -1,9 +1,10 @@
 % Closures
 
-Rust not only has named functions, but anonymous functions as well. Anonymous
-functions that have an associated environment are called ‘closures’, because they
-close over an environment. Rust has a really great implementation of them, as
-we’ll see.
+Sometimes it is useful to wrap up a function and _free variables_ for better
+clarity and reuse. The free variables that can be used come from the
+enclosing scope and are ‘closed over’ when used in the function. From this, we
+get the name ‘closures’ and Rust provides a really great implementation of
+them, as we’ll see.
 
 # Syntax
 
@@ -34,7 +35,7 @@ assert_eq!(4, plus_two(2));
 ```
 
 You’ll notice a few things about closures that are a bit different from regular
-functions defined with `fn`. The first is that we did not need to
+named functions defined with `fn`. The first is that we did not need to
 annotate the types of arguments the closure takes or the values it returns. We
 can:
 
@@ -44,14 +45,15 @@ let plus_one = |x: i32| -> i32 { x + 1 };
 assert_eq!(2, plus_one(1));
 ```
 
-But we don’t have to. Why is this? Basically, it was chosen for ergonomic reasons.
-While specifying the full type for named functions is helpful with things like
-documentation and type inference, the types of closures are rarely documented
-since they’re anonymous, and they don’t cause the kinds of error-at-a-distance
-problems that inferring named function types can.
+But we don’t have to. Why is this? Basically, it was chosen for ergonomic
+reasons. While specifying the full type for named functions is helpful with
+things like documentation and type inference, the full type signatures of
+closures are rarely documented since they’re anonymous, and they don’t cause
+the kinds of error-at-a-distance problems that inferring named function types
+can.
 
-The second is that the syntax is similar, but a bit different. I’ve added spaces
-here for easier comparison:
+The second is that the syntax is similar, but a bit different. I’ve added
+spaces here for easier comparison:
 
 ```rust
 fn  plus_one_v1   (x: i32) -> i32 { x + 1 }
@@ -63,8 +65,8 @@ Small differences, but they’re similar.
 
 # Closures and their environment
 
-Closures are called such because they ‘close over their environment’. It
-looks like this:
+The environment for a closure can include bindings from its enclosing scope in
+addition to parameters and local bindings. It looks like this:
 
 ```rust
 let num = 5;
@@ -197,15 +199,16 @@ frame.  Without `move`, a closure may be tied to the stack frame that created
 it, while a `move` closure is self-contained. This means that you cannot
 generally return a non-`move` closure from a function, for example.
 
-But before we talk about taking and returning closures, we should talk some more
-about the way that closures are implemented. As a systems language, Rust gives
-you tons of control over what your code does, and closures are no different.
+But before we talk about taking and returning closures, we should talk some
+more about the way that closures are implemented. As a systems language, Rust
+gives you tons of control over what your code does, and closures are no
+different.
 
 # Closure implementation
 
 Rust’s implementation of closures is a bit different than other languages. They
 are effectively syntax sugar for traits. You’ll want to make sure to have read
-the [traits chapter][traits] before this one, as well as the chapter on [trait
+the [traits][traits] section before this one, as well as the section on [trait
 objects][trait-objects].
 
 [traits]: traits.html
@@ -250,7 +253,7 @@ use it.
 # Taking closures as arguments
 
 Now that we know that closures are traits, we already know how to accept and
-return closures: just like any other trait!
+return closures: the same as any other trait!
 
 This also means that we can choose static vs dynamic dispatch as well. First,
 let’s write a function which takes something callable, calls it, and returns
@@ -268,7 +271,7 @@ let answer = call_with_one(|x| x + 2);
 assert_eq!(3, answer);
 ```
 
-We pass our closure, `|x| x + 2`, to `call_with_one`. It just does what it
+We pass our closure, `|x| x + 2`, to `call_with_one`. It does what it
 suggests: it calls the closure, giving it `1` as an argument.
 
 Let’s examine the signature of `call_with_one` in more depth:
@@ -288,9 +291,9 @@ isn’t interesting. The next part is:
 #   some_closure(1) }
 ```
 
-Because `Fn` is a trait, we can bound our generic with it. In this case, our closure
-takes a `i32` as an argument and returns an `i32`, and so the generic bound we use
-is `Fn(i32) -> i32`.
+Because `Fn` is a trait, we can bound our generic with it. In this case, our
+closure takes a `i32` as an argument and returns an `i32`, and so the generic
+bound we use is `Fn(i32) -> i32`.
 
 There’s one other key point here: because we’re bounding a generic with a
 trait, this will get monomorphized, and therefore, we’ll be doing static
@@ -315,6 +318,53 @@ assert_eq!(3, answer);
 
 Now we take a trait object, a `&Fn`. And we have to make a reference
 to our closure when we pass it to `call_with_one`, so we use `&||`.
+
+A quick note about closures that use explicit lifetimes. Sometimes you might have a closure
+that takes a reference like so:
+
+```rust
+fn call_with_ref<F>(some_closure:F) -> i32
+    where F: Fn(&i32) -> i32 {
+
+    let mut value = 0;
+    some_closure(&value)
+}
+```
+
+Normally you can specify the lifetime of the parameter to our closure. We
+could annotate it on the function declaration:
+
+```rust,ignore
+fn call_with_ref<'a, F>(some_closure:F) -> i32 
+    where F: Fn(&'a 32) -> i32 {
+```
+
+However this presents a problem with in our case. When you specify the explict
+lifetime on a function it binds that lifetime to the *entire* scope of the function
+instead of just the invocation scope of our closure. This means that the borrow checker
+will see a mutable reference in the same lifetime as our immutable reference and fail
+to compile.
+
+In order to say that we only need the lifetime to be valid for the invocation scope
+of the closure we can use Higher-Ranked Trait Bounds with the `for<...>` syntax:
+
+```ignore
+fn call_with_ref<F>(some_closure:F) -> i32
+    where F: for<'a> Fn(&'a 32) -> i32 {
+```
+
+This lets the Rust compiler find the minimum lifetime to invoke our closure and 
+satisfy the borrow checker's rules. Our function then compiles and excutes as we
+expect.
+
+```rust
+fn call_with_ref<F>(some_closure:F) -> i32
+    where F: for<'a> Fn(&'a i32) -> i32 {
+
+    let mut value = 0;
+    some_closure(&value)
+}
+```
 
 # Function pointers and closures
 
@@ -341,7 +391,7 @@ assert_eq!(2, answer);
 In this example, we don’t strictly need the intermediate variable `f`,
 the name of the function works just fine too:
 
-```ignore
+```rust,ignore
 let answer = call_with_one(&add_one);
 ```
 
@@ -368,14 +418,13 @@ assert_eq!(6, answer);
 This gives us these long, related errors:
 
 ```text
-error: the trait `core::marker::Sized` is not implemented for the type
-`core::ops::Fn(i32) -> i32` [E0277]
+error: the trait bound `core::ops::Fn(i32) -> i32 : core::marker::Sized` is not satisfied [E0277]
 fn factory() -> (Fn(i32) -> i32) {
                 ^~~~~~~~~~~~~~~~
 note: `core::ops::Fn(i32) -> i32` does not have a constant size known at compile-time
 fn factory() -> (Fn(i32) -> i32) {
                 ^~~~~~~~~~~~~~~~
-error: the trait `core::marker::Sized` is not implemented for the type `core::ops::Fn(i32) -> i32` [E0277]
+error: the trait bound `core::ops::Fn(i32) -> i32 : core::marker::Sized` is not satisfied [E0277]
 let f = factory();
     ^
 note: `core::ops::Fn(i32) -> i32` does not have a constant size known at compile-time
@@ -445,14 +494,14 @@ This error is letting us know that we don’t have a `&'static Fn(i32) -> i32`,
 we have a `[closure@<anon>:7:9: 7:20]`. Wait, what?
 
 Because each closure generates its own environment `struct` and implementation
-of `Fn` and friends, these types are anonymous. They exist just solely for
+of `Fn` and friends, these types are anonymous. They exist solely for
 this closure. So Rust shows them as `closure@<anon>`, rather than some
 autogenerated name.
 
 The error also points out that the return type is expected to be a reference,
 but what we are trying to return is not. Further, we cannot directly assign a
 `'static` lifetime to an object. So we'll take a different approach and return
-a "trait object" by `Box`ing up the `Fn`. This _almost_ works:
+a ‘trait object’ by `Box`ing up the `Fn`. This _almost_ works:
 
 ```rust,ignore
 fn factory() -> Box<Fn(i32) -> i32> {
@@ -490,14 +539,14 @@ fn factory() -> Box<Fn(i32) -> i32> {
 
     Box::new(move |x| x + num)
 }
-# fn main() {
+fn main() {
 let f = factory();
 
 let answer = f(1);
 assert_eq!(6, answer);
-# }
+}
 ```
 
 By making the inner closure a `move Fn`, we create a new stack frame for our
-closure. By `Box`ing it up, we’ve given it a known size, and allowing it to
+closure. By `Box`ing it up, we’ve given it a known size, allowing it to
 escape our stack frame.

@@ -33,7 +33,7 @@ Rust, as well as publications about Rust.
 * [Non-blocking steal-half work queues](http://www.cs.bgu.ac.il/%7Ehendlerd/papers/p280-hendler.pdf)
 * [Reagents: expressing and composing fine-grained concurrency](http://www.mpi-sws.org/~turon/reagents.pdf)
 * [Algorithms for scalable synchronization of shared-memory multiprocessors](https://www.cs.rochester.edu/u/scott/papers/1991_TOCS_synch.pdf)
-* [Epoc-based reclamation](https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.pdf).
+* [Epoch-based reclamation](https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.pdf).
 
 ### Others
 
@@ -48,7 +48,7 @@ Systems Level
 Language](http://www.cs.indiana.edu/~eholk/papers/hips2013.pdf). Early GPU work by Eric Holk.
 * [Parallel closures: a new twist on an old
   idea](https://www.usenix.org/conference/hotpar12/parallel-closures-new-twist-old-idea)
-  - not exactly about rust, but by nmatsakis
+  - not exactly about Rust, but by nmatsakis
 * [Patina: A Formalization of the Rust Programming
   Language](ftp://ftp.cs.washington.edu/tr/2015/03/UW-CSE-15-03-02.pdf). Early
   formalization of a subset of the type system, by Eric Reed.
@@ -61,8 +61,9 @@ Language](http://www.cs.indiana.edu/~eholk/papers/hips2013.pdf). Early GPU work 
   Rust](http://scialex.github.io/reenix.pdf). Undergrad paper by Alex
   Light.
 * [Evaluation of performance and productivity metrics of potential
-  programming languages in the HPC environment](). Bachelor's thesis by
-  Florian Wilkens. Compares C, Go and Rust.
+  programming languages in the HPC environment]
+  (http://octarineparrot.com/assets/mrfloya-thesis-ba.pdf).
+  Bachelor's thesis by Florian Wilkens. Compares C, Go and Rust.
 * [Nom, a byte oriented, streaming, zero copy, parser combinators library
   in Rust](http://spw15.langsec.org/papers/couprie-nom.pdf). By
   Geoffroy Couprie, research for VLC.
@@ -78,3 +79,5 @@ Language](http://www.cs.indiana.edu/~eholk/papers/hips2013.pdf). Early GPU work 
 * [Session Types for
   Rust](http://munksgaard.me/papers/laumann-munksgaard-larsen.pdf). Philip
   Munksgaard's master's thesis. Research for Servo.
+* [Ownership is Theft: Experiences Building an Embedded OS in Rust - Amit Levy, et. al.](http://amitlevy.com/papers/tock-plos2015.pdf)
+* [You can't spell trust without Rust](https://raw.githubusercontent.com/Gankro/thesis/master/thesis.pdf). Alexis Beingessner's master's thesis.
