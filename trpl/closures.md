@@ -223,6 +223,7 @@ trait system to overload operators. Calling functions is no different. We have
 three separate traits to overload with:
 
 ```rust
+# #![feature(unboxed_closures)]
 # mod foo {
 pub trait Fn<Args> : FnMut<Args> {
     extern "rust-call" fn call(&self, args: Args) -> Self::Output;
@@ -291,9 +292,9 @@ isn’t interesting. The next part is:
 #   some_closure(1) }
 ```
 
-Because `Fn` is a trait, we can bound our generic with it. In this case, our
-closure takes a `i32` as an argument and returns an `i32`, and so the generic
-bound we use is `Fn(i32) -> i32`.
+Because `Fn` is a trait, we can use it as a bound for our generic type. In
+this case, our closure takes a `i32` as an argument and returns an `i32`, and
+so the generic bound we use is `Fn(i32) -> i32`.
 
 There’s one other key point here: because we’re bounding a generic with a
 trait, this will get monomorphized, and therefore, we’ll be doing static
@@ -335,11 +336,11 @@ Normally you can specify the lifetime of the parameter to our closure. We
 could annotate it on the function declaration:
 
 ```rust,ignore
-fn call_with_ref<'a, F>(some_closure:F) -> i32 
-    where F: Fn(&'a 32) -> i32 {
+fn call_with_ref<'a, F>(some_closure:F) -> i32
+    where F: Fn(&'a i32) -> i32 {
 ```
 
-However this presents a problem with in our case. When you specify the explict
+However this presents a problem with in our case. When you specify the explicit
 lifetime on a function it binds that lifetime to the *entire* scope of the function
 instead of just the invocation scope of our closure. This means that the borrow checker
 will see a mutable reference in the same lifetime as our immutable reference and fail
@@ -350,11 +351,11 @@ of the closure we can use Higher-Ranked Trait Bounds with the `for<...>` syntax:
 
 ```ignore
 fn call_with_ref<F>(some_closure:F) -> i32
-    where F: for<'a> Fn(&'a 32) -> i32 {
+    where F: for<'a> Fn(&'a i32) -> i32 {
 ```
 
-This lets the Rust compiler find the minimum lifetime to invoke our closure and 
-satisfy the borrow checker's rules. Our function then compiles and excutes as we
+This lets the Rust compiler find the minimum lifetime to invoke our closure and
+satisfy the borrow checker's rules. Our function then compiles and executes as we
 expect.
 
 ```rust

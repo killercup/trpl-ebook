@@ -365,12 +365,12 @@ numbers. A bare number like above is actually shorthand for `^0.3.0`,
 meaning "anything compatible with 0.3.0".
 If we wanted to use only `0.3.0` exactly, we could say `rand="=0.3.0"`
 (note the two equal signs).
-And if we wanted to use the latest version we could use `*`.
+And if we wanted to use the latest version we could use `rand="*"`.
 We could also use a range of versions.
 [Cargo’s documentation][cargodoc] contains more details.
 
 [semver]: http://semver.org
-[cargodoc]: http://doc.crates.io/crates-io.html
+[cargodoc]: http://doc.crates.io/specifying-dependencies.html
 
 Now, without changing any of our code, let’s build our project:
 
@@ -806,7 +806,7 @@ You guessed: 59
 You win!
 Please input your guess.
 quit
-thread '<main>' panicked at 'Please type a number!'
+thread 'main' panicked at 'Please type a number!'
 ```
 
 Ha! `quit` actually quits. As does any other non-number input. Well, this is

@@ -17,6 +17,11 @@ Install:
     + hyphenat
     + quotchap
     + collection-fontsrecommended
+    + mathspec
+    + euenc
+    + xltxtra
+    + xecjk
+    + fancyhdr
 - the DejaVu Sans Mono font: http://dejavu-fonts.org/
 - the IPA font for Japanese Text: http://ipafont.ipa.go.jp/ipaexfont/download.html#en
 

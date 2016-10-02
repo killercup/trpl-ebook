@@ -76,7 +76,7 @@ This [unfortunate error](https://github.com/rust-lang/rust/issues/22547) is
 correct; documentation comments apply to the thing after them, and there's
 nothing after that last comment.
 
-[rc-new]: https://doc.rust-lang.org/nightly/std/rc/struct.Rc.html#method.new
+[rc-new]: ../std/rc/struct.Rc.html#method.new
 
 ### Writing documentation comments
 
@@ -484,6 +484,17 @@ you have a module in `foo.rs`, you'll often open its code and see this:
 //! A module for using `foo`s.
 //!
 //! The `foo` module contains a lot of useful functionality blah blah blah
+```
+
+### Crate documentation
+
+Crates can be documented by placing an inner doc comment (`//!`) at the
+beginning of the crate root, aka `lib.rs`:
+
+```rust
+//! This is documentation for the `foo` crate.
+//!
+//! The foo crate is meant to be used for bar.
 ```
 
 ### Documentation comment style
