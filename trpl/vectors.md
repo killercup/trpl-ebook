@@ -79,7 +79,7 @@ println!("Item 7 is {}", v[7]);
 then the current thread will [panic] with a message like this:
 
 ```text
-thread '<main>' panicked at 'index out of bounds: the len is 3 but the index is 7'
+thread 'main' panicked at 'index out of bounds: the len is 3 but the index is 7'
 ```
 
 If you want to handle out-of-bounds errors without panicking, you can use
@@ -152,5 +152,5 @@ API documentation][vec].
 [box]: ../std/boxed/index.html
 [generic]: generics.html
 [panic]: concurrency.html#panics
-[get]: http://doc.rust-lang.org/std/vec/struct.Vec.html#method.get
-[get_mut]: http://doc.rust-lang.org/std/vec/struct.Vec.html#method.get_mut
+[get]: ../std/vec/struct.Vec.html#method.get
+[get_mut]: ../std/vec/struct.Vec.html#method.get_mut

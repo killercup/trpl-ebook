@@ -81,7 +81,7 @@ fn main() {
 If you try running this code, the program will crash with a message like this:
 
 ```text
-thread '<main>' panicked at 'Invalid number: 11', src/bin/panic-simple.rs:5
+thread 'main' panicked at 'Invalid number: 11', src/bin/panic-simple.rs:5
 ```
 
 Here's another example that is slightly less contrived. A program that accepts
@@ -166,7 +166,7 @@ story. The other half is *using* the `find` function we've written. Let's try
 to use it to find the extension in a file name.
 
 ```rust
-# fn find(_: &str, _: char) -> Option<usize> { None }
+# fn find(haystack: &str, needle: char) -> Option<usize> { haystack.find(needle) }
 fn main() {
     let file_name = "foobar.rs";
     match find(file_name, '.') {
@@ -223,7 +223,7 @@ Getting the extension of a file name is a pretty common operation, so it makes
 sense to put it into a function:
 
 ```rust
-# fn find(_: &str, _: char) -> Option<usize> { None }
+# fn find(haystack: &str, needle: char) -> Option<usize> { haystack.find(needle) }
 // Returns the extension of the given file name, where the extension is defined
 // as all characters following the first `.`.
 // If `file_name` has no `.`, then `None` is returned.
@@ -272,7 +272,7 @@ Armed with our new combinator, we can rewrite our `extension_explicit` method
 to get rid of the case analysis:
 
 ```rust
-# fn find(_: &str, _: char) -> Option<usize> { None }
+# fn find(haystack: &str, needle: char) -> Option<usize> { haystack.find(needle) }
 // Returns the extension of the given file name, where the extension is defined
 // as all characters following the first `.`.
 // If `file_name` has no `.`, then `None` is returned.
@@ -498,7 +498,7 @@ At this point, you should be skeptical of calling `unwrap`. For example, if
 the string doesn't parse as a number, you'll get a panic:
 
 ```text
-thread '<main>' panicked at 'called `Result::unwrap()` on an `Err` value: ParseIntError { kind: InvalidDigit }', /home/rustbuild/src/rust-buildbot/slave/beta-dist-rustc-linux/build/src/libcore/result.rs:729
+thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: ParseIntError { kind: InvalidDigit }', /home/rustbuild/src/rust-buildbot/slave/beta-dist-rustc-linux/build/src/libcore/result.rs:729
 ```
 
 This is rather unsightly, and if this happened inside a library you're
@@ -1829,7 +1829,7 @@ use std::error::Error;
 
 fn search<P: AsRef<Path>>
          (file_path: P, city: &str)
-         -> Result<Vec<PopulationCount>, Box<Error+Send+Sync>> {
+         -> Result<Vec<PopulationCount>, Box<Error>> {
     let mut found = vec![];
     let file = try!(File::open(file_path));
     let mut rdr = csv::Reader::from_reader(file);
@@ -1858,20 +1858,17 @@ Instead of `x.unwrap()`, we now have `try!(x)`. Since our function returns a
 `Result<T, E>`, the `try!` macro will return early from the function if an
 error occurs.
 
-There is one big gotcha in this code: we used `Box<Error + Send + Sync>`
-instead of `Box<Error>`. We did this so we could convert a plain string to an
-error type. We need these extra bounds so that we can use the
-[corresponding `From`
-impls](../std/convert/trait.From.html):
+At the end of `search` we also convert a plain string to an error type 
+by using the [corresponding `From` impls](../std/convert/trait.From.html):
 
 ```rust,ignore
 // We are making use of this impl in the code above, since we call `From::from`
 // on a `&'static str`.
-impl<'a, 'b> From<&'b str> for Box<Error + Send + Sync + 'a>
+impl<'a> From<&'a str> for Box<Error>
 
 // But this is also useful when you need to allocate a new string for an
 // error message, usually with `format!`.
-impl From<String> for Box<Error + Send + Sync>
+impl From<String> for Box<Error>
 ```
 
 Since `search` now returns a `Result<T, E>`, `main` should use case analysis
@@ -1964,7 +1961,7 @@ use std::io;
 
 fn search<P: AsRef<Path>>
          (file_path: &Option<P>, city: &str)
-         -> Result<Vec<PopulationCount>, Box<Error+Send+Sync>> {
+         -> Result<Vec<PopulationCount>, Box<Error>> {
     let mut found = vec![];
     let input: Box<io::Read> = match *file_path {
         None => Box::new(io::stdin()),
@@ -2175,9 +2172,8 @@ heuristics!
   `unwrap`. Be warned: if it winds up in someone else's hands, don't be
   surprised if they are agitated by poor error messages!
 * If you're writing a quick 'n' dirty program and feel ashamed about panicking
-  anyway, then use either a `String` or a `Box<Error + Send + Sync>` for your
-  error type (the `Box<Error + Send + Sync>` type is because of the
-  [available `From` impls](../std/convert/trait.From.html)).
+  anyway, then use either a `String` or a `Box<Error>` for your
+  error type.
 * Otherwise, in a program, define your own error types with appropriate
   [`From`](../std/convert/trait.From.html)
   and
@@ -2205,7 +2201,7 @@ heuristics!
 [3]: ../std/option/enum.Option.html#method.unwrap_or
 [4]: ../std/option/enum.Option.html#method.unwrap_or_else
 [5]: ../std/option/enum.Option.html
-[6]: ../std/result/
+[6]: ../std/result/index.html
 [7]: ../std/result/enum.Result.html#method.unwrap
 [8]: ../std/fmt/trait.Debug.html
 [9]: ../std/primitive.str.html#method.parse

@@ -57,9 +57,11 @@ but you must add the right number of `:` if you skip them:
 asm!("xor %eax, %eax"
     :
     :
-    : "{eax}"
+    : "eax"
    );
 # } }
+# #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+# fn main() {}
 ```
 
 Whitespace also doesn't matter:
@@ -68,8 +70,10 @@ Whitespace also doesn't matter:
 # #![feature(asm)]
 # #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 # fn main() { unsafe {
-asm!("xor %eax, %eax" ::: "{eax}");
+asm!("xor %eax, %eax" ::: "eax");
 # } }
+# #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+# fn main() {}
 ```
 
 ## Operands
@@ -127,8 +131,10 @@ stay valid.
 # #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 # fn main() { unsafe {
 // Put the value 0x200 in eax
-asm!("mov $$0x200, %eax" : /* no outputs */ : /* no inputs */ : "{eax}");
+asm!("mov $$0x200, %eax" : /* no outputs */ : /* no inputs */ : "eax");
 # } }
+# #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+# fn main() {}
 ```
 
 Input and output registers need not be listed since that information
@@ -164,6 +170,8 @@ unsafe {
 }
 println!("eax is currently {}", result);
 # }
+# #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+# fn main() {}
 ```
 
 ## More Information
