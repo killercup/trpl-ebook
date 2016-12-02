@@ -1,6 +1,6 @@
 /* based on https://github.com/jgm/pandoc/blob/c9cb313a479f3d134d5df1cffe5e340034fb44b4/data/epub.css */
 body { margin: 5%; text-align: justify; font-size: medium; }
-code { font-family: monospace; word-wrap: break-word }
+code { font-family: monospace; font-size: 0.9em; word-wrap: break-word }
 h1 { text-align: left; }
 h2 { text-align: left; }
 h3 { text-align: left; }
@@ -14,4 +14,4 @@ ol.toc { padding: 0; margin-left: 1em; }
 ol.toc li { list-style-type: none; margin: 0; padding: 0; }
 a.footnoteRef { vertical-align: super; }
 
-pre { text-align: left; white-space: pre-wrap; font-size: 0.6em; }
+pre { text-align: left; white-space: pre-wrap }
