@@ -16,7 +16,9 @@ $if(lang)$
 \fi
 $endif$
 
-\usepackage[$if(papersize)$$papersize$$else$a4paper$endif$]{geometry}
+\usepackage[$if(papersize)$$papersize$$else$a4paper$endif$,margin=27mm]{geometry}
+\addtolength{\topmargin}{-7mm}
+\addtolength{\textheight}{18mm}
 
 \usepackage{graphicx}
 
