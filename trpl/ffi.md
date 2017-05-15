@@ -1,4 +1,4 @@
-% Foreign Function Interface
+# Foreign Function Interface
 
 # Introduction
 
@@ -56,9 +56,9 @@ almost any function that takes a pointer argument isn't valid for all possible
 inputs since the pointer could be dangling, and raw pointers fall outside of
 Rust's safe memory model.
 
-When declaring the argument types to a foreign function, the Rust compiler can
-not check if the declaration is correct, so specifying it correctly is part of
-keeping the binding correct at runtime.
+When declaring the argument types to a foreign function, the Rust compiler
+cannot check if the declaration is correct, so specifying it correctly is part
+of keeping the binding correct at runtime.
 
 The `extern` block can be extended to cover the entire snappy API:
 
@@ -95,7 +95,7 @@ internal details.
 
 Wrapping the functions which expect buffers involves using the `slice::raw` module to manipulate Rust
 vectors as pointers to memory. Rust's vectors are guaranteed to be a contiguous block of memory. The
-length is number of elements currently contained, and the capacity is the total size in elements of
+length is the number of elements currently contained, and the capacity is the total size in elements of
 the allocated memory. The length is less than or equal to the capacity.
 
 ```rust
@@ -277,7 +277,7 @@ extern {
 fn main() {
     unsafe {
         register_callback(callback);
-        trigger_callback(); // Triggers the callback
+        trigger_callback(); // Triggers the callback.
     }
 }
 ```
@@ -294,7 +294,7 @@ int32_t register_callback(rust_callback callback) {
 }
 
 void trigger_callback() {
-  cb(7); // Will call callback(7) in Rust
+  cb(7); // Will call callback(7) in Rust.
 }
 ```
 
@@ -309,7 +309,7 @@ However it is often desired that the callback is targeted to a special
 Rust object. This could be the object that represents the wrapper for the
 respective C object.
 
-This can be achieved by passing an raw pointer to the object down to the
+This can be achieved by passing a raw pointer to the object down to the
 C library. The C library can then include the pointer to the Rust object in
 the notification. This will allow the callback to unsafely access the
 referenced Rust object.
@@ -320,13 +320,13 @@ Rust code:
 #[repr(C)]
 struct RustObject {
     a: i32,
-    // other members
+    // Other members...
 }
 
 extern "C" fn callback(target: *mut RustObject, a: i32) {
     println!("I'm called from C with value {0}", a);
     unsafe {
-        // Update the value in RustObject with the value received from the callback
+        // Update the value in RustObject with the value received from the callback:
         (*target).a = a;
     }
 }
@@ -339,7 +339,7 @@ extern {
 }
 
 fn main() {
-    // Create the object that will be referenced in the callback
+    // Create the object that will be referenced in the callback:
     let mut rust_object = Box::new(RustObject { a: 5 });
 
     unsafe {
@@ -363,7 +363,7 @@ int32_t register_callback(void* callback_target, rust_callback callback) {
 }
 
 void trigger_callback() {
-  cb(cb_target, 7); // Will call callback(&rustObject, 7) in Rust
+  cb(cb_target, 7); // Will call callback(&rustObject, 7) in Rust.
 }
 ```
 
@@ -408,7 +408,7 @@ libraries:
 * Static - `#[link(name = "my_build_dependency", kind = "static")]`
 * Frameworks - `#[link(name = "CoreFoundation", kind = "framework")]`
 
-Note that frameworks are only available on OSX targets.
+Note that frameworks are only available on macOS targets.
 
 The different `kind` values are meant to differentiate how the native library
 participates in linkage. From a linkage perspective, the Rust compiler creates
@@ -437,7 +437,7 @@ A few examples of how this model can be used are:
   is included in a final target (like a binary), the native library will be
   linked in.
 
-On OSX, frameworks behave with the same semantics as a dynamic library.
+On macOS, frameworks behave with the same semantics as a dynamic library.
 
 # Unsafe blocks
 
@@ -471,7 +471,7 @@ extern {
 
 fn main() {
     println!("You have readline version {} installed.",
-             rl_readline_version as i32);
+             unsafe { rl_readline_version as i32 });
 }
 ```
 
@@ -539,6 +539,7 @@ This is currently hidden behind the `abi_vectorcall` gate and is subject to chan
 * `system`
 * `C`
 * `win64`
+* `sysv64`
 
 Most of the abis in this list are self-explanatory, but the `system` abi may
 seem a little odd. This constraint selects whatever the appropriate ABI is for
@@ -573,6 +574,31 @@ The [`libc` crate on crates.io][libc] includes type aliases and function
 definitions for the C standard library in the `libc` module, and Rust links
 against `libc` and `libm` by default.
 
+# Variadic functions
+
+In C, functions can be 'variadic', meaning they accept a variable number of arguments. This can
+be achieved in Rust by specifying `...` within the argument list of a foreign function declaration:
+
+```no_run
+extern {
+    fn foo(x: i32, ...);
+}
+
+fn main() {
+    unsafe {
+        foo(10, 20, 30, 40, 50);
+    }
+}
+```
+
+Normal Rust functions can *not* be variadic:
+
+```ignore
+// This will not compile
+
+fn foo(x: i32, ...) { }
+```
+
 # The "nullable pointer optimization"
 
 Certain Rust types are defined to never be `null`. This includes references (`&T`,
@@ -605,7 +631,7 @@ use libc::c_int;
 
 # #[cfg(hidden)]
 extern "C" {
-    /// Register the callback.
+    /// Registers the callback.
     fn register(cb: Option<extern "C" fn(Option<extern "C" fn(c_int) -> c_int>, c_int) -> c_int>);
 }
 # unsafe fn register(_: Option<extern "C" fn(Option<extern "C" fn(c_int) -> c_int>,
@@ -661,25 +687,30 @@ attribute turns off Rust's name mangling, so that it is easier to link to.
 
 It’s important to be mindful of `panic!`s when working with FFI. A `panic!`
 across an FFI boundary is undefined behavior. If you’re writing code that may
-panic, you should run it in another thread, so that the panic doesn’t bubble up
-to C:
+panic, you should run it in a closure with [`catch_unwind()`]:
 
 ```rust
-use std::thread;
+use std::panic::catch_unwind;
 
 #[no_mangle]
 pub extern fn oh_no() -> i32 {
-    let h = thread::spawn(|| {
+    let result = catch_unwind(|| {
         panic!("Oops!");
     });
-
-    match h.join() {
-        Ok(_) => 1,
-        Err(_) => 0,
+    match result {
+        Ok(_) => 0,
+        Err(_) => 1,
     }
 }
-# fn main() {}
+
+fn main() {}
 ```
+
+Please note that [`catch_unwind()`] will only catch unwinding panics, not
+those who abort the process. See the documentation of [`catch_unwind()`]
+for more information.
+
+[`catch_unwind()`]: ../std/panic/fn.catch_unwind.html
 
 # Representing opaque structs
 

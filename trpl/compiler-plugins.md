@@ -1,6 +1,6 @@
-% Compiler Plugins
+# Compiler Plugins
 
-# Introduction
+## Introduction
 
 `rustc` can load compiler plugins, which are user-provided libraries that
 extend the compiler's behavior with new syntax extensions, lint checks, etc.
@@ -46,10 +46,10 @@ extern crate rustc;
 extern crate rustc_plugin;
 
 use syntax::parse::token;
-use syntax::ast::TokenTree;
+use syntax::tokenstream::TokenTree;
 use syntax::ext::base::{ExtCtxt, MacResult, DummyResult, MacEager};
-use syntax::ext::build::AstBuilder;  // trait for expr_usize
-use syntax_pos::Span;
+use syntax::ext::build::AstBuilder;  // A trait for expr_usize.
+use syntax::ext::quote::rt::Span;
 use rustc_plugin::Registry;
 
 fn expand_rn(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree])
@@ -69,7 +69,7 @@ fn expand_rn(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree])
     }
 
     let text = match args[0] {
-        TokenTree::Token(_, token::Ident(s, _)) => s.to_string(),
+        TokenTree::Token(_, token::Ident(s)) => s.to_string(),
         _ => {
             cx.span_err(sp, "argument should be a single identifier");
             return DummyResult::any(sp);
@@ -119,7 +119,7 @@ The advantages over a simple `fn(&str) -> u32` are:
   a way to define new literal syntax for any data type.
 
 In addition to procedural macros, you can define new
-[`derive`](../reference.html#derive)-like attributes and other kinds of
+[`derive`](../reference/attributes.html#derive)-like attributes and other kinds of
 extensions.  See `Registry::register_syntax_extension` and the `SyntaxExtension`
 enum.  For a more involved macro example, see
 [`regex_macros`](https://github.com/rust-lang/regex/blob/master/regex_macros/src/lib.rs).
@@ -165,8 +165,8 @@ quasiquote as an ordinary plugin library.
 # Lint plugins
 
 Plugins can extend [Rust's lint
-infrastructure](../reference.html#lint-check-attributes) with additional checks for
-code style, safety, etc. Now let's write a plugin
+infrastructure](../reference/attributes.html#lint-check-attributes) with
+additional checks for code style, safety, etc. Now let's write a plugin
 [`lint_plugin_test.rs`](https://github.com/rust-lang/rust/blob/master/src/test/run-pass-fulldeps/auxiliary/lint_plugin_test.rs)
 that warns about any item named `lintme`.
 
@@ -244,9 +244,10 @@ mostly use the same infrastructure as lint plugins, and provide examples of how
 to access type information.
 
 Lints defined by plugins are controlled by the usual [attributes and compiler
-flags](../reference.html#lint-check-attributes), e.g. `#[allow(test_lint)]` or
-`-A test-lint`. These identifiers are derived from the first argument to
-`declare_lint!`, with appropriate case and punctuation conversion.
+flags](../reference/attributes.html#lint-check-attributes), e.g.
+`#[allow(test_lint)]` or `-A test-lint`. These identifiers are derived from the
+first argument to `declare_lint!`, with appropriate case and punctuation
+conversion.
 
 You can run `rustc -W help foo.rs` to see a list of lints known to `rustc`,
 including those provided by plugins loaded by `foo.rs`.

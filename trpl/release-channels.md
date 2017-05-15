@@ -1,4 +1,4 @@
-% Release Channels
+# Release Channels
 
 The Rust project uses a concept called ‘release channels’ to manage releases.
 It’s important to understand this process to choose which version of Rust

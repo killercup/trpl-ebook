@@ -1,4 +1,4 @@
-% Crates and Modules
+# Crates and Modules
 
 When a project starts getting large, it’s considered good software
 engineering practice to split it up into a bunch of smaller pieces, and then
@@ -126,7 +126,7 @@ Instead of declaring a module like this:
 
 ```rust,ignore
 mod english {
-    // contents of our module go here
+    // Contents of our module go here.
 }
 ```
 

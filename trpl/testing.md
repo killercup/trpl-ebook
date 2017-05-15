@@ -1,4 +1,4 @@
-% Testing
+# Testing
 
 > Program testing can be a very effective way to show the presence of bugs, but
 > it is hopelessly inadequate for showing their absence.
@@ -23,8 +23,26 @@ $ cd adder
 Cargo will automatically generate a simple test when you make a new project.
 Here's the contents of `src/lib.rs`:
 
-```rust
-# fn main() {}
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+    }
+}
+```
+
+For now, let's remove the `mod` bit, and focus on just the function:
+
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 #[test]
 fn it_works() {
 }
@@ -36,8 +54,9 @@ currently has no body. That's good enough to pass! We can run the tests with
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+    Finished debug [unoptimized + debuginfo] target(s) in 0.15 secs
+     Running target/debug/deps/adder-941f01916ca4a642
 
 running 1 test
 test it_works ... ok
@@ -62,7 +81,9 @@ test it_works ... ok
 Note the `it_works`. This comes from the name of our function:
 
 ```rust
+# fn main() {
 fn it_works() {
+}
 # }
 ```
 
@@ -75,8 +96,11 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 So why does our do-nothing test pass? Any test which doesn't `panic!` passes,
 and any test that does `panic!` fails. Let's make our test fail:
 
-```rust
-# fn main() {}
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 #[test]
 fn it_works() {
     assert!(false);
@@ -89,8 +113,9 @@ run our tests again:
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+    Finished debug [unoptimized + debuginfo] target(s) in 0.17 secs
+     Running target/debug/deps/adder-941f01916ca4a642
 
 running 1 test
 test it_works ... FAILED
@@ -98,8 +123,8 @@ test it_works ... FAILED
 failures:
 
 ---- it_works stdout ----
-        thread 'it_works' panicked at 'assertion failed: false', /home/steve/tmp/adder/src/lib.rs:3
-
+        thread 'it_works' panicked at 'assertion failed: false', src/lib.rs:5
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
 
 
 failures:
@@ -107,7 +132,7 @@ failures:
 
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured
 
-thread 'main' panicked at 'Some tests failed', /home/steve/src/rust/src/libtest/lib.rs:247
+error: test failed
 ```
 
 Rust indicates that our test failed:
@@ -146,8 +171,11 @@ This is useful if you want to integrate `cargo test` into other tooling.
 
 We can invert our test's failure with another attribute: `should_panic`:
 
-```rust
-# fn main() {}
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 #[test]
 #[should_panic]
 fn it_works() {
@@ -159,8 +187,9 @@ This test will now succeed if we `panic!` and fail if we complete. Let's try it:
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+    Finished debug [unoptimized + debuginfo] target(s) in 0.17 secs
+     Running target/debug/deps/adder-941f01916ca4a642
 
 running 1 test
 test it_works ... ok
@@ -177,8 +206,11 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 Rust provides another macro, `assert_eq!`, that compares two arguments for
 equality:
 
-```rust
-# fn main() {}
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 #[test]
 #[should_panic]
 fn it_works() {
@@ -191,8 +223,9 @@ passes:
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+    Finished debug [unoptimized + debuginfo] target(s) in 0.21 secs
+     Running target/debug/deps/adder-941f01916ca4a642
 
 running 1 test
 test it_works ... ok
@@ -212,8 +245,11 @@ parameter can be added to the `should_panic` attribute. The test harness will
 make sure that the failure message contains the provided text. A safer version
 of the example above would be:
 
-```rust
-# fn main() {}
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 #[test]
 #[should_panic(expected = "assertion failed")]
 fn it_works() {
@@ -224,7 +260,10 @@ fn it_works() {
 That's all there is to the basics! Let's write one 'real' test:
 
 ```rust,ignore
-# fn main() {}
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -243,8 +282,15 @@ some known arguments and compare it to the expected output.
 Sometimes a few specific tests can be very time-consuming to execute. These
 can be disabled by default by using the `ignore` attribute:
 
-```rust
-# fn main() {}
+```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
+pub fn add_two(a: i32) -> i32 {
+    a + 2
+}
+
 #[test]
 fn it_works() {
     assert_eq!(4, add_two(2));
@@ -253,7 +299,7 @@ fn it_works() {
 #[test]
 #[ignore]
 fn expensive_test() {
-    // code that takes an hour to run
+    // Code that takes an hour to run...
 }
 ```
 
@@ -262,8 +308,9 @@ not:
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+    Finished debug [unoptimized + debuginfo] target(s) in 0.20 secs
+     Running target/debug/deps/adder-941f01916ca4a642
 
 running 2 tests
 test expensive_test ... ignored
@@ -282,7 +329,8 @@ The expensive tests can be run explicitly using `cargo test -- --ignored`:
 
 ```bash
 $ cargo test -- --ignored
-     Running target/adder-91b3e234d4ed382a
+    Finished debug [unoptimized + debuginfo] target(s) in 0.0 secs
+     Running target/debug/deps/adder-941f01916ca4a642
 
 running 1 test
 test expensive_test ... ok
@@ -302,11 +350,17 @@ which is why the command is `cargo test -- --ignored`.
 # The `tests` module
 
 There is one way in which our existing example is not idiomatic: it's
-missing the `tests` module. The idiomatic way of writing our example
-looks like this:
+missing the `tests` module. You might have noticed this test module was
+present in the code that was initially generated with `cargo new` but
+was missing from our last example. Let's explain what this does.
+
+The idiomatic way of writing our example looks like this:
 
 ```rust,ignore
-# fn main() {}
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -330,12 +384,15 @@ currently trying to run the tests. This can save compile time, and also ensures
 that our tests are entirely left out of a normal build.
 
 The second change is the `use` declaration. Because we're in an inner module,
-we need to bring our test function into scope. This can be annoying if you have
+we need to bring the tested function into scope. This can be annoying if you have
 a large module, and so this is a common use of globs. Let's change our
 `src/lib.rs` to make use of it:
 
 ```rust,ignore
-# fn main() {}
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -356,8 +413,8 @@ Note the different `use` line. Now we run our tests:
 ```bash
 $ cargo test
     Updating registry `https://github.com/rust-lang/crates.io-index`
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+     Running target/debug/deps/adder-91b3e234d4ed382a
 
 running 1 test
 test tests::it_works ... ok
@@ -380,14 +437,19 @@ the `tests` directory.
 
 # The `tests` directory
 
-Each file in `tests/*.rs` directory is treated as individual crate.
-So, to write an integration test, let's make a `tests` directory, and
-put a `tests/integration_test.rs` file inside, with this as its contents:
+Each file in `tests/*.rs` directory is treated as an individual crate.
+To write an integration test, let's make a `tests` directory and
+put a `tests/integration_test.rs` file inside with this as its contents:
 
 ```rust,ignore
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
+# // Sadly, this code will not work in play.rust-lang.org, because we have no
+# // crate adder to import. You'll need to try this part on your own machine.
 extern crate adder;
 
-# fn main() {}
 #[test]
 fn it_works() {
     assert_eq!(4, adder::add_two(2));
@@ -404,15 +466,15 @@ Let's run them:
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/you/projects/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0 (file:///home/you/projects/adder)
+     Running target/debug/deps/adder-91b3e234d4ed382a
 
 running 1 test
 test tests::it_works ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 
-     Running target/lib-c18e7d3494509e74
+     Running target/debug/integration_test-68064b69521c828a
 
 running 1 test
 test it_works ... ok
@@ -437,6 +499,10 @@ be imported in every test with `mod common;`
 That's all there is to the `tests` directory. The `tests` module isn't needed
 here, since the whole thing is focused on tests.
 
+Note, when building integration tests, cargo will not pass the `test` attribute
+to the compiler. It means that all parts in `cfg(test)` won't be included in
+the build used in your integration tests.
+
 Let's finally check out that third section: documentation tests.
 
 # Documentation tests
@@ -448,7 +514,10 @@ running examples in your documentation (**note:** this only works in library
 crates, not binary crates). Here's a fleshed-out `src/lib.rs` with examples:
 
 ```rust,ignore
-# fn main() {}
+# // The next line exists to trick play.rust-lang.org into running our code as a
+# // test:
+# // fn main
+#
 //! The `adder` crate provides functions that add numbers to other numbers.
 //!
 //! # Examples
@@ -490,15 +559,15 @@ Let's run the tests again:
 
 ```bash
 $ cargo test
-   Compiling adder v0.0.1 (file:///home/steve/tmp/adder)
-     Running target/adder-91b3e234d4ed382a
+   Compiling adder v0.1.0. (file:///home/you/projects/adder)
+     Running target/debug/deps/adder-91b3e234d4ed382a
 
 running 1 test
 test tests::it_works ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured
 
-     Running target/lib-c18e7d3494509e74
+     Running target/debug/integration_test-68064b69521c828a
 
 running 1 test
 test it_works ... ok
@@ -521,3 +590,44 @@ you add more examples.
 
 We haven’t covered all of the details with writing documentation tests. For more,
 please see the [Documentation chapter](documentation.html).
+
+# Testing and concurrency
+
+It is important to note that tests are run concurrently using threads. For this
+reason, care should be taken to ensure your tests do not depend on each-other,
+or on any shared state. "Shared state" can also include the environment, such
+as the current working directory, or environment variables.
+
+If this is an issue it is possible to control this concurrency, either by
+setting the environment variable `RUST_TEST_THREADS`, or by passing the argument
+`--test-threads` to the tests:
+
+```bash
+$ RUST_TEST_THREADS=1 cargo test   # Run tests with no concurrency
+...
+$ cargo test -- --test-threads=1   # Same as above
+...
+```
+
+# Test output
+
+By default Rust's test library captures and discards output to standard
+out/error, e.g. output from `println!()`. This too can be controlled using the
+environment or a switch:
+
+
+```bash
+$ RUST_TEST_NOCAPTURE=1 cargo test   # Preserve stdout/stderr
+...
+$ cargo test -- --nocapture          # Same as above
+...
+```
+
+However a better method avoiding capture is to use logging rather than raw
+output. Rust has a [standard logging API][log], which provides a frontend to
+multiple logging implementations. This can be used in conjunction with the
+default [env_logger] to output any debugging information in a manner that can be
+controlled at runtime.
+
+[log]: https://crates.io/crates/log
+[env_logger]: https://crates.io/crates/env_logger

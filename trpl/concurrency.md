@@ -1,10 +1,10 @@
-% Concurrency
+# Concurrency
 
 Concurrency and parallelism are incredibly important topics in computer
 science, and are also a hot topic in industry today. Computers are gaining more
 and more cores, yet many programmers aren't prepared to fully utilize them.
 
-Rust's memory safety features also apply to its concurrency story too. Even
+Rust's memory safety features also apply to its concurrency story. Even
 concurrent Rust programs must be memory safe, having no data races. Rust's type
 system is up to the task, and gives you powerful ways to reason about
 concurrent code at compile time.
@@ -36,7 +36,7 @@ down the channel and to the other thread. Therefore, we'd ensure that `Send` was
 implemented for that type.
 
 In the opposite way, if we were wrapping a library with [FFI][ffi] that isn't
-threadsafe, we wouldn't want to implement `Send`, and so the compiler will help
+thread-safe, we wouldn't want to implement `Send`, and so the compiler will help
 us enforce that it can't leave the current thread.
 
 [ffi]: ffi.html
@@ -213,10 +213,10 @@ fn main() {
     let mut data = Rc::new(vec![1, 2, 3]);
 
     for i in 0..3 {
-        // create a new owned reference
+        // Create a new owned reference:
         let data_ref = data.clone();
 
-        // use it in a thread
+        // Use it in a thread:
         thread::spawn(move || {
             data_ref[0] += i;
         });
@@ -281,8 +281,8 @@ And... still gives us an error.
 ```
 
 `Arc<T>` by default has immutable contents. It allows the _sharing_ of data
-between threads, but shared mutable data is unsafe and when threads are
-involved can cause data races!
+between threads, but shared mutable data is unsafe—and when threads are
+involved—can cause data races!
 
 
 Usually when we wish to make something in an immutable position mutable, we use
@@ -390,8 +390,8 @@ use std::sync::mpsc;
 fn main() {
     let data = Arc::new(Mutex::new(0));
 
-    // `tx` is the "transmitter" or "sender"
-    // `rx` is the "receiver"
+    // `tx` is the "transmitter" or "sender".
+    // `rx` is the "receiver".
     let (tx, rx) = mpsc::channel();
 
     for _ in 0..10 {

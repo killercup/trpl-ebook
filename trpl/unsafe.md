@@ -1,4 +1,4 @@
-% Unsafe
+# Unsafe
 
 Rust’s main draw is its powerful static guarantees about behavior. But safety
 checks are conservative by nature: there are some programs that are actually
@@ -12,7 +12,7 @@ four contexts. The first one is to mark a function as unsafe:
 
 ```rust
 unsafe fn danger_will_robinson() {
-    // scary stuff
+    // Scary stuff...
 }
 ```
 
@@ -23,7 +23,7 @@ The second use of `unsafe` is an unsafe block:
 
 ```rust
 unsafe {
-    // scary stuff
+    // Scary stuff...
 }
 ```
 
@@ -139,4 +139,4 @@ I’ll repeat again: even though you _can_ do arbitrary things in unsafe blocks
 and functions doesn’t mean you should. The compiler will act as though you’re
 upholding its invariants, so be careful!
 
-[intrinsics]: intrinsics.html
+[intrinsics]: ../unstable-book/intrinsics.html

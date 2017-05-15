@@ -1,4 +1,4 @@
-% Documentation
+# Documentation
 
 Documentation is an important part of any software project, and it's
 first-class in Rust. Let's talk about the tooling Rust gives you to
@@ -28,7 +28,7 @@ code. You can use documentation comments for this purpose:
 /// let five = Rc::new(5);
 /// ```
 pub fn new(value: T) -> Rc<T> {
-    // implementation goes here
+    // Implementation goes here.
 }
 ```
 
@@ -460,8 +460,9 @@ not actually pass as a test.
 ```
 
 The `no_run` attribute will compile your code, but not run it. This is
-important for examples such as "Here's how to start up a network service,"
-which you would want to make sure compile, but might run in an infinite loop!
+important for examples such as "Here's how to retrieve a web page,"
+which you would want to ensure compiles, but might be run in a test
+environment that has no network access.
 
 ### Documenting modules
 
@@ -483,7 +484,7 @@ you have a module in `foo.rs`, you'll often open its code and see this:
 ```rust
 //! A module for using `foo`s.
 //!
-//! The `foo` module contains a lot of useful functionality blah blah blah
+//! The `foo` module contains a lot of useful functionality blah blah blah...
 ```
 
 ### Crate documentation
@@ -600,7 +601,7 @@ is documented, especially when you are working on a library. Rust allows you to
 to generate warnings or errors, when an item is missing documentation.
 To generate warnings you use `warn`:
 
-```rust
+```rust,ignore
 #![warn(missing_docs)]
 ```
 
@@ -630,7 +631,7 @@ struct Hidden;
 You can control a few aspects of the HTML that `rustdoc` generates through the
 `#![doc]` version of the attribute:
 
-```rust
+```rust,ignore
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/")]

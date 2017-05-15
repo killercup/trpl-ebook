@@ -1,4 +1,4 @@
-% Loops
+# Loops
 
 Rust currently provides three approaches to performing some kind of iterative activity. They are: `loop`, `while` and `for`. Each approach has its own set of uses.
 
@@ -100,7 +100,8 @@ developers.
 
 ### Enumerate
 
-When you need to keep track of how many times you already looped, you can use the `.enumerate()` function.
+When you need to keep track of how many times you have already looped, you can
+use the `.enumerate()` function.
 
 #### On ranges:
 
@@ -202,8 +203,8 @@ of the outer loops, you can use labels to specify which loop the `break` or
 ```rust
 'outer: for x in 0..10 {
     'inner: for y in 0..10 {
-        if x % 2 == 0 { continue 'outer; } // continues the loop over x
-        if y % 2 == 0 { continue 'inner; } // continues the loop over y
+        if x % 2 == 0 { continue 'outer; } // Continues the loop over `x`.
+        if y % 2 == 0 { continue 'inner; } // Continues the loop over `y`.
         println!("x: {}, y: {}", x, y);
     }
 }

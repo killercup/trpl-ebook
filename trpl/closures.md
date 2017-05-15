@@ -1,4 +1,4 @@
-% Closures
+# Closures
 
 Sometimes it is useful to wrap up a function and _free variables_ for better
 clarity and reuse. The free variables that can be used come from the
@@ -116,7 +116,7 @@ let mut num = 5;
 {
     let plus_num = |x: i32| x + num;
 
-} // plus_num goes out of scope, borrow of num ends
+} // `plus_num` goes out of scope; borrow of `num` ends.
 
 let y = &mut num;
 ```
@@ -262,7 +262,7 @@ the result:
 
 ```rust
 fn call_with_one<F>(some_closure: F) -> i32
-    where F : Fn(i32) -> i32 {
+    where F: Fn(i32) -> i32 {
 
     some_closure(1)
 }
@@ -279,21 +279,21 @@ Let’s examine the signature of `call_with_one` in more depth:
 
 ```rust
 fn call_with_one<F>(some_closure: F) -> i32
-#    where F : Fn(i32) -> i32 {
+#    where F: Fn(i32) -> i32 {
 #    some_closure(1) }
 ```
 
-We take one parameter, and it has the type `F`. We also return a `i32`. This part
+We take one parameter, and it has the type `F`. We also return an `i32`. This part
 isn’t interesting. The next part is:
 
 ```rust
 # fn call_with_one<F>(some_closure: F) -> i32
-    where F : Fn(i32) -> i32 {
+    where F: Fn(i32) -> i32 {
 #   some_closure(1) }
 ```
 
 Because `Fn` is a trait, we can use it as a bound for our generic type. In
-this case, our closure takes a `i32` as an argument and returns an `i32`, and
+this case, our closure takes an `i32` as an argument and returns an `i32`, and
 so the generic bound we use is `Fn(i32) -> i32`.
 
 There’s one other key point here: because we’re bounding a generic with a
@@ -327,7 +327,7 @@ that takes a reference like so:
 fn call_with_ref<F>(some_closure:F) -> i32
     where F: Fn(&i32) -> i32 {
 
-    let mut value = 0;
+    let value = 0;
     some_closure(&value)
 }
 ```
@@ -340,14 +340,15 @@ fn call_with_ref<'a, F>(some_closure:F) -> i32
     where F: Fn(&'a i32) -> i32 {
 ```
 
-However this presents a problem with in our case. When you specify the explicit
-lifetime on a function it binds that lifetime to the *entire* scope of the function
-instead of just the invocation scope of our closure. This means that the borrow checker
-will see a mutable reference in the same lifetime as our immutable reference and fail
-to compile.
+However, this presents a problem in our case. When a function has an explicit
+lifetime parameter, that lifetime must be at least as long as the *entire*
+call to that function.  The borrow checker will complain that `value` doesn't
+live long enough, because it is only in scope after its declaration inside the
+function body.
 
-In order to say that we only need the lifetime to be valid for the invocation scope
-of the closure we can use Higher-Ranked Trait Bounds with the `for<...>` syntax:
+What we need is a closure that can borrow its argument only for its own
+invocation scope, not for the outer function's scope.  In order to say that,
+we can use Higher-Ranked Trait Bounds with the `for<...>` syntax:
 
 ```ignore
 fn call_with_ref<F>(some_closure:F) -> i32
@@ -362,7 +363,7 @@ expect.
 fn call_with_ref<F>(some_closure:F) -> i32
     where F: for<'a> Fn(&'a i32) -> i32 {
 
-    let mut value = 0;
+    let value = 0;
     some_closure(&value)
 }
 ```
@@ -510,12 +511,11 @@ fn factory() -> Box<Fn(i32) -> i32> {
 
     Box::new(|x| x + num)
 }
-# fn main() {
+
 let f = factory();
 
 let answer = f(1);
 assert_eq!(6, answer);
-# }
 ```
 
 There’s just one last problem:
@@ -540,12 +540,11 @@ fn factory() -> Box<Fn(i32) -> i32> {
 
     Box::new(move |x| x + num)
 }
-fn main() {
+
 let f = factory();
 
 let answer = f(1);
 assert_eq!(6, answer);
-}
 ```
 
 By making the inner closure a `move Fn`, we create a new stack frame for our

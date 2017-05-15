@@ -1,4 +1,4 @@
-% Raw Pointers
+# Raw Pointers
 
 Rust has a number of different smart pointer types in its standard library, but
 there are two types that are extra-special. Much of Rust’s safety comes from
@@ -101,11 +101,11 @@ programmer *must* guarantee this.
 The recommended method for the conversion is:
 
 ```rust
-// explicit cast
+// Explicit cast:
 let i: u32 = 1;
 let p_imm: *const u32 = &i as *const u32;
 
-// implicit coercion
+// Implicit coercion:
 let mut m: u32 = 2;
 let p_mut: *mut u32 = &mut m;
 

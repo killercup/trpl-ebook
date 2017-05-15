@@ -1,4 +1,4 @@
-% Bibliography
+# Bibliography
 
 This is a reading list of material relevant to Rust. It includes prior
 research that has - at one time or another - influenced the design of

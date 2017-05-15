@@ -1,4 +1,4 @@
-% Error Handling
+# Error Handling
 
 Like most programming languages, Rust encourages the programmer to handle
 errors in a particular way. Generally speaking, error handling is divided into
@@ -59,13 +59,13 @@ handling is reducing the amount of explicit case analysis the programmer has to
 do while keeping code composable.
 
 Keeping code composable is important, because without that requirement, we
-could [`panic`](../std/macro.panic!.html) whenever we
+could [`panic`](../std/macro.panic.html) whenever we
 come across something unexpected. (`panic` causes the current task to unwind,
 and in most cases, the entire program aborts.) Here's an example:
 
 ```rust,should_panic
 // Guess a number between 1 and 10.
-// If it matches the number we had in mind, return true. Else, return false.
+// If it matches the number we had in mind, return `true`. Else, return `false`.
 fn guess(n: i32) -> bool {
     if n < 1 || n > 10 {
         panic!("Invalid number: {}", n);
@@ -350,7 +350,7 @@ fn file_path_ext_explicit(file_path: &str) -> Option<&str> {
 }
 
 fn file_name(file_path: &str) -> Option<&str> {
-  // implementation elided
+  // Implementation elided.
   unimplemented!()
 }
 ```
@@ -360,7 +360,7 @@ analysis, but its type doesn't quite fit...
 
 ```rust,ignore
 fn file_path_ext(file_path: &str) -> Option<&str> {
-    file_name(file_path).map(|x| extension(x)) //Compilation error
+    file_name(file_path).map(|x| extension(x)) // This causes a compilation error.
 }
 ```
 
@@ -944,7 +944,7 @@ macro_rules! try {
 }
 ```
 
-(The [real definition](../std/macro.try!.html) is a bit more
+(The [real definition](../std/macro.try.html) is a bit more
 sophisticated. We will address that later.)
 
 Using the `try!` macro makes it very easy to simplify our last example. Since
@@ -1235,11 +1235,11 @@ use std::fs;
 use std::io;
 use std::num;
 
-// We have to jump through some hoops to actually get error values.
+// We have to jump through some hoops to actually get error values:
 let io_err: io::Error = io::Error::last_os_error();
 let parse_err: num::ParseIntError = "not a number".parse::<i32>().unwrap_err();
 
-// OK, here are the conversions.
+// OK, here are the conversions:
 let err1: Box<Error> = From::from(io_err);
 let err2: Box<Error> = From::from(parse_err);
 ```
@@ -1271,7 +1271,7 @@ macro_rules! try {
 ```
 
 This is not its real definition. Its real definition is
-[in the standard library](../std/macro.try!.html):
+[in the standard library](../std/macro.try.html):
 
 <span id="code-try-def"></span>
 
@@ -1609,7 +1609,7 @@ fn main() {
     let data_path = &matches.free[0];
     let city: &str = &matches.free[1];
 
-    // Do stuff with information
+    // Do stuff with information.
 }
 ```
 
@@ -1747,7 +1747,7 @@ simply ignoring that row.
 use std::path::Path;
 
 struct Row {
-    // unchanged
+    // This struct remains unchanged.
 }
 
 struct PopulationCount {
@@ -1769,7 +1769,7 @@ fn search<P: AsRef<Path>>(file_path: P, city: &str) -> Vec<PopulationCount> {
     for row in rdr.decode::<Row>() {
         let row = row.unwrap();
         match row.population {
-            None => { } // skip it
+            None => { } // Skip it.
             Some(count) => if row.city == city {
                 found.push(PopulationCount {
                     city: row.city,
@@ -1825,7 +1825,7 @@ Let's try it:
 ```rust,ignore
 use std::error::Error;
 
-// The rest of the code before this is unchanged
+// The rest of the code before this is unchanged.
 
 fn search<P: AsRef<Path>>
          (file_path: P, city: &str)
@@ -1836,7 +1836,7 @@ fn search<P: AsRef<Path>>
     for row in rdr.decode::<Row>() {
         let row = try!(row);
         match row.population {
-            None => { } // skip it
+            None => { } // Skip it.
             Some(count) => if row.city == city {
                 found.push(PopulationCount {
                     city: row.city,
@@ -1957,7 +1957,7 @@ that it is generic on some type parameter `R` that satisfies
 ```rust,ignore
 use std::io;
 
-// The rest of the code before this is unchanged
+// The rest of the code before this is unchanged.
 
 fn search<P: AsRef<Path>>
          (file_path: &Option<P>, city: &str)
@@ -2070,7 +2070,7 @@ fn search<P: AsRef<Path>>
     for row in rdr.decode::<Row>() {
         let row = try!(row);
         match row.population {
-            None => { } // skip it
+            None => { } // Skip it.
             Some(count) => if row.city == city {
                 found.push(PopulationCount {
                     city: row.city,
@@ -2178,7 +2178,7 @@ heuristics!
   [`From`](../std/convert/trait.From.html)
   and
   [`Error`](../std/error/trait.Error.html)
-  impls to make the [`try!`](../std/macro.try!.html)
+  impls to make the [`try!`](../std/macro.try.html)
   macro more ergonomic.
 * If you're writing a library and your code can produce errors, define your own
   error type and implement the

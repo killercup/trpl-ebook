@@ -1,4 +1,4 @@
-% Traits
+# Traits
 
 A trait is a language feature that tells the Rust compiler about
 functionality a type must provide.
@@ -46,6 +46,34 @@ impl HasArea for Circle {
 As you can see, the `trait` block looks very similar to the `impl` block,
 but we don’t define a body, only a type signature. When we `impl` a trait,
 we use `impl Trait for Item`, rather than only `impl Item`.
+
+`Self` may be used in a type annotation to refer to an instance of the type
+implementing this trait passed as a parameter. `Self`, `&Self` or `&mut Self`
+may be used depending on the level of ownership required.
+
+```rust
+struct Circle {
+    x: f64,
+    y: f64,
+    radius: f64,
+}
+
+trait HasArea {
+    fn area(&self) -> f64;
+
+    fn is_larger(&self, &Self) -> bool;
+}
+
+impl HasArea for Circle {
+    fn area(&self) -> f64 {
+        std::f64::consts::PI * (self.radius * self.radius)
+    }
+
+    fn is_larger(&self, other: &Self) -> bool {
+        self.area() > other.area()
+    }
+}
+```
 
 ## Trait bounds on generic functions
 
@@ -215,27 +243,21 @@ to know more about [operator traits][operators-and-overloading].
 # Rules for implementing traits
 
 So far, we’ve only added trait implementations to structs, but you can
-implement a trait for any type. So technically, we _could_ implement `HasArea`
-for `i32`:
+implement a trait for any type such as `f32`:
 
 ```rust
-trait HasArea {
-    fn area(&self) -> f64;
+trait ApproxEqual {
+    fn approx_equal(&self, other: &Self) -> bool;
 }
-
-impl HasArea for i32 {
-    fn area(&self) -> f64 {
-        println!("this is silly");
-
-        *self as f64
+impl ApproxEqual for f32 {
+    fn approx_equal(&self, other: &Self) -> bool {
+        // Appropriate for `self` and `other` being close to 1.0.
+        (self - other).abs() <= ::std::f32::EPSILON
     }
 }
 
-5.area();
+println!("{}", 1.0.approx_equal(&1.00000001));
 ```
-
-It is considered poor style to implement methods on such primitive types, even
-though it is possible.
 
 This may seem like the Wild West, but there are two restrictions around
 implementing traits that prevent this from getting out of hand. The first is
@@ -247,10 +269,10 @@ won’t have its methods:
 [write]: ../std/io/trait.Write.html
 
 ```rust,ignore
-let mut f = std::fs::File::open("foo.txt").expect("Couldn’t open foo.txt");
-let buf = b"whatever"; // byte string literal. buf: &[u8; 8]
+let mut f = std::fs::File::create("foo.txt").expect("Couldn’t create foo.txt");
+let buf = b"whatever"; // buf: &[u8; 8], a byte string literal.
 let result = f.write(buf);
-# result.unwrap(); // ignore the error
+# result.unwrap(); // Ignore the error.
 ```
 
 Here’s the error:
@@ -263,13 +285,13 @@ let result = f.write(buf);
 
 We need to `use` the `Write` trait first:
 
-```rust,ignore
+```rust,no_run
 use std::io::Write;
 
-let mut f = std::fs::File::open("foo.txt").expect("Couldn’t open foo.txt");
+let mut f = std::fs::File::create("foo.txt").expect("Couldn’t create foo.txt");
 let buf = b"whatever";
 let result = f.write(buf);
-# result.unwrap(); // ignore the error
+# result.unwrap(); // Ignore the error.
 ```
 
 This will compile without error.
@@ -391,14 +413,14 @@ impl ConvertTo<i64> for i32 {
     fn convert(&self) -> i64 { *self as i64 }
 }
 
-// can be called with T == i32
+// Can be called with T == i32.
 fn normal<T: ConvertTo<i64>>(x: &T) -> i64 {
     x.convert()
 }
 
-// can be called with T == i64
+// Can be called with T == i64.
 fn inverse<T>(x: i32) -> T
-        // this is using ConvertTo as if it were "ConvertTo<i64>"
+        // This is using ConvertTo as if it were "ConvertTo<i64>".
         where i32: ConvertTo<T> {
     x.convert()
 }
@@ -448,15 +470,15 @@ impl Foo for OverrideDefault {
 
     fn is_invalid(&self) -> bool {
         println!("Called OverrideDefault.is_invalid!");
-        true // overrides the expected value of is_invalid()
+        true // Overrides the expected value of `is_invalid()`.
     }
 }
 
 let default = UseDefault;
-assert!(!default.is_invalid()); // prints "Called UseDefault.is_valid."
+assert!(!default.is_invalid()); // Prints "Called UseDefault.is_valid."
 
 let over = OverrideDefault;
-assert!(over.is_invalid()); // prints "Called OverrideDefault.is_invalid!"
+assert!(over.is_invalid()); // Prints "Called OverrideDefault.is_invalid!"
 ```
 
 # Inheritance

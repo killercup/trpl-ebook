@@ -17,7 +17,7 @@ pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str) -> Result<(),
                        release_date = options::RELEASE_DATE,
                        format = format);
 
-    try!(run(&opts, &book));
+    run(&opts, &book).expect("pandoc not found, please install pandoc");
 
     println!("[✓] {}", format.to_ascii_uppercase());
 

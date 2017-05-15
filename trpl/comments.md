@@ -1,4 +1,4 @@
-% Comments
+# Comments
 
 Now that we have some functions, it’s a good idea to learn about comments.
 Comments are notes that you leave to other programmers to help explain things
@@ -10,7 +10,7 @@ and *doc comments*.
 ```rust
 // Line comments are anything after ‘//’ and extend to the end of the line.
 
-let x = 5; // this is also a line comment.
+let x = 5; // This is also a line comment.
 
 // If you have a long explanation for something, you can put line comments next
 // to each other. Put a space between the // and your comment so that it’s
