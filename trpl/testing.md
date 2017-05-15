@@ -24,6 +24,7 @@ Cargo will automatically generate a simple test when you make a new project.
 Here's the contents of `src/lib.rs`:
 
 ```rust
+# fn main() {}
 #[test]
 fn it_works() {
 }
@@ -75,6 +76,7 @@ So why does our do-nothing test pass? Any test which doesn't `panic!` passes,
 and any test that does `panic!` fails. Let's make our test fail:
 
 ```rust
+# fn main() {}
 #[test]
 fn it_works() {
     assert!(false);
@@ -82,8 +84,8 @@ fn it_works() {
 ```
 
 `assert!` is a macro provided by Rust which takes one argument: if the argument
-is `true`, nothing happens. If the argument is false, it `panic!`s. Let's run
-our tests again:
+is `true`, nothing happens. If the argument is `false`, it will `panic!`. Let's
+run our tests again:
 
 ```bash
 $ cargo test
@@ -105,7 +107,7 @@ failures:
 
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured
 
-thread '<main>' panicked at 'Some tests failed', /home/steve/src/rust/src/libtest/lib.rs:247
+thread 'main' panicked at 'Some tests failed', /home/steve/src/rust/src/libtest/lib.rs:247
 ```
 
 Rust indicates that our test failed:
@@ -145,6 +147,7 @@ This is useful if you want to integrate `cargo test` into other tooling.
 We can invert our test's failure with another attribute: `should_panic`:
 
 ```rust
+# fn main() {}
 #[test]
 #[should_panic]
 fn it_works() {
@@ -175,6 +178,7 @@ Rust provides another macro, `assert_eq!`, that compares two arguments for
 equality:
 
 ```rust
+# fn main() {}
 #[test]
 #[should_panic]
 fn it_works() {
@@ -209,6 +213,7 @@ make sure that the failure message contains the provided text. A safer version
 of the example above would be:
 
 ```rust
+# fn main() {}
 #[test]
 #[should_panic(expected = "assertion failed")]
 fn it_works() {
@@ -219,6 +224,7 @@ fn it_works() {
 That's all there is to the basics! Let's write one 'real' test:
 
 ```rust,ignore
+# fn main() {}
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -238,6 +244,7 @@ Sometimes a few specific tests can be very time-consuming to execute. These
 can be disabled by default by using the `ignore` attribute:
 
 ```rust
+# fn main() {}
 #[test]
 fn it_works() {
     assert_eq!(4, add_two(2));
@@ -289,7 +296,7 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-The `--ignored` argument is an argument to the test binary, and not to cargo,
+The `--ignored` argument is an argument to the test binary, and not to Cargo,
 which is why the command is `cargo test -- --ignored`.
 
 # The `tests` module
@@ -299,6 +306,7 @@ missing the `tests` module. The idiomatic way of writing our example
 looks like this:
 
 ```rust,ignore
+# fn main() {}
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -327,6 +335,7 @@ a large module, and so this is a common use of globs. Let's change our
 `src/lib.rs` to make use of it:
 
 ```rust,ignore
+# fn main() {}
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -365,18 +374,20 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 It works!
 
 The current convention is to use the `tests` module to hold your "unit-style"
-tests. Anything that just tests one small bit of functionality makes sense to
+tests. Anything that tests one small bit of functionality makes sense to
 go here. But what about "integration-style" tests instead? For that, we have
-the `tests` directory
+the `tests` directory.
 
 # The `tests` directory
 
-To write an integration test, let's make a `tests` directory, and
-put a `tests/lib.rs` file inside, with this as its contents:
+Each file in `tests/*.rs` directory is treated as individual crate.
+So, to write an integration test, let's make a `tests` directory, and
+put a `tests/integration_test.rs` file inside, with this as its contents:
 
 ```rust,ignore
 extern crate adder;
 
+# fn main() {}
 #[test]
 fn it_works() {
     assert_eq!(4, adder::add_two(2));
@@ -384,8 +395,8 @@ fn it_works() {
 ```
 
 This looks similar to our previous tests, but slightly different. We now have
-an `extern crate adder` at the top. This is because the tests in the `tests`
-directory are an entirely separate crate, and so we need to import our library.
+an `extern crate adder` at the top. This is because each test in the `tests`
+directory is an entirely separate crate, and so we need to import our library.
 This is also why `tests` is a suitable place to write integration-style tests:
 they use the library like any other consumer of it would.
 
@@ -418,6 +429,11 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 Now we have three sections: our previous test is also run, as well as our new
 one.
 
+Cargo will ignore files in subdirectories of the `tests/` directory.
+Therefore shared modules in integrations tests are possible.
+For example `tests/common/mod.rs` is not separately compiled by cargo but can
+be imported in every test with `mod common;`
+
 That's all there is to the `tests` directory. The `tests` module isn't needed
 here, since the whole thing is focused on tests.
 
@@ -432,6 +448,7 @@ running examples in your documentation (**note:** this only works in library
 crates, not binary crates). Here's a fleshed-out `src/lib.rs` with examples:
 
 ```rust,ignore
+# fn main() {}
 //! The `adder` crate provides functions that add numbers to other numbers.
 //!
 //! # Examples
@@ -502,3 +519,5 @@ documentation tests: the `_0` is generated for the module test, and `add_two_0`
 for the function test. These will auto increment with names like `add_two_1` as
 you add more examples.
 
+We haven’t covered all of the details with writing documentation tests. For more,
+please see the [Documentation chapter](documentation.html).

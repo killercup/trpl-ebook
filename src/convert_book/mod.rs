@@ -26,9 +26,11 @@ pub fn render_book(prefix: &str, src_path: &Path, meta_file: &str) -> Result<(),
 
     try!(save_as(&book, prefix, "html", options::HTML));
     try!(save_as(&book, prefix, "epub", options::EPUB));
-    try!(save_as(&book, prefix, "tex", options::LATEX));
 
-    let plain_book = helpers::remove_emojis::remove_emojis(&book);
+    let cc_book = helpers::convert_checkmarks::convert_checkmarks(&book);    
+    try!(save_as(&cc_book, prefix, "tex", options::LATEX));
+
+    let plain_book = helpers::remove_emojis::remove_emojis(&cc_book);
     try!(save_as(&plain_book,
                  prefix,
                  "a4.pdf",

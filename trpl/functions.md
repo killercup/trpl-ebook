@@ -68,7 +68,7 @@ You get this error:
 
 ```text
 expected one of `!`, `:`, or `@`, found `)`
-fn print_number(x, y) {
+fn print_sum(x, y) {
 ```
 
 This is a deliberate design decision. While full-program inference is possible,
@@ -124,7 +124,7 @@ statement `x + 1;` doesn’t return a value. There are two kinds of statements i
 Rust: ‘declaration statements’ and ‘expression statements’. Everything else is
 an expression. Let’s talk about declaration statements first.
 
-In some languages, variable bindings can be written as expressions, not just
+In some languages, variable bindings can be written as expressions, not
 statements. Like Ruby:
 
 ```ruby
@@ -134,7 +134,7 @@ x = y = 5
 In Rust, however, using `let` to introduce a binding is _not_ an expression. The
 following will produce a compile-time error:
 
-```ignore
+```rust,ignore
 let x = (let y = 5); // expected identifier, found keyword `let`
 ```
 
@@ -145,7 +145,7 @@ Note that assigning to an already-bound variable (e.g. `y = 5`) is still an
 expression, although its value is not particularly useful. Unlike other
 languages where an assignment evaluates to the assigned value (e.g. `5` in the
 previous example), in Rust the value of an assignment is an empty tuple `()`
-because the assigned value can have [just one owner](ownership.html), and any
+because the assigned value can have [only one owner](ownership.html), and any
 other returned value would be too surprising:
 
 ```rust
@@ -221,7 +221,7 @@ If you add a main function that calls `diverges()` and run it, you’ll get
 some output that looks like this:
 
 ```text
-thread ‘<main>’ panicked at ‘This function never returns!’, hello.rs:2
+thread ‘main’ panicked at ‘This function never returns!’, hello.rs:2
 ```
 
 If you want more information, you can get a backtrace by setting the
@@ -229,7 +229,7 @@ If you want more information, you can get a backtrace by setting the
 
 ```text
 $ RUST_BACKTRACE=1 ./diverges
-thread '<main>' panicked at 'This function never returns!', hello.rs:2
+thread 'main' panicked at 'This function never returns!', hello.rs:2
 stack backtrace:
    1:     0x7f402773a829 - sys::backtrace::write::h0942de78b6c02817K8r
    2:     0x7f402773d7fc - panicking::on_panic::h3f23f9d0b5f4c91bu9w
@@ -246,12 +246,25 @@ stack backtrace:
   13:                0x0 - <unknown>
 ```
 
+If you need to override an already set `RUST_BACKTRACE`, 
+in cases when you cannot just unset the variable, 
+then set it to `0` to avoid getting a backtrace. 
+Any other value (even no value at all) turns on backtrace.
+
+```text
+$ export RUST_BACKTRACE=1
+...
+$ RUST_BACKTRACE=0 ./diverges 
+thread 'main' panicked at 'This function never returns!', hello.rs:2
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+```
+
 `RUST_BACKTRACE` also works with Cargo’s `run` command:
 
 ```text
 $ RUST_BACKTRACE=1 cargo run
      Running `target/debug/diverges`
-thread '<main>' panicked at 'This function never returns!', hello.rs:2
+thread 'main' panicked at 'This function never returns!', hello.rs:2
 stack backtrace:
    1:     0x7f402773a829 - sys::backtrace::write::h0942de78b6c02817K8r
    2:     0x7f402773d7fc - panicking::on_panic::h3f23f9d0b5f4c91bu9w
@@ -270,7 +283,7 @@ stack backtrace:
 
 A diverging function can be used as any type:
 
-```should_panic
+```rust,should_panic
 # fn diverges() -> ! {
 #    panic!("This function never returns!");
 # }

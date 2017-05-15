@@ -11,18 +11,24 @@ This repository contains stuff to convert [this book](http://doc.rust-lang.org/b
 Install:
 
 - pandoc
-- Rust and cargo (nightly for regex macros)
-- XeLaTeX and probably some additional packages, I had to install (`sudo tlmgr install $pkg`) those:
+- Rust and cargo
+- XeLaTeX, up to date (`sudo tlmgr update -all`) and probably some additional packages (`sudo tlmgr install $pkg`) such as:
     + framed
     + hyphenat
     + quotchap
+    + collection-fontsrecommended
+    + mathspec
+    + euenc
+    + xltxtra
+    + xecjk
+    + fancyhdr
 - the DejaVu Sans Mono font: http://dejavu-fonts.org/
 - the IPA font for Japanese Text: http://ipafont.ipa.go.jp/ipaexfont/download.html#en
 
 Then run:
 
 ```sh
-$ cargo run
+$ cargo run --release
 ```
 
 Voilà!

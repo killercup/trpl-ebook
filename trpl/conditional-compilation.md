@@ -34,15 +34,16 @@ These can nest arbitrarily:
 As for how to enable or disable these switches, if you’re using Cargo,
 they get set in the [`[features]` section][features] of your `Cargo.toml`:
 
-[features]: http://doc.crates.io/manifest.html#the-%5Bfeatures%5D-section
+[features]: http://doc.crates.io/manifest.html#the-features-section
 
 ```toml
 [features]
 # no features by default
 default = []
 
-# The “secure-password” feature depends on the bcrypt package.
-secure-password = ["bcrypt"]
+# Add feature "foo" here, then you can use it. 
+# Our "foo" feature depends on nothing else.
+foo = []
 ```
 
 When you do this, Cargo passes along a flag to `rustc`:

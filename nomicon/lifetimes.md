@@ -107,8 +107,8 @@ This signature of `as_str` takes a reference to a u32 with *some* lifetime, and
 promises that it can produce a reference to a str that can live *just as long*.
 Already we can see why this signature might be trouble. That basically implies
 that we're going to find a str somewhere in the scope the reference
-to the u32 originated in, or somewhere *even earlier*. That's a bit of a big
-ask.
+to the u32 originated in, or somewhere *even earlier*. That's a bit of a tall
+order.
 
 We then proceed to compute the string `s`, and return a reference to it. Since
 the contract of our function says the reference must outlive `'a`, that's the
@@ -193,9 +193,9 @@ println!("{}", x);
 }
 ```
 
-The problem here is is bit more subtle and interesting. We want Rust to
+The problem here is a bit more subtle and interesting. We want Rust to
 reject this program for the following reason: We have a live shared reference `x`
-to a descendent of `data` when we try to take a mutable reference to `data`
+to a descendant of `data` when we try to take a mutable reference to `data`
 to `push`. This would create an aliased mutable reference, which would
 violate the *second* rule of references.
 

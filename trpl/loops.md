@@ -74,19 +74,21 @@ for x in 0..10 {
 
 In slightly more abstract terms,
 
-```ignore
+```rust,ignore
 for var in expression {
     code
 }
 ```
 
-The expression is an [iterator][iterator]. The iterator gives back a series of
-elements. Each element is one iteration of the loop. That value is then bound
-to the name `var`, which is valid for the loop body. Once the body is over, the
-next value is fetched from the iterator, and we loop another time. When there
-are no more values, the `for` loop is over.
+The expression is an item that can be converted into an [iterator] using
+[`IntoIterator`]. The iterator gives back a series of elements. Each element is
+one iteration of the loop. That value is then bound to the name `var`, which is
+valid for the loop body. Once the body is over, the next value is fetched from
+the iterator, and we loop another time. When there are no more values, the `for`
+loop is over.
 
 [iterator]: iterators.html
+[`IntoIterator`]: ../std/iter/trait.IntoIterator.html
 
 In our example, `0..10` is an expression that takes a start and an end position,
 and gives an iterator over those values. The upper bound is exclusive, though,
@@ -103,19 +105,19 @@ When you need to keep track of how many times you already looped, you can use th
 #### On ranges:
 
 ```rust
-for (i,j) in (5..10).enumerate() {
-    println!("i = {} and j = {}", i, j);
+for (index, value) in (5..10).enumerate() {
+    println!("index = {} and value = {}", index, value);
 }
 ```
 
 Outputs:
 
 ```text
-i = 0 and j = 5
-i = 1 and j = 6
-i = 2 and j = 7
-i = 3 and j = 8
-i = 4 and j = 9
+index = 0 and value = 5
+index = 1 and value = 6
+index = 2 and value = 7
+index = 3 and value = 8
+index = 4 and value = 9
 ```
 
 Don't forget to add the parentheses around the range.
@@ -123,7 +125,8 @@ Don't forget to add the parentheses around the range.
 #### On iterators:
 
 ```rust
-# let lines = "hello\nworld".lines();
+let lines = "hello\nworld".lines();
+
 for (linenumber, line) in lines.enumerate() {
     println!("{}: {}", linenumber, line);
 }
@@ -132,10 +135,8 @@ for (linenumber, line) in lines.enumerate() {
 Outputs:
 
 ```text
-0: Content of line one
-1: Content of line two
-2: Content of line three
-3: Content of line four
+0: hello
+1: world
 ```
 
 ## Ending iteration early
@@ -177,7 +178,7 @@ loop {
 
 We now loop forever with `loop` and use `break` to break out early. Issuing an explicit `return` statement will also serve to terminate the loop early.
 
-`continue` is similar, but instead of ending the loop, goes to the next
+`continue` is similar, but instead of ending the loop, it goes to the next
 iteration. This will only print the odd numbers:
 
 ```rust
@@ -193,7 +194,7 @@ for x in 0..10 {
 You may also encounter situations where you have nested loops and need to
 specify which one your `break` or `continue` statement is for. Like most
 other languages, by default a `break` or `continue` will apply to innermost
-loop. In a situation where you would like to a `break` or `continue` for one
+loop. In a situation where you would like to `break` or `continue` for one
 of the outer loops, you can use labels to specify which loop the `break` or
  `continue` statement applies to. This will only print when both `x` and `y` are
  odd:

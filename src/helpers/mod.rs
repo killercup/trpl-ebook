@@ -2,6 +2,7 @@
 
 pub mod adjust_header_level;
 pub mod adjust_reference_names;
+pub mod convert_checkmarks;
 pub mod file;
 pub mod line_breaks;
 pub mod normalize;

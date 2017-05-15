@@ -3,8 +3,8 @@
 A trait is a language feature that tells the Rust compiler about
 functionality a type must provide.
 
-Do you remember the `impl` keyword, used to call a function with [method
-syntax][methodsyntax]?
+Recall the `impl` keyword, used to call a function with [method
+syntax][methodsyntax]:
 
 ```rust
 struct Circle {
@@ -22,8 +22,8 @@ impl Circle {
 
 [methodsyntax]: method-syntax.html
 
-Traits are similar, except that we define a trait with just the method
-signature, then implement the trait for that struct. Like this:
+Traits are similar, except that we first define a trait with a method
+signature, then implement the trait for a type. In this example, we implement the trait `HasArea` for `Circle`:
 
 ```rust
 struct Circle {
@@ -44,14 +44,16 @@ impl HasArea for Circle {
 ```
 
 As you can see, the `trait` block looks very similar to the `impl` block,
-but we don’t define a body, just a type signature. When we `impl` a trait,
-we use `impl Trait for Item`, rather than just `impl Item`.
+but we don’t define a body, only a type signature. When we `impl` a trait,
+we use `impl Trait for Item`, rather than only `impl Item`.
 
-## Traits bounds for generic functions
+## Trait bounds on generic functions
 
 Traits are useful because they allow a type to make certain promises about its
-behavior. Generic functions can exploit this to constrain the types they
+behavior. Generic functions can exploit this to constrain, or [bound][bounds], the types they
 accept. Consider this function, which does not compile:
+
+[bounds]: glossary.html#bounds
 
 ```rust,ignore
 fn print_area<T>(shape: T) {
@@ -66,7 +68,7 @@ error: no method named `area` found for type `T` in the current scope
 ```
 
 Because `T` can be any type, we can’t be sure that it implements the `area`
-method. But we can add a ‘trait constraint’ to our generic `T`, ensuring
+method. But we can add a trait bound to our generic `T`, ensuring
 that it does:
 
 ```rust
@@ -152,13 +154,13 @@ print_area(5);
 We get a compile-time error:
 
 ```text
-error: the trait `HasArea` is not implemented for the type `_` [E0277]
+error: the trait bound `_ : HasArea` is not satisfied [E0277]
 ```
 
-## Traits bounds for generic structs
+## Trait bounds on generic structs
 
-Your generic structs can also benefit from trait constraints. All you need to
-do is append the constraint when you declare type parameters. Here is a new
+Your generic structs can also benefit from trait bounds. All you need to
+do is append the bound when you declare type parameters. Here is a new
 type `Rectangle<T>` and its operation `is_square()`:
 
 ```rust
@@ -193,7 +195,7 @@ fn main() {
 `is_square()` needs to check that the sides are equal, so the sides must be of
 a type that implements the [`core::cmp::PartialEq`][PartialEq] trait:
 
-```ignore
+```rust,ignore
 impl<T: PartialEq> Rectangle<T> { ... }
 ```
 
@@ -245,7 +247,7 @@ won’t have its methods:
 [write]: ../std/io/trait.Write.html
 
 ```rust,ignore
-let mut f = std::fs::File::open("foo.txt").ok().expect("Couldn’t open foo.txt");
+let mut f = std::fs::File::open("foo.txt").expect("Couldn’t open foo.txt");
 let buf = b"whatever"; // byte string literal. buf: &[u8; 8]
 let result = f.write(buf);
 # result.unwrap(); // ignore the error
@@ -264,7 +266,7 @@ We need to `use` the `Write` trait first:
 ```rust,ignore
 use std::io::Write;
 
-let mut f = std::fs::File::open("foo.txt").ok().expect("Couldn’t open foo.txt");
+let mut f = std::fs::File::open("foo.txt").expect("Couldn’t open foo.txt");
 let buf = b"whatever";
 let result = f.write(buf);
 # result.unwrap(); // ignore the error
@@ -275,16 +277,22 @@ This will compile without error.
 This means that even if someone does something bad like add methods to `i32`,
 it won’t affect you, unless you `use` that trait.
 
-There’s one more restriction on implementing traits: either the trait, or the
-type you’re writing the `impl` for, must be defined by you. So, we could
-implement the `HasArea` type for `i32`, because `HasArea` is in our code. But
-if we tried to implement `ToString`, a trait provided by Rust, for `i32`, we could
-not, because neither the trait nor the type are in our code.
+There’s one more restriction on implementing traits: either the trait
+or the type you’re implementing it for must be defined by you. Or more
+precisely, one of them must be defined in the same crate as the `impl`
+you're writing. For more on Rust's module and package system, see the
+chapter on [crates and modules][cm].
+
+So, we could implement the `HasArea` type for `i32`, because we defined
+`HasArea` in our code. But if we tried to implement `ToString`, a trait
+provided by Rust, for `i32`, we could not, because neither the trait nor
+the type are defined in our crate.
 
 One last thing about traits: generic functions with a trait bound use
 ‘monomorphization’ (mono: one, morph: form), so they are statically dispatched.
 What’s that mean? Check out the chapter on [trait objects][to] for more details.
 
+[cm]: crates-and-modules.html
 [to]: trait-objects.html
 
 # Multiple trait bounds
@@ -389,21 +397,21 @@ fn normal<T: ConvertTo<i64>>(x: &T) -> i64 {
 }
 
 // can be called with T == i64
-fn inverse<T>() -> T
+fn inverse<T>(x: i32) -> T
         // this is using ConvertTo as if it were "ConvertTo<i64>"
         where i32: ConvertTo<T> {
-    42.convert()
+    x.convert()
 }
 ```
 
 This shows off the additional feature of `where` clauses: they allow bounds
-where the left-hand side is an arbitrary type (`i32` in this case), not just a
-plain type parameter (like `T`).
+on the left-hand side not only of type parameters `T`, but also of types (`i32` in this case). In this example, `i32` must implement
+`ConvertTo<T>`. Rather than defining what `i32` is (since that's obvious), the
+`where` clause here constrains `T`.
 
 # Default methods
 
-If you already know how a typical implementor will define a method, you can
-let your trait supply a default:
+A default method can be added to a trait definition if it is already known how a typical implementor will define a method. For example, `is_invalid()` is defined as the opposite of `is_valid()`:
 
 ```rust
 trait Foo {
@@ -413,9 +421,7 @@ trait Foo {
 }
 ```
 
-Implementors of the `Foo` trait need to implement `is_valid()`, but they don’t
-need to implement `is_invalid()`. They’ll get this default behavior. They can
-override the default if they so choose:
+Implementors of the `Foo` trait need to implement `is_valid()` but not `is_invalid()` due to the added default behavior. This default behavior can still be overridden as in:
 
 ```rust
 # trait Foo {
@@ -442,7 +448,7 @@ impl Foo for OverrideDefault {
 
     fn is_invalid(&self) -> bool {
         println!("Called OverrideDefault.is_invalid!");
-        true // this implementation is a self-contradiction!
+        true // overrides the expected value of is_invalid()
     }
 }
 
@@ -490,5 +496,34 @@ impl FooBar for Baz {
 If we forget to implement `Foo`, Rust will tell us:
 
 ```text
-error: the trait `main::Foo` is not implemented for the type `main::Baz` [E0277]
+error: the trait bound `main::Baz : main::Foo` is not satisfied [E0277]
 ```
+
+# Deriving
+
+Implementing traits like `Debug` and `Default` repeatedly can become
+quite tedious. For that reason, Rust provides an [attribute][attributes] that
+allows you to let Rust automatically implement traits for you:
+
+```rust
+#[derive(Debug)]
+struct Foo;
+
+fn main() {
+    println!("{:?}", Foo);
+}
+```
+
+[attributes]: attributes.html
+
+However, deriving is limited to a certain set of traits:
+
+- [`Clone`](../core/clone/trait.Clone.html)
+- [`Copy`](../core/marker/trait.Copy.html)
+- [`Debug`](../core/fmt/trait.Debug.html)
+- [`Default`](../core/default/trait.Default.html)
+- [`Eq`](../core/cmp/trait.Eq.html)
+- [`Hash`](../core/hash/trait.Hash.html)
+- [`Ord`](../core/cmp/trait.Ord.html)
+- [`PartialEq`](../core/cmp/trait.PartialEq.html)
+- [`PartialOrd`](../core/cmp/trait.PartialOrd.html)

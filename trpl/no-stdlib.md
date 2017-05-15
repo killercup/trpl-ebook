@@ -1,27 +1,44 @@
 % No stdlib
 
-By default, `std` is linked to every Rust crate. In some contexts,
-this is undesirable, and can be avoided with the `#![no_std]`
-attribute attached to the crate.
+Rust’s standard library provides a lot of useful functionality, but assumes
+support for various features of its host system: threads, networking, heap
+allocation, and others. There are systems that do not have these features,
+however, and Rust can work with those too! To do so, we tell Rust that we
+don’t want to use the standard library via an attribute: `#![no_std]`.
 
-```ignore
-// a minimal library
-#![crate_type="lib"]
-#![feature(no_std)]
-#![no_std]
-# // fn main() {} tricked you, rustdoc!
-```
+> Note: This feature is technically stable, but there are some caveats. For
+> one, you can build a `#![no_std]` _library_ on stable, but not a _binary_.
+> For details on libraries without the standard library, see [the chapter on
+> `#![no_std]`](using-rust-without-the-standard-library.html)
 
 Obviously there's more to life than just libraries: one can use
-`#[no_std]` with an executable, controlling the entry point is
-possible in two ways: the `#[start]` attribute, or overriding the
-default shim for the C `main` function with your own.
+`#[no_std]` with an executable.
+
+### Using libc
+
+In order to build a `#[no_std]` executable we will need libc as a dependency. We can specify
+this using our `Cargo.toml` file:
+
+```toml
+[dependencies]
+libc = { version = "0.2.14", default-features = false }
+```
+
+Note that the default features have been disabled. This is a critical step -
+**the default features of libc include the standard library and so must be
+disabled.**
+
+### Writing an executable without stdlib
+
+Controlling the entry point is possible in two ways: the `#[start]` attribute,
+or overriding the default shim for the C `main` function with your own.
 
 The function marked `#[start]` is passed the command line parameters
 in the same format as C:
 
-```rust
-#![feature(lang_items, start, no_std, libc)]
+```rust,ignore
+#![feature(lang_items)]
+#![feature(start)]
 #![no_std]
 
 // Pull in the system libc library for what crt0.o likely requires
@@ -33,13 +50,21 @@ fn start(_argc: isize, _argv: *const *const u8) -> isize {
     0
 }
 
-// These functions and traits are used by the compiler, but not
+// These functions are used by the compiler, but not
 // for a bare-bones hello world. These are normally
 // provided by libstd.
-#[lang = "eh_personality"] extern fn eh_personality() {}
-#[lang = "panic_fmt"] fn panic_fmt() -> ! { loop {} }
-# #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
-# // fn main() {} tricked you, rustdoc!
+#[lang = "eh_personality"]
+#[no_mangle]
+pub extern fn eh_personality() {
+}
+
+#[lang = "panic_fmt"]
+#[no_mangle]
+pub extern fn rust_begin_panic(_msg: core::fmt::Arguments,
+                               _file: &'static str,
+                               _line: u32) -> ! {
+    loop {}
+}
 ```
 
 To override the compiler-inserted `main` shim, one has to disable it
@@ -47,116 +72,55 @@ with `#![no_main]` and then create the appropriate symbol with the
 correct ABI and the correct name, which requires overriding the
 compiler's name mangling too:
 
-```ignore
-#![feature(no_std)]
+```rust,ignore
+#![feature(lang_items)]
+#![feature(start)]
 #![no_std]
 #![no_main]
-#![feature(lang_items, start)]
 
+// Pull in the system libc library for what crt0.o likely requires
 extern crate libc;
 
+// Entry point for this program
 #[no_mangle] // ensure that this symbol is called `main` in the output
-pub extern fn main(argc: i32, argv: *const *const u8) -> i32 {
+pub extern fn main(_argc: i32, _argv: *const *const u8) -> i32 {
     0
 }
 
-#[lang = "eh_personality"] extern fn eh_personality() {}
-#[lang = "panic_fmt"] fn panic_fmt() -> ! { loop {} }
-# #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
-# // fn main() {} tricked you, rustdoc!
-```
-
-
-The compiler currently makes a few assumptions about symbols which are available
-in the executable to call. Normally these functions are provided by the standard
-library, but without it you must define your own.
-
-The first of these two functions, `eh_personality`, is used by the
-failure mechanisms of the compiler. This is often mapped to GCC's
-personality function (see the
-[libstd implementation](../std/rt/unwind/index.html) for more
-information), but crates which do not trigger a panic can be assured
-that this function is never called. The second function, `panic_fmt`, is
-also used by the failure mechanisms of the compiler.
-
-## Using libcore
-
-> **Note**: the core library's structure is unstable, and it is recommended to
-> use the standard library instead wherever possible.
-
-With the above techniques, we've got a bare-metal executable running some Rust
-code. There is a good deal of functionality provided by the standard library,
-however, that is necessary to be productive in Rust. If the standard library is
-not sufficient, then [libcore](../core/index.html) is designed to be used
-instead.
-
-The core library has very few dependencies and is much more portable than the
-standard library itself. Additionally, the core library has most of the
-necessary functionality for writing idiomatic and effective Rust code.
-
-As an example, here is a program that will calculate the dot product of two
-vectors provided from C, using idiomatic Rust practices.
-
-```ignore
-#![feature(lang_items, start, no_std, core, libc)]
-#![no_std]
-
-# extern crate libc;
-extern crate core;
-
-use core::prelude::*;
-
-use core::mem;
-
+// These functions and traits are used by the compiler, but not
+// for a bare-bones hello world. These are normally
+// provided by libstd.
+#[lang = "eh_personality"]
 #[no_mangle]
-pub extern fn dot_product(a: *const u32, a_len: u32,
-                          b: *const u32, b_len: u32) -> u32 {
-    use core::raw::Slice;
-
-    // Convert the provided arrays into Rust slices.
-    // The core::raw module guarantees that the Slice
-    // structure has the same memory layout as a &[T]
-    // slice.
-    //
-    // This is an unsafe operation because the compiler
-    // cannot tell the pointers are valid.
-    let (a_slice, b_slice): (&[u32], &[u32]) = unsafe {
-        mem::transmute((
-            Slice { data: a, len: a_len as usize },
-            Slice { data: b, len: b_len as usize },
-        ))
-    };
-
-    // Iterate over the slices, collecting the result
-    let mut ret = 0;
-    for (i, j) in a_slice.iter().zip(b_slice.iter()) {
-        ret += (*i) * (*j);
-    }
-    return ret;
+pub extern fn eh_personality() {
 }
 
 #[lang = "panic_fmt"]
-extern fn panic_fmt(args: &core::fmt::Arguments,
-                    file: &str,
-                    line: u32) -> ! {
+#[no_mangle]
+pub extern fn rust_begin_panic(_msg: core::fmt::Arguments,
+                               _file: &'static str,
+                               _line: u32) -> ! {
     loop {}
 }
-
-#[lang = "eh_personality"] extern fn eh_personality() {}
-# #[lang = "eh_unwind_resume"] extern fn rust_eh_unwind_resume() {}
-# #[start] fn start(argc: isize, argv: *const *const u8) -> isize { 0 }
-# fn main() {}
 ```
 
-Note that there is one extra lang item here which differs from the examples
-above, `panic_fmt`. This must be defined by consumers of libcore because the
-core library declares panics, but it does not define it. The `panic_fmt`
-lang item is this crate's definition of panic, and it must be guaranteed to
-never return.
+## More about the langauge items
 
-As can be seen in this example, the core library is intended to provide the
-power of Rust in all circumstances, regardless of platform requirements. Further
-libraries, such as liballoc, add functionality to libcore which make other
-platform-specific assumptions, but continue to be more portable than the
-standard library itself.
+The compiler currently makes a few assumptions about symbols which are
+available in the executable to call. Normally these functions are provided by
+the standard library, but without it you must define your own. These symbols
+are called "language items", and they each have an internal name, and then a
+signature that an implementation must conform to.
 
+The first of these two functions, `eh_personality`, is used by the failure
+mechanisms of the compiler. This is often mapped to GCC's personality function
+(see the [libstd implementation][unwind] for more information), but crates
+which do not trigger a panic can be assured that this function is never
+called. Both the language item and the symbol name are `eh_personality`.
+ 
+[unwind]: https://github.com/rust-lang/rust/blob/master/src/libpanic_unwind/gcc.rs
+
+The second function, `panic_fmt`, is also used by the failure mechanisms of the
+compiler. When a panic happens, this controls the message that's displayed on
+the screen. While the language item's name is `panic_fmt`, the symbol name is
+`rust_begin_panic`.

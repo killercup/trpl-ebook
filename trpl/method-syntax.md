@@ -43,19 +43,17 @@ fn main() {
 
 This will print `12.566371`.
 
-
-
 We’ve made a `struct` that represents a circle. We then write an `impl` block,
 and inside it, define a method, `area`.
 
 Methods take a special first parameter, of which there are three variants:
 `self`, `&self`, and `&mut self`. You can think of this first parameter as
 being the `foo` in `foo.bar()`. The three variants correspond to the three
-kinds of things `foo` could be: `self` if it’s just a value on the stack,
+kinds of things `foo` could be: `self` if it’s a value on the stack,
 `&self` if it’s a reference, and `&mut self` if it’s a mutable reference.
-Because we took the `&self` parameter to `area`, we can use it just like any
+Because we took the `&self` parameter to `area`, we can use it like any
 other parameter. Because we know it’s a `Circle`, we can access the `radius`
-just like we would with any other `struct`. 
+like we would with any other `struct`.
 
 We should default to using `&self`, as you should prefer borrowing over taking
 ownership, as well as taking immutable references over mutable ones. Here’s an
@@ -77,6 +75,35 @@ impl Circle {
        println!("taking self by mutable reference!");
     }
 
+    fn takes_ownership(self) {
+       println!("taking ownership of self!");
+    }
+}
+```
+
+You can use as many `impl` blocks as you’d like. The previous example could
+have also been written like this:
+
+```rust
+struct Circle {
+    x: f64,
+    y: f64,
+    radius: f64,
+}
+
+impl Circle {
+    fn reference(&self) {
+       println!("taking self by reference!");
+    }
+}
+
+impl Circle {
+    fn mutable_reference(&mut self) {
+       println!("taking self by mutable reference!");
+    }
+}
+
+impl Circle {
     fn takes_ownership(self) {
        println!("taking ownership of self!");
     }
@@ -124,7 +151,7 @@ fn grow(&self, increment: f64) -> Circle {
 # Circle } }
 ```
 
-We just say we’re returning a `Circle`. With this method, we can grow a new
+We say we’re returning a `Circle`. With this method, we can grow a new
 `Circle` to any arbitrary size.
 
 # Associated functions
