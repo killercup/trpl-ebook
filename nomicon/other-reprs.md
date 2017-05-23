@@ -1,4 +1,4 @@
-% Alternative representations
+# Alternative representations
 
 Rust allows you to specify alternative data layout strategies from the default.
 

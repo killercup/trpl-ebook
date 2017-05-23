@@ -1,4 +1,4 @@
-% Constructors
+# Constructors
 
 There is exactly one way to create an instance of a user-defined type: name it,
 and initialize all its fields at once:

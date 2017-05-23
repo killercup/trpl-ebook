@@ -1,4 +1,4 @@
-% Working with Unsafe
+# Working with Unsafe
 
 Rust generally only gives us the tools to talk about Unsafe Rust in a scoped and
 binary manner. Unfortunately, reality is significantly more complicated than

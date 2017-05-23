@@ -1,4 +1,4 @@
-% repr(Rust)
+# repr(Rust)
 
 First and foremost, all types have an alignment specified in bytes. The
 alignment of a type specifies what addresses are valid to store the value at. A

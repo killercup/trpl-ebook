@@ -1,4 +1,4 @@
-% The Dot Operator
+# The Dot Operator
 
 The dot operator will perform a lot of magic to convert types. It will perform
 auto-referencing, auto-dereferencing, and coercion until types match.
