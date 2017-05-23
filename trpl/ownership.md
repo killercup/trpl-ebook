@@ -1,4 +1,4 @@
-% Ownership
+# Ownership
 
 This is the first of three sections presenting Rust’s ownership system. This is one of
 Rust’s most distinct and compelling features, with which Rust developers should
@@ -57,13 +57,13 @@ of scope at the end of `foo()`, Rust will clean up everything related to the
 vector, even the heap-allocated memory. This happens deterministically, at the
 end of the scope.
 
-We'll cover [vectors] in detail later in this chapter; we only use them
+We covered [vectors] in the previous chapter; we use them
 here as an example of a type that allocates space on the heap at runtime. They
 behave like [arrays], except their size may change by `push()`ing more
 elements onto them.
 
 Vectors have a [generic type][generics] `Vec<T>`, so in this example `v` will have type
-`Vec<i32>`. We'll cover generics in detail later in this chapter.
+`Vec<i32>`. We'll cover [generics] in detail in a later chapter.
 
 [arrays]: primitive-types.html#arrays
 [vectors]: vectors.html
@@ -107,7 +107,7 @@ try to use something after we’ve passed it as an argument:
 
 ```rust,ignore
 fn take(v: Vec<i32>) {
-    // what happens here isn’t important.
+    // What happens here isn’t important.
 }
 
 let v = vec![1, 2, 3];
@@ -264,9 +264,9 @@ Of course, if we had to hand ownership back with every function we wrote:
 
 ```rust
 fn foo(v: Vec<i32>) -> Vec<i32> {
-    // do stuff with v
+    // Do stuff with `v`.
 
-    // hand back ownership
+    // Hand back ownership.
     v
 }
 ```
@@ -275,9 +275,9 @@ This would get very tedious. It gets worse the more things we want to take owner
 
 ```rust
 fn foo(v1: Vec<i32>, v2: Vec<i32>) -> (Vec<i32>, Vec<i32>, i32) {
-    // do stuff with v1 and v2
+    // Do stuff with `v1` and `v2`.
 
-    // hand back ownership, and the result of our function
+    // Hand back ownership, and the result of our function.
     (v1, v2, 42)
 }
 

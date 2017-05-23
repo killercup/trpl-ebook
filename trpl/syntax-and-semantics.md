@@ -1,4 +1,4 @@
-% Syntax and Semantics
+# Syntax and Semantics
 
 This chapter breaks Rust down into small chunks, one for each concept.
 

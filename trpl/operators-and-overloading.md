@@ -1,4 +1,4 @@
-% Operators and Overloading
+# Operators and Overloading
 
 Rust allows for a limited form of operator overloading. There are certain
 operators that are able to be overloaded. To support a particular operator
@@ -41,7 +41,7 @@ There are a number of operators that can be overloaded this way, and all of
 their associated traits live in the [`std::ops`][stdops] module. Check out its
 documentation for the full list.
 
-[stdops]: ../std/ops/index.html
+[stdops]: ../../std/ops/index.html
 
 Implementing these traits follows a pattern. Let’s look at [`Add`][add] in more
 detail:
@@ -56,7 +56,7 @@ pub trait Add<RHS = Self> {
 # }
 ```
 
-[add]: ../std/ops/trait.Add.html
+[add]: ../../std/ops/trait.Add.html
 
 There’s three types in total involved here: the type you `impl Add` for, `RHS`,
 which defaults to `Self`, and `Output`. For an expression `let z = x + y`, `x`
@@ -69,7 +69,7 @@ impl Add<i32> for Point {
     type Output = f64;
 
     fn add(self, rhs: i32) -> f64 {
-        // add an i32 to a Point and get an f64
+        // Add an i32 to a Point and get an f64.
 # 1.0
     }
 }

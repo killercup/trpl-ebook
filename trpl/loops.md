@@ -1,4 +1,4 @@
-% Loops
+# Loops
 
 Rust currently provides three approaches to performing some kind of iterative activity. They are: `loop`, `while` and `for`. Each approach has its own set of uses.
 
@@ -81,14 +81,14 @@ for var in expression {
 ```
 
 The expression is an item that can be converted into an [iterator] using
-[`IntoIterator`]. The iterator gives back a series of elements. Each element is
-one iteration of the loop. That value is then bound to the name `var`, which is
+[`IntoIterator`]. The iterator gives back a series of elements, one element per
+iteration of the loop. That value is then bound to the name `var`, which is
 valid for the loop body. Once the body is over, the next value is fetched from
 the iterator, and we loop another time. When there are no more values, the `for`
 loop is over.
 
 [iterator]: iterators.html
-[`IntoIterator`]: ../std/iter/trait.IntoIterator.html
+[`IntoIterator`]: ../../std/iter/trait.IntoIterator.html
 
 In our example, `0..10` is an expression that takes a start and an end position,
 and gives an iterator over those values. The upper bound is exclusive, though,
@@ -100,7 +100,8 @@ developers.
 
 ### Enumerate
 
-When you need to keep track of how many times you already looped, you can use the `.enumerate()` function.
+When you need to keep track of how many times you have already looped, you can
+use the `.enumerate()` function.
 
 #### On ranges:
 
@@ -193,17 +194,21 @@ for x in 0..10 {
 
 You may also encounter situations where you have nested loops and need to
 specify which one your `break` or `continue` statement is for. Like most
-other languages, by default a `break` or `continue` will apply to innermost
-loop. In a situation where you would like to `break` or `continue` for one
+other languages, Rust's `break` or `continue` apply to the innermost loop.
+In a situation where you would like to `break` or `continue` for one
 of the outer loops, you can use labels to specify which loop the `break` or
- `continue` statement applies to. This will only print when both `x` and `y` are
- odd:
+`continue` statement applies to. 
+ 
+In the example below, we `continue` to the next iteration of `outer` loop
+when `x` is even, while we `continue` to the next iteration of `inner`
+loop when y is even. So it will execute the `println!` when both `x` and
+`y` are odd.
 
 ```rust
 'outer: for x in 0..10 {
     'inner: for y in 0..10 {
-        if x % 2 == 0 { continue 'outer; } // continues the loop over x
-        if y % 2 == 0 { continue 'inner; } // continues the loop over y
+        if x % 2 == 0 { continue 'outer; } // Continues the loop over `x`.
+        if y % 2 == 0 { continue 'inner; } // Continues the loop over `y`.
         println!("x: {}, y: {}", x, y);
     }
 }

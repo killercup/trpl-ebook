@@ -1,4 +1,4 @@
-% Using Rust Without the Standard Library
+# Using Rust Without the Standard Library
 
 Rust’s standard library provides a lot of useful functionality, but assumes
 support for various features of its host system: threads, networking, heap
@@ -9,11 +9,11 @@ don’t want to use the standard library via an attribute: `#![no_std]`.
 > Note: This feature is technically stable, but there are some caveats. For
 > one, you can build a `#![no_std]` _library_ on stable, but not a _binary_.
 > For details on binaries without the standard library, see [the nightly
-> chapter on `#![no_std]`](no-stdlib.html)
+> chapter on 'lang items'][unstable book lang items]
 
 To use `#![no_std]`, add it to your crate root:
 
-```rust
+```rust,ignore
 #![no_std]
 
 fn plus_one(x: i32) -> i32 {
@@ -22,14 +22,14 @@ fn plus_one(x: i32) -> i32 {
 ```
 
 Much of the functionality that’s exposed in the standard library is also
-available via the [`core` crate](../core/index.html). When we’re using the
+available via the [`core` crate](../../core/index.html). When we’re using the
 standard library, Rust automatically brings `std` into scope, allowing you to
 use its features without an explicit import. By the same token, when using
 `#![no_std]`, Rust will bring `core` into scope for you, as well as [its
-prelude](../core/prelude/v1/index.html). This means that a lot of code will Just
+prelude](../../core/prelude/v1/index.html). This means that a lot of code will Just
 Work:
 
-```rust
+```rust,ignore
 #![no_std]
 
 fn may_fail(failure: bool) -> Result<(), &'static str> {
@@ -40,3 +40,5 @@ fn may_fail(failure: bool) -> Result<(), &'static str> {
     }
 }
 ```
+
+[unstable book lang items]: ../../unstable-book/language-features/lang-items.html#using-libc

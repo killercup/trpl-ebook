@@ -1,4 +1,4 @@
-% Vectors
+# Vectors
 
 A ‘vector’ is a dynamic or ‘growable’ array, implemented as the standard
 library type [`Vec<T>`][vec]. The `T` means that we can have vectors
@@ -17,7 +17,7 @@ situation, this is just convention.)
 There’s an alternate form of `vec!` for repeating an initial value:
 
 ```rust
-let v = vec![0; 10]; // ten zeroes
+let v = vec![0; 10]; // A vector of ten zeroes.
 ```
 
 Vectors store their contents as contiguous arrays of `T` on the heap. This means
@@ -46,10 +46,10 @@ let v = vec![1, 2, 3, 4, 5];
 let i: usize = 0;
 let j: i32 = 0;
 
-// works
+// Works:
 v[i];
 
-// doesn’t
+// Doesn’t:
 v[j];
 ```
 
@@ -148,9 +148,9 @@ for i in &v {
 Vectors have many more useful methods, which you can read about in [their
 API documentation][vec].
 
-[vec]: ../std/vec/index.html
-[box]: ../std/boxed/index.html
+[vec]: ../../std/vec/index.html
+[box]: ../../std/boxed/index.html
 [generic]: generics.html
 [panic]: concurrency.html#panics
-[get]: ../std/vec/struct.Vec.html#method.get
-[get_mut]: ../std/vec/struct.Vec.html#method.get_mut
+[get]: ../../std/vec/struct.Vec.html#method.get
+[get_mut]: ../../std/vec/struct.Vec.html#method.get_mut

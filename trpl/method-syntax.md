@@ -1,4 +1,4 @@
-% Method Syntax
+# Method Syntax
 
 Functions are great, but if you want to call a bunch of them on some data, it
 can be awkward. Consider this code:

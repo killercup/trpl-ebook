@@ -1,14 +1,8 @@
-% Getting Started
+# Getting Started
 
 This first chapter of the book will get us going with Rust and its tooling.
 First, we’ll install Rust. Then, the classic ‘Hello World’ program. Finally,
 we’ll talk about Cargo, Rust’s build system and package manager.
-
-# Installing Rust
-
-The first step to using Rust is to install it. Generally speaking, you’ll need
-an Internet connection to run the commands in this section, as we’ll be
-downloading Rust from the Internet.
 
 We’ll be showing off a number of commands using a terminal, and those lines all
 start with `$`. You don't need to type in the `$`s, they are there to indicate
@@ -16,135 +10,53 @@ the start of each command. We’ll see many tutorials and examples around the we
 that follow this convention: `$` for commands run as our regular user, and `#`
 for commands we should be running as an administrator.
 
-## Platform support
+# Installing Rust
 
-The Rust compiler runs on, and compiles to, a great number of platforms, though
-not all platforms are equally supported. Rust's support levels are organized
-into three tiers, each with a different set of guarantees.
+The first step to using Rust is to install it. Generally speaking, you’ll need
+an Internet connection to run the commands in this section, as we’ll be
+downloading Rust from the Internet.
 
-Platforms are identified by their "target triple" which is the string to inform
-the compiler what kind of output should be produced. The columns below indicate
-whether the corresponding component works on the specified platform.
+The Rust compiler runs on, and compiles to, a great number of platforms, but is
+best supported on Linux, Mac, and Windows, on the x86 and x86-64 CPU
+architecture. There are official builds of the Rust compiler and standard
+library for these platforms and more. [For full details on Rust platform support
+see the website][platform-support].
 
-### Tier 1
+[platform-support]: https://forge.rust-lang.org/platform-support.html
 
-Tier 1 platforms can be thought of as "guaranteed to build and work".
-Specifically they will each satisfy the following requirements:
+## Installing Rust
 
-* Automated testing is set up to run tests for the platform.
-* Landing changes to the `rust-lang/rust` repository's master branch is gated on
-  tests passing.
-* Official release artifacts are provided for the platform.
-* Documentation for how to use and how to build the platform is available.
-
-|  Target                       | std |rustc|cargo| notes                      |
-|-------------------------------|-----|-----|-----|----------------------------|
-| `i686-apple-darwin`           |  ✓  |  ✓  |  ✓  | 32-bit OSX (10.7+, Lion+)  |
-| `i686-pc-windows-gnu`         |  ✓  |  ✓  |  ✓  | 32-bit MinGW (Windows 7+)  |
-| `i686-pc-windows-msvc`        |  ✓  |  ✓  |  ✓  | 32-bit MSVC (Windows 7+)   |
-| `i686-unknown-linux-gnu`      |  ✓  |  ✓  |  ✓  | 32-bit Linux (2.6.18+)     |
-| `x86_64-apple-darwin`         |  ✓  |  ✓  |  ✓  | 64-bit OSX (10.7+, Lion+)  |
-| `x86_64-pc-windows-gnu`       |  ✓  |  ✓  |  ✓  | 64-bit MinGW (Windows 7+)  |
-| `x86_64-pc-windows-msvc`      |  ✓  |  ✓  |  ✓  | 64-bit MSVC (Windows 7+)   |
-| `x86_64-unknown-linux-gnu`    |  ✓  |  ✓  |  ✓  | 64-bit Linux (2.6.18+)     |
-
-### Tier 2
-
-Tier 2 platforms can be thought of as "guaranteed to build". Automated tests
-are not run so it's not guaranteed to produce a working build, but platforms
-often work to quite a good degree and patches are always welcome! Specifically,
-these platforms are required to have each of the following:
-
-* Automated building is set up, but may not be running tests.
-* Landing changes to the `rust-lang/rust` repository's master branch is gated on
-  platforms **building**. Note that this means for some platforms only the
-  standard library is compiled, but for others the full bootstrap is run.
-* Official release artifacts are provided for the platform.
-
-|  Target                       | std |rustc|cargo| notes                      |
-|-------------------------------|-----|-----|-----|----------------------------|
-| `aarch64-apple-ios`           |  ✓  |     |     | ARM64 iOS                  |
-| `aarch64-unknown-linux-gnu`   |  ✓  |  ✓  |  ✓  | ARM64 Linux (2.6.18+)      |
-| `arm-linux-androideabi`       |  ✓  |     |     | ARM Android                |
-| `arm-unknown-linux-gnueabi`   |  ✓  |  ✓  |  ✓  | ARM Linux (2.6.18+)        |
-| `arm-unknown-linux-gnueabihf` |  ✓  |  ✓  |  ✓  | ARM Linux (2.6.18+)        |
-| `armv7-apple-ios`             |  ✓  |     |     | ARM iOS                    |
-|`armv7-unknown-linux-gnueabihf`|  ✓  |  ✓  |  ✓  | ARMv7 Linux (2.6.18+)      |
-| `armv7s-apple-ios`            |  ✓  |     |     | ARM iOS                    |
-| `i386-apple-ios`              |  ✓  |     |     | 32-bit x86 iOS             |
-| `i586-pc-windows-msvc`        |  ✓  |     |     | 32-bit Windows w/o SSE     |
-| `mips-unknown-linux-gnu`      |  ✓  |     |     | MIPS Linux (2.6.18+)       |
-| `mips-unknown-linux-musl`     |  ✓  |     |     | MIPS Linux with MUSL       |
-| `mipsel-unknown-linux-gnu`    |  ✓  |     |     | MIPS (LE) Linux (2.6.18+)  |
-| `mipsel-unknown-linux-musl`   |  ✓  |     |     | MIPS (LE) Linux with MUSL  |
-| `powerpc-unknown-linux-gnu`   |  ✓  |     |     | PowerPC Linux (2.6.18+)    |
-| `powerpc64-unknown-linux-gnu` |  ✓  |     |     | PPC64 Linux (2.6.18+)      |
-|`powerpc64le-unknown-linux-gnu`|  ✓  |     |     | PPC64LE Linux (2.6.18+)    |
-| `x86_64-apple-ios`            |  ✓  |     |     | 64-bit x86 iOS             |
-| `x86_64-rumprun-netbsd`       |  ✓  |     |     | 64-bit NetBSD Rump Kernel  |
-| `x86_64-unknown-freebsd`      |  ✓  |  ✓  |  ✓  | 64-bit FreeBSD             |
-| `x86_64-unknown-linux-musl`   |  ✓  |     |     | 64-bit Linux with MUSL     |
-| `x86_64-unknown-netbsd`       |  ✓  |  ✓  |  ✓  | 64-bit NetBSD              |
-
-### Tier 3
-
-Tier 3 platforms are those which Rust has support for, but landing changes is
-not gated on the platform either building or passing tests. Working builds for
-these platforms may be spotty as their reliability is often defined in terms of
-community contributions. Additionally, release artifacts and installers are not
-provided, but there may be community infrastructure producing these in
-unofficial locations.
-
-|  Target                       | std |rustc|cargo| notes                      |
-|-------------------------------|-----|-----|-----|----------------------------|
-| `aarch64-linux-android`       |  ✓  |     |     | ARM64 Android              |
-| `armv7-linux-androideabi`     |  ✓  |     |     | ARM-v7a Android            |
-| `i686-linux-android`          |  ✓  |     |     | 32-bit x86 Android         |
-| `i686-pc-windows-msvc` (XP)   |  ✓  |     |     | Windows XP support         |
-| `i686-unknown-freebsd`        |  ✓  |  ✓  |  ✓  | 32-bit FreeBSD             |
-| `x86_64-pc-windows-msvc` (XP) |  ✓  |     |     | Windows XP support         |
-| `x86_64-sun-solaris`          |  ✓  |  ✓  |     | 64-bit Solaris/SunOS       |
-| `x86_64-unknown-bitrig`       |  ✓  |  ✓  |     | 64-bit Bitrig              |
-| `x86_64-unknown-dragonfly`    |  ✓  |  ✓  |     | 64-bit DragonFlyBSD        |
-| `x86_64-unknown-openbsd`      |  ✓  |  ✓  |     | 64-bit OpenBSD             |
-
-Note that this table can be expanded over time, this isn't the exhaustive set of
-tier 3 platforms that will ever be!
-
-## Installing on Linux or Mac
-
-If we're on Linux or a Mac, all we need to do is open a terminal and type this:
+All you need to do on Unix systems like Linux and macOS is open a
+terminal and type this:
 
 ```bash
-$ curl -sSf https://static.rust-lang.org/rustup.sh | sh
+$ curl https://sh.rustup.rs -sSf | sh
 ```
 
-This will download a script, and start the installation. If it all goes well,
-you’ll see this appear:
+It will download a script, and start the installation. If everything
+goes well, you’ll see this appear:
 
 ```text
-Rust is ready to roll.
+Rust is installed now. Great! 
 ```
 
-From here, press `y` for ‘yes’, and then follow the rest of the prompts.
+Installing on Windows is nearly as easy: download and run
+[rustup-init.exe]. It will start the installation in a console and
+present the above message on success.
 
-## Installing on Windows
+For other installation options and information, visit the [install]
+page of the Rust website.
 
-If you're on Windows, please download the appropriate [installer][install-page].
-
-[install-page]: https://www.rust-lang.org/install.html
+[rustup-init.exe]: https://win.rustup.rs
+[install]: https://www.rust-lang.org/install.html
 
 ## Uninstalling
 
-Uninstalling Rust is as easy as installing it. On Linux or Mac, run
-the uninstall script:
+Uninstalling Rust is as easy as installing it:
 
 ```bash
-$ sudo /usr/local/lib/rustlib/uninstall.sh
+$ rustup self uninstall
 ```
-
-If we used the Windows installer, we can re-run the `.msi` and it will give us
-an uninstall option.
 
 ## Troubleshooting
 
@@ -158,20 +70,33 @@ You should see the version number, commit hash, and commit date.
 
 If you do, Rust has been installed successfully! Congrats!
 
-If you don't and you're on Windows, check that Rust is in your %PATH% system
-variable: `$ echo %PATH%`. If it isn't, run the installer again, select "Change"
-on the "Change, repair, or remove installation" page and ensure "Add to PATH" is
-installed on the local hard drive.  If you need to configure your path manually,
-you can find the Rust executables in a directory like
-`"C:\Program Files\Rust stable GNU 1.x\bin"`.
+If you don't, that probably means that the `PATH` environment variable
+doesn't include Cargo's binary directory, `~/.cargo/bin` on Unix, or
+`%USERPROFILE%\.cargo\bin` on Windows. This is the directory where
+Rust development tools live, and most Rust developers keep it in their
+`PATH` environment variable, which makes it possible to run `rustc` on
+the command line. Due to differences in operating systems, command
+shells, and bugs in installation, you may need to restart your shell,
+log out of the system, or configure `PATH` manually as appropriate for
+your operating environment.
 
 Rust does not do its own linking, and so you’ll need to have a linker
-installed. Doing so will depend on your specific system, consult its
-documentation for more details.
+installed. Doing so will depend on your specific system. For
+Linux-based systems, Rust will attempt to call `cc` for linking. On
+`windows-msvc` (Rust built on Windows with Microsoft Visual Studio),
+this depends on having [Microsoft Visual C++ Build Tools][msvbt]
+installed. These do not need to be in `%PATH%` as `rustc` will find
+them automatically. In general, if you have your linker in a
+non-traditional location you can call `rustc 
+linker=/path/to/cc`, where `/path/to/cc` should point to your linker path.
 
-If not, there are a number of places where we can get help. The easiest is
-[the #rust-beginners IRC channel on irc.mozilla.org][irc-beginners] and for
-general discussion [the #rust IRC channel on irc.mozilla.org][irc], which we
+[msvbt]: http://landinghub.visualstudio.com/visual-cpp-build-tools
+
+If you are still stuck, there are a number of places where we can get
+help. The easiest is
+[the #rust-beginners IRC channel on irc.mozilla.org][irc-beginners] 
+and for general discussion
+[the #rust IRC channel on irc.mozilla.org][irc], which we 
 can access through [Mibbit][mibbit]. Then we'll be chatting with other
 Rustaceans (a silly nickname we call ourselves) who can help us out. Other great
 resources include [the user’s forum][users] and [Stack Overflow][stackoverflow].
@@ -183,9 +108,7 @@ resources include [the user’s forum][users] and [Stack Overflow][stackoverflow
 [stackoverflow]: http://stackoverflow.com/questions/tagged/rust
 
 This installer also installs a copy of the documentation locally, so we can
-read it offline. On UNIX systems, `/usr/local/share/doc/rust` is the location.
-On Windows, it's in a `share/doc` directory, inside the directory to which Rust
-was installed.
+read it offline. It's only a `rustup doc` away!
 
 # Hello, world!
 
@@ -230,12 +153,13 @@ $ cd hello_world
 
 ## Writing and Running a Rust Program
 
-Next, make a new source file and call it *main.rs*. Rust files always end
-in a *.rs* extension. If you’re using more than one word in your filename, use
-an underscore to separate them; for example, you'd use *hello_world.rs* rather
-than *helloworld.rs*.
+We need to create a source file for our Rust program. Rust files always end
+in a *.rs* extension. If you are using more than one word in your filename,
+use an underscore to separate them; for example, you would use
+*my_program.rs* rather than *myprogram.rs*.
 
-Now open the *main.rs* file you just created, and type the following code:
+Now, make a new file and call it *main.rs*. Open the file and type
+the following code:
 
 ```rust
 fn main() {
@@ -243,7 +167,7 @@ fn main() {
 }
 ```
 
-Save the file, and go back to your terminal window. On Linux or OSX, enter the
+Save the file, and go back to your terminal window. On Linux or macOS, enter the
 following commands:
 
 ```bash
@@ -329,7 +253,7 @@ $ rustc main.rs
 
 If you come from a C or C++ background, you'll notice that this is similar to
 `gcc` or `clang`. After compiling successfully, Rust should output a binary
-executable, which you can see on Linux or OSX by entering the `ls` command in
+executable, which you can see on Linux or macOS by entering the `ls` command in
 your shell as follows:
 
 ```bash
@@ -493,6 +417,9 @@ $ cargo run
      Running `target/debug/hello_world`
 Hello, world!
 ```
+
+The `run` command comes in handy when you need to rapidly iterate on a
+project.
 
 Notice that this example didn’t re-build the project. Cargo figured out that
 the file hasn’t changed, and so it just ran the binary. If you'd modified your

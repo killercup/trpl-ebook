@@ -1,4 +1,4 @@
-% References and Borrowing
+# References and Borrowing
 
 This is the second of three sections presenting Rust’s ownership system. This is one of
 Rust’s most distinct and compelling features, with which Rust developers should
@@ -46,9 +46,9 @@ like this:
 
 ```rust
 fn foo(v1: Vec<i32>, v2: Vec<i32>) -> (Vec<i32>, Vec<i32>, i32) {
-    // do stuff with v1 and v2
+    // Do stuff with `v1` and `v2`.
 
-    // hand back ownership, and the result of our function
+    // Hand back ownership, and the result of our function.
     (v1, v2, 42)
 }
 
@@ -63,9 +63,9 @@ the first step:
 
 ```rust
 fn foo(v1: &Vec<i32>, v2: &Vec<i32>) -> i32 {
-    // do stuff with v1 and v2
+    // Do stuff with `v1` and `v2`.
 
-    // return the answer
+    // Return the answer.
     42
 }
 
@@ -74,7 +74,7 @@ let v2 = vec![1, 2, 3];
 
 let answer = foo(&v1, &v2);
 
-// we can use v1 and v2 here!
+// We can use `v1` and `v2` here!
 ```
 
 A more concrete example:
@@ -83,15 +83,15 @@ A more concrete example:
 fn main() {
     // Don't worry if you don't understand how `fold` works, the point here is that an immutable reference is borrowed.
     fn sum_vec(v: &Vec<i32>) -> i32 {
-        return v.iter().fold(0, |a, &b| a + b);
+        v.iter().fold(0, |a, &b| a + b)
     }
     // Borrow two vectors and sum them.
-    // This kind of borrowing does not allow mutation to the borrowed.
+    // This kind of borrowing does not allow mutation through the borrowed reference.
     fn foo(v1: &Vec<i32>, v2: &Vec<i32>) -> i32 {
-        // do stuff with v1 and v2
+        // Do stuff with `v1` and `v2`.
         let s1 = sum_vec(v1);
         let s2 = sum_vec(v2);
-        // return the answer
+        // Return the answer.
         s1 + s2
     }
 
@@ -152,7 +152,7 @@ the thing `y` points at. You’ll notice that `x` had to be marked `mut` as well
 If it wasn’t, we couldn’t take a mutable borrow to an immutable value.
 
 You'll also notice we added an asterisk (`*`) in front of `y`, making it `*y`,
-this is because `y` is a `&mut` reference. You'll need to use astrisks to
+this is because `y` is a `&mut` reference. You'll need to use asterisks to
 access the contents of a reference as well.
 
 Otherwise, `&mut` references are like references. There _is_ a large
@@ -240,7 +240,7 @@ fn main() {
 
 In other words, the mutable borrow is held through the rest of our example. What
 we want is for the mutable borrow by `y` to end so that the resource can be
-returned to the owner, `x`. `x` can then provide a immutable borrow to `println!`.
+returned to the owner, `x`. `x` can then provide an immutable borrow to `println!`.
 In Rust, borrowing is tied to the scope that the borrow is valid for. And our
 scopes look like this:
 
@@ -248,12 +248,12 @@ scopes look like this:
 fn main() {
     let mut x = 5;
 
-    let y = &mut x;    // -+ &mut borrow of x starts here
+    let y = &mut x;    // -+ &mut borrow of `x` starts here.
                        //  |
     *y += 1;           //  |
                        //  |
-    println!("{}", x); // -+ - try to borrow x here
-}                      // -+ &mut borrow of x ends here
+    println!("{}", x); // -+ - Try to borrow `x` here.
+}                      // -+ &mut borrow of `x` ends here.
                        
 ```
 
@@ -265,11 +265,11 @@ So when we add the curly braces:
 let mut x = 5;
 
 {
-    let y = &mut x; // -+ &mut borrow starts here
+    let y = &mut x; // -+ &mut borrow starts here.
     *y += 1;        //  |
-}                   // -+ ... and ends here
+}                   // -+ ... and ends here.
 
-println!("{}", x);  // <- try to borrow x here
+println!("{}", x);  // <- Try to borrow `x` here.
 ```
 
 There’s no problem. Our mutable borrow goes out of scope before we create an
