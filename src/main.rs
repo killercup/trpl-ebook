@@ -26,7 +26,7 @@ Usage:
   compile-trpl [--prefix=<prefix>] [--source=<directory>] [--meta=<meta_file>]
 
 Options:
-  --prefix=<prefix>     Prefix/short name of your book, e.g. "trpl" or "nomicon".
+  --prefix=<prefix>     Prefix/short name of your book, e.g. "trpl-1st-edition" or "nomicon".
   --source=<directory>  Directory containing the git book files, especially SUMMARY.md and README.md.
   --meta=<meta_file>    Meta data of your book, needs to contain `date: {release_date}`.
 "#;
@@ -43,8 +43,8 @@ fn main() {
         .and_then(|d| d.decode())
         .unwrap_or_else(|e| e.exit());
 
-    let prefix = args.flag_prefix.unwrap_or("trpl".to_owned());
-    let source = args.flag_source.unwrap_or("trpl".to_owned());
+    let prefix = args.flag_prefix.unwrap_or("trpl-1st-edition".to_owned());
+    let source = args.flag_source.unwrap_or("trpl-1st-ed".to_owned());
     let meta = args.flag_meta.unwrap_or("trpl_meta.yml".to_owned());
 
     convert_book::render_book(&prefix, &Path::new(&source), &meta).unwrap();
