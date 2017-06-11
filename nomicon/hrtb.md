@@ -1,4 +1,4 @@
-% Higher-Rank Trait Bounds (HRTBs)
+# Higher-Rank Trait Bounds (HRTBs)
 
 Rust's `Fn` traits are a little bit magic. For instance, we can write the
 following code:

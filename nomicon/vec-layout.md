@@ -1,4 +1,4 @@
-% Layout
+# Layout
 
 First off, we need to come up with the struct layout. A Vec has three parts:
 a pointer to the allocation, the size of the allocation, and the number of

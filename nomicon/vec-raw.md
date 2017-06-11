@@ -1,4 +1,4 @@
-% RawVec
+# RawVec
 
 We've actually reached an interesting situation here: we've duplicated the logic
 for specifying a buffer and freeing its memory in Vec and IntoIter. Now that

@@ -1,4 +1,4 @@
-% Poisoning
+# Poisoning
 
 Although all unsafe code *must* ensure it has minimal exception safety, not all
 types ensure *maximal* exception safety. Even if the type does, your code may

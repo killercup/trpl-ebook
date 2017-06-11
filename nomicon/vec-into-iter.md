@@ -1,4 +1,4 @@
-% IntoIter
+# IntoIter
 
 Let's move on to writing iterators. `iter` and `iter_mut` have already been
 written for us thanks to The Magic of Deref. However there's two interesting

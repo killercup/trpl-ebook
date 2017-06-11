@@ -26,7 +26,7 @@ to help us make sense of code that can possibly be concurrent.
 ### `Send`
 
 The first trait we're going to talk about is
-[`Send`](../std/marker/trait.Send.html). When a type `T` implements `Send`, it
+[`Send`](../../std/marker/trait.Send.html). When a type `T` implements `Send`, it
 indicates that something of this type is able to have ownership transferred
 safely between threads.
 
@@ -43,7 +43,7 @@ us enforce that it can't leave the current thread.
 
 ### `Sync`
 
-The second of these traits is called [`Sync`](../std/marker/trait.Sync.html).
+The second of these traits is called [`Sync`](../../std/marker/trait.Sync.html).
 When a type `T` implements `Sync`, it indicates that something
 of this type has no possibility of introducing memory unsafety when used from
 multiple threads concurrently through shared references. This implies that
@@ -238,7 +238,7 @@ This won't work, however, and will give us the error:
 
 As the error message mentions, `Rc` cannot be sent between threads safely. This
 is because the internal reference count is not maintained in a thread safe
-matter and can have a data race.
+manner and can have a data race.
 
 To solve this, we'll use `Arc<T>`, Rust's standard atomic reference count type.
 
@@ -333,8 +333,8 @@ locked, it will wait until the other thread releases the lock.
 The lock "release" here is implicit; when the result of the lock (in this case,
 `data`) goes out of scope, the lock is automatically released.
 
-Note that [`lock`](../std/sync/struct.Mutex.html#method.lock) method of
-[`Mutex`](../std/sync/struct.Mutex.html) has this signature:
+Note that [`lock`](../../std/sync/struct.Mutex.html#method.lock) method of
+[`Mutex`](../../std/sync/struct.Mutex.html) has this signature:
 
 ```rust,ignore
 fn lock(&self) -> LockResult<MutexGuard<T>>

@@ -1,4 +1,4 @@
-% Insert and Remove
+# Insert and Remove
 
 Something *not* provided by slice is `insert` and `remove`, so let's do those
 next.

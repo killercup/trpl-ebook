@@ -1,4 +1,4 @@
-% Lifetime Elision
+# Lifetime Elision
 
 In order to make common patterns more ergonomic, Rust allows lifetimes to be
 *elided* in function signatures.

@@ -59,7 +59,7 @@ handling is reducing the amount of explicit case analysis the programmer has to
 do while keeping code composable.
 
 Keeping code composable is important, because without that requirement, we
-could [`panic`](../std/macro.panic.html) whenever we
+could [`panic`](../../std/macro.panic.html) whenever we
 come across something unexpected. (`panic` causes the current task to unwind,
 and in most cases, the entire program aborts.) Here's an example:
 
@@ -236,7 +236,7 @@ fn extension_explicit(file_name: &str) -> Option<&str> {
 ```
 
 (Pro-tip: don't use this code. Use the
-[`extension`](../std/path/struct.Path.html#method.extension)
+[`extension`](../../std/path/struct.Path.html#method.extension)
 method in the standard library instead.)
 
 The code stays simple, but the important thing to notice is that the type of
@@ -530,10 +530,10 @@ above is generic over all the different number types defined in the
 standard library. We could (and probably should) also make our
 function generic, but let's favor explicitness for the moment. We only
 care about `i32`, so we need to [find its implementation of
-`FromStr`](../std/primitive.i32.html) (do a `CTRL-F` in your browser
+`FromStr`](../../std/primitive.i32.html) (do a `CTRL-F` in your browser
 for “FromStr”) and look at its [associated type][10] `Err`. We did
 this so we can find the concrete error type. In this case, it's
-[`std::num::ParseIntError`](../std/num/struct.ParseIntError.html).
+[`std::num::ParseIntError`](../../std/num/struct.ParseIntError.html).
 Finally, we can rewrite our function:
 
 ```rust
@@ -577,12 +577,12 @@ fn main() {
 ```
 
 The usual suspects are all there for `Result`, including
-[`unwrap_or`](../std/result/enum.Result.html#method.unwrap_or) and
-[`and_then`](../std/result/enum.Result.html#method.and_then).
+[`unwrap_or`](../../std/result/enum.Result.html#method.unwrap_or) and
+[`and_then`](../../std/result/enum.Result.html#method.and_then).
 Additionally, since `Result` has a second type parameter, there are
 combinators that affect only the error type, such as
-[`map_err`](../std/result/enum.Result.html#method.map_err) (instead of
-`map`) and [`or_else`](../std/result/enum.Result.html#method.or_else)
+[`map_err`](../../std/result/enum.Result.html#method.map_err) (instead of
+`map`) and [`or_else`](../../std/result/enum.Result.html#method.or_else)
 (instead of `and_then`).
 
 ### The `Result` type alias idiom
@@ -611,11 +611,11 @@ Why would we do this? Well, if we have a lot of functions that could return
 uses `ParseIntError` so that we don't have to write it out all the time.
 
 The most prominent place this idiom is used in the standard library is
-with [`io::Result`](../std/io/type.Result.html). Typically, one writes
+with [`io::Result`](../../std/io/type.Result.html). Typically, one writes
 `io::Result<T>`, which makes it clear that you're using the `io`
 module's type alias instead of the plain definition from
 `std::result`. (This idiom is also used for
-[`fmt::Result`](../std/fmt/type.Result.html).)
+[`fmt::Result`](../../std/fmt/type.Result.html).)
 
 ## A brief interlude: unwrapping isn't evil
 
@@ -639,7 +639,7 @@ summarize some of my *opinions* on the matter.
 
 This is probably not an exhaustive list. Moreover, when using an
 `Option`, it is often better to use its
-[`expect`](../std/option/enum.Option.html#method.expect)
+[`expect`](../../std/option/enum.Option.html#method.expect)
 method. `expect` does exactly the same thing as `unwrap`, except it
 prints a message you give to `expect`. This makes the resulting panic
 a bit nicer to deal with, since it will show your message instead of
@@ -719,7 +719,7 @@ fn main() {
 ```
 
 There are a couple new things in this example. The first is the use of the
-[`Option::ok_or`](../std/option/enum.Option.html#method.ok_or)
+[`Option::ok_or`](../../std/option/enum.Option.html#method.ok_or)
 combinator. This is one way to convert an `Option` into a `Result`. The
 conversion requires you to specify what error to use if `Option` is `None`.
 Like the other combinators we've seen, its definition is very simple:
@@ -734,7 +734,7 @@ fn ok_or<T, E>(option: Option<T>, err: E) -> Result<T, E> {
 ```
 
 The other new combinator used here is
-[`Result::map_err`](../std/result/enum.Result.html#method.map_err).
+[`Result::map_err`](../../std/result/enum.Result.html#method.map_err).
 This is like `Result::map`, except it maps a function on to the *error*
 portion of a `Result` value. If the `Result` is an `Ok(...)` value, then it is
 returned unmodified.
@@ -781,7 +781,7 @@ fn main() {
 
 (N.B. The `AsRef<Path>` is used because those are the
 [same bounds used on
-`std::fs::File::open`](../std/fs/struct.File.html#method.open).
+`std::fs::File::open`](../../std/fs/struct.File.html#method.open).
 This makes it ergonomic to use any kind of string as a file path.)
 
 There are three different errors that can occur here:
@@ -791,16 +791,16 @@ There are three different errors that can occur here:
 3. A problem parsing the data as a number.
 
 The first two problems are described via the
-[`std::io::Error`](../std/io/struct.Error.html) type. We know this
+[`std::io::Error`](../../std/io/struct.Error.html) type. We know this
 because of the return types of
-[`std::fs::File::open`](../std/fs/struct.File.html#method.open) and
-[`std::io::Read::read_to_string`](../std/io/trait.Read.html#method.read_to_string).
+[`std::fs::File::open`](../../std/fs/struct.File.html#method.open) and
+[`std::io::Read::read_to_string`](../../std/io/trait.Read.html#method.read_to_string).
 (Note that they both use the [`Result` type alias
 idiom](#the-result-type-alias-idiom) described previously. If you
 click on the `Result` type, you'll [see the type
-alias](../std/io/type.Result.html), and consequently, the underlying
+alias](../../std/io/type.Result.html), and consequently, the underlying
 `io::Error` type.)  The third problem is described by the
-[`std::num::ParseIntError`](../std/num/struct.ParseIntError.html)
+[`std::num::ParseIntError`](../../std/num/struct.ParseIntError.html)
 type. The `io::Error` type in particular is *pervasive* throughout the
 standard library. You will see it again and again.
 
@@ -944,7 +944,7 @@ macro_rules! try {
 }
 ```
 
-(The [real definition](../std/macro.try.html) is a bit more
+(The [real definition](../../std/macro.try.html) is a bit more
 sophisticated. We will address that later.)
 
 Using the `try!` macro makes it very easy to simplify our last example. Since
@@ -1003,7 +1003,7 @@ determine the type of error is not robust. (Admittedly, this downside is far
 more important inside of a library as opposed to, say, an application.)
 
 For example, the `io::Error` type embeds an
-[`io::ErrorKind`](../std/io/enum.ErrorKind.html),
+[`io::ErrorKind`](../../std/io/enum.ErrorKind.html),
 which is *structured data* that represents what went wrong during an IO
 operation. This is important because you might want to react differently
 depending on the error. (e.g., A `BrokenPipe` error might mean quitting your
@@ -1076,8 +1076,8 @@ that you don't remove choices from the caller unnecessarily.
 # Standard library traits used for error handling
 
 The standard library defines two integral traits for error handling:
-[`std::error::Error`](../std/error/trait.Error.html) and
-[`std::convert::From`](../std/convert/trait.From.html). While `Error`
+[`std::error::Error`](../../std/error/trait.Error.html) and
+[`std::convert::From`](../../std/convert/trait.From.html). While `Error`
 is designed specifically for generically describing errors, the `From`
 trait serves a more general role for converting values between two
 distinct types.
@@ -1085,7 +1085,7 @@ distinct types.
 ## The `Error` trait
 
 The `Error` trait is [defined in the standard
-library](../std/error/trait.Error.html):
+library](../../std/error/trait.Error.html):
 
 ```rust
 use std::fmt::{Debug, Display};
@@ -1113,7 +1113,7 @@ The first two are a result of `Error` requiring impls for both `Debug` and
 `Display`. The latter two are from the two methods defined on `Error`. The
 power of `Error` comes from the fact that all error types impl `Error`, which
 means errors can be existentially quantified as a
-[trait object](../book/trait-objects.html).
+[trait object](trait-objects.html).
 This manifests as either `Box<Error>` or `&Error`. Indeed, the `cause` method
 returns an `&Error`, which is itself a trait object. We'll revisit the
 `Error` trait's utility as a trait object later.
@@ -1189,7 +1189,7 @@ different error types and satisfy the contracts defined for `description` and
 
 The `std::convert::From` trait is
 [defined in the standard
-library](../std/convert/trait.From.html):
+library](../../std/convert/trait.From.html):
 
 <span id="code-from-def"></span>
 
@@ -1204,7 +1204,7 @@ way to talk about conversion *from* a particular type `T` to some other type
 (in this case, “some other type” is the subject of the impl, or `Self`).
 The crux of `From` is the
 [set of implementations provided by the standard
-library](../std/convert/trait.From.html).
+library](../../std/convert/trait.From.html).
 
 Here are a few simple examples demonstrating how `From` works:
 
@@ -1271,7 +1271,7 @@ macro_rules! try {
 ```
 
 This is not its real definition. Its real definition is
-[in the standard library](../std/macro.try.html):
+[in the standard library](../../std/macro.try.html):
 
 <span id="code-try-def"></span>
 
@@ -1340,8 +1340,8 @@ There's one little nit left: the `Box<Error>` type is *opaque*. If we
 return a `Box<Error>` to the caller, the caller can't (easily) inspect
 underlying error type. The situation is certainly better than `String`
 because the caller can call methods like
-[`description`](../std/error/trait.Error.html#tymethod.description)
-and [`cause`](../std/error/trait.Error.html#method.cause), but the
+[`description`](../../std/error/trait.Error.html#tymethod.description)
+and [`cause`](../../std/error/trait.Error.html#method.cause), but the
 limitation remains: `Box<Error>` is opaque. (N.B. This isn't entirely
 true because Rust does have runtime reflection, which is useful in
 some scenarios that are [beyond the scope of this
@@ -1484,14 +1484,14 @@ And that's it!
 If your library needs to report custom errors, then you should
 probably define your own error type. It's up to you whether or not to
 expose its representation (like
-[`ErrorKind`](../std/io/enum.ErrorKind.html)) or keep it hidden (like
-[`ParseIntError`](../std/num/struct.ParseIntError.html)). Regardless
+[`ErrorKind`](../../std/io/enum.ErrorKind.html)) or keep it hidden (like
+[`ParseIntError`](../../std/num/struct.ParseIntError.html)). Regardless
 of how you do it, it's usually good practice to at least provide some
 information about the error beyond its `String`
 representation. But certainly, this will vary depending on use cases.
 
 At a minimum, you should probably implement the
-[`Error`](../std/error/trait.Error.html)
+[`Error`](../../std/error/trait.Error.html)
 trait. This will give users of your library some minimum flexibility for
 [composing errors](#the-real-try-macro). Implementing the `Error` trait also
 means that users are guaranteed the ability to obtain a string representation
@@ -1507,8 +1507,8 @@ provides `From` impls for both `io::Error` and `byteorder::Error`.
 Finally, depending on your tastes, you may also want to define a
 [`Result` type alias](#the-result-type-alias-idiom), particularly if your
 library defines a single error type. This is used in the standard library
-for [`io::Result`](../std/io/type.Result.html)
-and [`fmt::Result`](../std/fmt/type.Result.html).
+for [`io::Result`](../../std/io/type.Result.html)
+and [`fmt::Result`](../../std/fmt/type.Result.html).
 
 # Case study: A program to read population data
 
@@ -1702,9 +1702,9 @@ fn main() {
 Let's outline the errors. We can start with the obvious: the three places that
 `unwrap` is called:
 
-1. [`File::open`](../std/fs/struct.File.html#method.open)
+1. [`File::open`](../../std/fs/struct.File.html#method.open)
    can return an
-   [`io::Error`](../std/io/struct.Error.html).
+   [`io::Error`](../../std/io/struct.Error.html).
 2. [`csv::Reader::decode`](http://burntsushi.net/rustdoc/csv/struct.Reader.html#method.decode)
    decodes one record at a time, and
    [decoding a
@@ -1859,7 +1859,7 @@ Instead of `x.unwrap()`, we now have `try!(x)`. Since our function returns a
 error occurs.
 
 At the end of `search` we also convert a plain string to an error type 
-by using the [corresponding `From` impls](../std/convert/trait.From.html):
+by using the [corresponding `From` impls](../../std/convert/trait.From.html):
 
 ```rust,ignore
 // We are making use of this impl in the code above, since we call `From::from`
@@ -2162,10 +2162,10 @@ heuristics!
 
 * If you're writing short example code that would be overburdened by error
   handling, it's probably fine to use `unwrap` (whether that's
-  [`Result::unwrap`](../std/result/enum.Result.html#method.unwrap),
-  [`Option::unwrap`](../std/option/enum.Option.html#method.unwrap)
+  [`Result::unwrap`](../../std/result/enum.Result.html#method.unwrap),
+  [`Option::unwrap`](../../std/option/enum.Option.html#method.unwrap)
   or preferably
-  [`Option::expect`](../std/option/enum.Option.html#method.expect)).
+  [`Option::expect`](../../std/option/enum.Option.html#method.expect)).
   Consumers of your code should know to use proper error handling. (If they
   don't, send them here!)
 * If you're writing a quick 'n' dirty program, don't feel ashamed if you use
@@ -2175,37 +2175,37 @@ heuristics!
   anyway, then use either a `String` or a `Box<Error>` for your
   error type.
 * Otherwise, in a program, define your own error types with appropriate
-  [`From`](../std/convert/trait.From.html)
+  [`From`](../../std/convert/trait.From.html)
   and
-  [`Error`](../std/error/trait.Error.html)
-  impls to make the [`try!`](../std/macro.try.html)
+  [`Error`](../../std/error/trait.Error.html)
+  impls to make the [`try!`](../../std/macro.try.html)
   macro more ergonomic.
 * If you're writing a library and your code can produce errors, define your own
   error type and implement the
-  [`std::error::Error`](../std/error/trait.Error.html)
+  [`std::error::Error`](../../std/error/trait.Error.html)
   trait. Where appropriate, implement
-  [`From`](../std/convert/trait.From.html) to make both
+  [`From`](../../std/convert/trait.From.html) to make both
   your library code and the caller's code easier to write. (Because of Rust's
   coherence rules, callers will not be able to impl `From` on your error type,
   so your library should do it.)
 * Learn the combinators defined on
-  [`Option`](../std/option/enum.Option.html)
+  [`Option`](../../std/option/enum.Option.html)
   and
-  [`Result`](../std/result/enum.Result.html).
+  [`Result`](../../std/result/enum.Result.html).
   Using them exclusively can be a bit tiring at times, but I've personally
   found a healthy mix of `try!` and combinators to be quite appealing.
   `and_then`, `map` and `unwrap_or` are my favorites.
 
-[1]: ../book/patterns.html
-[2]: ../std/option/enum.Option.html#method.map
-[3]: ../std/option/enum.Option.html#method.unwrap_or
-[4]: ../std/option/enum.Option.html#method.unwrap_or_else
-[5]: ../std/option/enum.Option.html
-[6]: ../std/result/index.html
-[7]: ../std/result/enum.Result.html#method.unwrap
-[8]: ../std/fmt/trait.Debug.html
-[9]: ../std/primitive.str.html#method.parse
-[10]: ../book/associated-types.html
+[1]: patterns.html
+[2]: ../../std/option/enum.Option.html#method.map
+[3]: ../../std/option/enum.Option.html#method.unwrap_or
+[4]: ../../std/option/enum.Option.html#method.unwrap_or_else
+[5]: ../../std/option/enum.Option.html
+[6]: ../../std/result/index.html
+[7]: ../../std/result/enum.Result.html#method.unwrap
+[8]: ../../std/fmt/trait.Debug.html
+[9]: ../../std/primitive.str.html#method.parse
+[10]: associated-types.html
 [11]: https://github.com/petewarden/dstkdata
 [12]: http://burntsushi.net/stuff/worldcitiespop.csv.gz
 [13]: http://burntsushi.net/stuff/uscitiespop.csv.gz

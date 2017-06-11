@@ -1,4 +1,4 @@
-% The Final Code
+# The Final Code
 
 ```rust
 #![feature(unique)]
