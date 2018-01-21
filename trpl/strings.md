@@ -1,4 +1,4 @@
-% Strings
+# Strings
 
 Strings are an important concept for any programmer to master. Rust’s string
 handling system is a bit different from other languages, due to its systems
@@ -83,10 +83,10 @@ converted using `&*`.
 ```rust,no_run
 use std::net::TcpStream;
 
-TcpStream::connect("192.168.0.1:3000"); // &str parameter
+TcpStream::connect("192.168.0.1:3000"); // Parameter is of type &str.
 
 let addr_string = "192.168.0.1:3000".to_string();
-TcpStream::connect(&*addr_string); // convert addr_string to &str
+TcpStream::connect(&*addr_string); // Convert `addr_string` to &str.
 ```
 
 Viewing a `String` as a `&str` is cheap, but converting the `&str` to a
@@ -138,14 +138,14 @@ You can get something similar to an index like this:
 
 ```rust
 # let hachiko = "忠犬ハチ公";
-let dog = hachiko.chars().nth(1); // kinda like hachiko[1]
+let dog = hachiko.chars().nth(1); // Kinda like `hachiko[1]`.
 ```
 
 This emphasizes that we have to walk from the beginning of the list of `chars`.
 
 ## Slicing
 
-You can get a slice of a string with slicing syntax:
+You can get a slice of a string with the slicing syntax:
 
 ```rust
 let dog = "hachiko";
@@ -163,8 +163,8 @@ let hachi = &dog[0..2];
 with this error:
 
 ```text
-thread 'main' panicked at 'index 0 and/or 2 in `忠犬ハチ公` do not lie on
-character boundary'
+thread 'main' panicked at 'byte index 2 is not a char boundary; it is inside '忠'
+(bytes 0..3) of `忠犬ハチ公`'
 ```
 
 ## Concatenation
@@ -192,4 +192,4 @@ feature called ‘[`Deref` coercions][dc]’.
 
 [ut]: unsized-types.html
 [dc]: deref-coercions.html
-[connect]: ../std/net/struct.TcpStream.html#method.connect
+[connect]: ../../std/net/struct.TcpStream.html#method.connect

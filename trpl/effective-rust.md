@@ -1,4 +1,4 @@
-% Effective Rust
+# Effective Rust
 
 So you’ve learned how to write some Rust code. But there’s a difference between
 writing *any* Rust code and writing *good* Rust code.

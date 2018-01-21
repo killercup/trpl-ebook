@@ -1,4 +1,4 @@
-% Limits of Lifetimes
+# Limits of Lifetimes
 
 Given the following code:
 

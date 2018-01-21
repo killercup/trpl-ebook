@@ -1,4 +1,4 @@
-% Match
+# Match
 
 Often, a simple [`if`][if]/`else` isn’t enough, because you have more than two
 possible options. Also, conditions can get quite complex. Rust
@@ -82,7 +82,7 @@ fn process_message(msg: Message) {
     match msg {
         Message::Quit => quit(),
         Message::ChangeColor(r, g, b) => change_color(r, g, b),
-        Message::Move { x: x, y: y } => move_cursor(x, y),
+        Message::Move { x, y: new_name_for_y } => move_cursor(x, new_name_for_y),
         Message::Write(s) => println!("{}", s),
     };
 }

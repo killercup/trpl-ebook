@@ -1,10 +1,10 @@
-% Concurrency
+# Concurrency
 
 Concurrency and parallelism are incredibly important topics in computer
 science, and are also a hot topic in industry today. Computers are gaining more
 and more cores, yet many programmers aren't prepared to fully utilize them.
 
-Rust's memory safety features also apply to its concurrency story too. Even
+Rust's memory safety features also apply to its concurrency story. Even
 concurrent Rust programs must be memory safe, having no data races. Rust's type
 system is up to the task, and gives you powerful ways to reason about
 concurrent code at compile time.
@@ -26,7 +26,7 @@ to help us make sense of code that can possibly be concurrent.
 ### `Send`
 
 The first trait we're going to talk about is
-[`Send`](../std/marker/trait.Send.html). When a type `T` implements `Send`, it
+[`Send`](../../std/marker/trait.Send.html). When a type `T` implements `Send`, it
 indicates that something of this type is able to have ownership transferred
 safely between threads.
 
@@ -36,14 +36,14 @@ down the channel and to the other thread. Therefore, we'd ensure that `Send` was
 implemented for that type.
 
 In the opposite way, if we were wrapping a library with [FFI][ffi] that isn't
-threadsafe, we wouldn't want to implement `Send`, and so the compiler will help
+thread-safe, we wouldn't want to implement `Send`, and so the compiler will help
 us enforce that it can't leave the current thread.
 
 [ffi]: ffi.html
 
 ### `Sync`
 
-The second of these traits is called [`Sync`](../std/marker/trait.Sync.html).
+The second of these traits is called [`Sync`](../../std/marker/trait.Sync.html).
 When a type `T` implements `Sync`, it indicates that something
 of this type has no possibility of introducing memory unsafety when used from
 multiple threads concurrently through shared references. This implies that
@@ -213,10 +213,10 @@ fn main() {
     let mut data = Rc::new(vec![1, 2, 3]);
 
     for i in 0..3 {
-        // create a new owned reference
+        // Create a new owned reference:
         let data_ref = data.clone();
 
-        // use it in a thread
+        // Use it in a thread:
         thread::spawn(move || {
             data_ref[0] += i;
         });
@@ -238,7 +238,7 @@ This won't work, however, and will give us the error:
 
 As the error message mentions, `Rc` cannot be sent between threads safely. This
 is because the internal reference count is not maintained in a thread safe
-matter and can have a data race.
+manner and can have a data race.
 
 To solve this, we'll use `Arc<T>`, Rust's standard atomic reference count type.
 
@@ -281,8 +281,8 @@ And... still gives us an error.
 ```
 
 `Arc<T>` by default has immutable contents. It allows the _sharing_ of data
-between threads, but shared mutable data is unsafe and when threads are
-involved can cause data races!
+between threads, but shared mutable data is unsafe—and when threads are
+involved—can cause data races!
 
 
 Usually when we wish to make something in an immutable position mutable, we use
@@ -333,8 +333,8 @@ locked, it will wait until the other thread releases the lock.
 The lock "release" here is implicit; when the result of the lock (in this case,
 `data`) goes out of scope, the lock is automatically released.
 
-Note that [`lock`](../std/sync/struct.Mutex.html#method.lock) method of
-[`Mutex`](../std/sync/struct.Mutex.html) has this signature:
+Note that [`lock`](../../std/sync/struct.Mutex.html#method.lock) method of
+[`Mutex`](../../std/sync/struct.Mutex.html) has this signature:
 
 ```rust,ignore
 fn lock(&self) -> LockResult<MutexGuard<T>>
@@ -390,8 +390,8 @@ use std::sync::mpsc;
 fn main() {
     let data = Arc::new(Mutex::new(0));
 
-    // `tx` is the "transmitter" or "sender"
-    // `rx` is the "receiver"
+    // `tx` is the "transmitter" or "sender".
+    // `rx` is the "receiver".
     let (tx, rx) = mpsc::channel();
 
     for _ in 0..10 {

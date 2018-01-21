@@ -1,4 +1,4 @@
-% Mutability
+# Mutability
 
 Mutability, the ability to change something, works a bit differently in Rust
 than in other languages. The first aspect of mutability is its non-default
@@ -6,7 +6,7 @@ status:
 
 ```rust,ignore
 let x = 5;
-x = 6; // error!
+x = 6; // Error!
 ```
 
 We can introduce mutability with the `mut` keyword:
@@ -14,7 +14,7 @@ We can introduce mutability with the `mut` keyword:
 ```rust
 let mut x = 5;
 
-x = 6; // no problem!
+x = 6; // No problem!
 ```
 
 This is a mutable [variable binding][vb]. When a binding is mutable, it means
@@ -72,7 +72,7 @@ let x = Arc::new(5);
 let y = x.clone();
 ```
 
-[arc]: ../std/sync/struct.Arc.html
+[arc]: ../../std/sync/struct.Arc.html
 
 When we call `clone()`, the `Arc<T>` needs to update the reference count. Yet
 we’ve not used any `mut`s here, `x` is an immutable binding, and we didn’t take
@@ -107,7 +107,7 @@ let x = RefCell::new(42);
 let y = x.borrow_mut();
 ```
 
-[stdcell]: ../std/cell/index.html
+[stdcell]: ../../std/cell/index.html
 
 RefCell hands out `&mut` references to what’s inside of it with the
 `borrow_mut()` method. Isn’t that dangerous? What if we do:
@@ -136,7 +136,7 @@ some fields mutable and some immutable:
 ```rust,ignore
 struct Point {
     x: i32,
-    mut y: i32, // nope
+    mut y: i32, // Nope.
 }
 ```
 
@@ -152,9 +152,9 @@ let mut a = Point { x: 5, y: 6 };
 
 a.x = 10;
 
-let b = Point { x: 5, y: 6};
+let b = Point { x: 5, y: 6 };
 
-b.x = 10; // error: cannot assign to immutable field `b.x`
+b.x = 10; // Error: cannot assign to immutable field `b.x`.
 ```
 
 [struct]: structs.html
@@ -176,6 +176,6 @@ point.y.set(7);
 println!("y: {:?}", point.y);
 ```
 
-[cell]: ../std/cell/struct.Cell.html
+[cell]: ../../std/cell/struct.Cell.html
 
 This will print `y: Cell { value: 7 }`. We’ve successfully updated `y`.

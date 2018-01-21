@@ -1,4 +1,4 @@
-% Structs
+# Structs
 
 `struct`s are a way of creating more complex data types. For example, if we were
 doing calculations involving coordinates in 2D space, we would need both an `x`
@@ -61,7 +61,7 @@ write something like this:
 
 ```rust,ignore
 struct Point {
-    mut x: i32,
+    mut x: i32, // This causes an error.
     y: i32,
 }
 ```
@@ -82,13 +82,13 @@ fn main() {
 
     point.x = 5;
 
-    let point = point; // now immutable
+    let point = point; // `point` is now immutable.
 
-    point.y = 6; // this causes an error
+    point.y = 6; // This causes an error.
 }
 ```
 
-Your structure can still contain `&mut` pointers, which will let
+Your structure can still contain `&mut` references, which will let
 you do some kinds of mutation:
 
 ```rust
@@ -114,6 +114,28 @@ fn main() {
 
     assert_eq!(5, point.x);
     assert_eq!(6, point.y);
+}
+```
+
+Initialization of a data structure (struct, enum, union) can be simplified when
+fields of the data structure are initialized with variables of the same
+names as the fields.
+
+```rust
+#[derive(Debug)]
+struct Person<'a> {
+    name: &'a str,
+    age: u8
+}
+
+fn main() {
+    // Create struct with field init shorthand
+    let name = "Peter";
+    let age = 27;
+    let peter = Person { name, age };
+
+    // Debug-print struct
+    println!("{:?}", peter);
 }
 ```
 
@@ -233,13 +255,14 @@ rather than positions.
 
 You can define a `struct` with no members at all:
 
-```rust
-struct Electron {} // use empty braces...
-struct Proton;     // ...or just a semicolon
+```rust,compile_fail,E0423
+struct Electron {} // Use empty braces...
+struct Proton;     // ...or just a semicolon.
 
-// whether you declared the struct with braces or not, do the same when creating one
+// Use the same notation when creating an instance.
 let x = Electron {};
 let y = Proton;
+let z = Electron; // Error
 ```
 
 Such a `struct` is called ‘unit-like’ because it resembles the empty

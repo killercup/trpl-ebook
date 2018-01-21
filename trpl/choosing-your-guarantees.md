@@ -1,4 +1,4 @@
-% Choosing your Guarantees
+# Choosing your Guarantees
 
 One important feature of Rust is that it lets us control the costs and guarantees
 of a program.
@@ -25,7 +25,7 @@ the following:
 ```rust
 let x = Box::new(1);
 let y = x;
-// x no longer accessible here
+// `x` is no longer accessible here.
 ```
 
 Here, the box was _moved_ into `y`. As `x` no longer owns it, the compiler will no longer allow the
@@ -38,7 +38,7 @@ This is a zero-cost abstraction for dynamic allocation. If you want to allocate 
 heap and safely pass around a pointer to that memory, this is ideal. Note that you will only be
 allowed to share references to this by the regular borrowing rules, checked at compile time.
 
-[box]: ../std/boxed/struct.Box.html
+[box]: ../../std/boxed/struct.Box.html
 
 ## `&T` and `&mut T`
 
@@ -104,7 +104,7 @@ two `usize` values) as compared to a regular `Box<T>` (for "strong" and "weak" r
 or goes out of scope respectively. Note that a clone will not do a deep copy, rather it will simply
 increment the inner reference count and return a copy of the `Rc<T>`.
 
-[rc]: ../std/rc/struct.Rc.html
+[rc]: ../../std/rc/struct.Rc.html
 
 # Cell types
 
@@ -118,7 +118,8 @@ These types are _generally_ found in struct fields, but they may be found elsewh
 
 ## `Cell<T>`
 
-[`Cell<T>`][cell] is a type that provides zero-cost interior mutability, but only for `Copy` types.
+[`Cell<T>`][cell] is a type that provides zero-cost interior mutability by moving data in and
+out of the cell.
 Since the compiler knows that all the data owned by the contained value is on the stack, there's
 no worry of leaking any data behind references (or worse!) by simply replacing the data.
 
@@ -160,7 +161,7 @@ This relaxes the &ldquo;no aliasing with mutability&rdquo; restriction in places
 unnecessary. However, this also relaxes the guarantees that the restriction provides; so if your
 invariants depend on data stored within `Cell`, you should be careful.
 
-This is useful for mutating primitives and other `Copy` types when there is no easy way of
+This is useful for mutating primitives and other types when there is no easy way of
 doing it in line with the static rules of `&` and `&mut`.
 
 `Cell` does not let you obtain interior references to the data, which makes it safe to freely
@@ -168,16 +169,17 @@ mutate.
 
 #### Cost
 
-There is no runtime cost to using `Cell<T>`, however if you are using it to wrap larger (`Copy`)
+There is no runtime cost to using `Cell<T>`, however if you are using it to wrap larger
 structs, it might be worthwhile to instead wrap individual fields in `Cell<T>` since each write is
 otherwise a full copy of the struct.
 
 
 ## `RefCell<T>`
 
-[`RefCell<T>`][refcell] also provides interior mutability, but isn't restricted to `Copy` types.
+[`RefCell<T>`][refcell] also provides interior mutability, but doesn't move data in and out of the
+cell.
 
-Instead, it has a runtime cost. `RefCell<T>` enforces the read-write lock pattern at runtime (it's
+However, it has a runtime cost. `RefCell<T>` enforces the read-write lock pattern at runtime (it's
 like a single-threaded mutex), unlike `&T`/`&mut T` which do so at compile time. This is done by the
 `borrow()` and `borrow_mut()` functions, which modify an internal reference count and return smart
 pointers which can be dereferenced immutably and mutably respectively. The refcount is restored when
@@ -232,9 +234,9 @@ indicator (one word in size) along with the data.
 
 At runtime each borrow causes a modification/check of the refcount.
 
-[cell-mod]: ../std/cell/index.html
-[cell]: ../std/cell/struct.Cell.html
-[refcell]: ../std/cell/struct.RefCell.html
+[cell-mod]: ../../std/cell/index.html
+[cell]: ../../std/cell/struct.Cell.html
+[refcell]: ../../std/cell/struct.RefCell.html
 
 # Synchronous types
 
@@ -250,7 +252,7 @@ time.
 There are many useful wrappers for concurrent programming in the [sync][sync] module, but only the
 major ones will be covered below.
 
-[sync]: ../std/sync/index.html
+[sync]: ../../std/sync/index.html
 
 ## `Arc<T>`
 
@@ -278,7 +280,7 @@ This has the added cost of using atomics for changing the refcount (which will h
 cloned or goes out of scope). When sharing data from an `Arc` in a single thread, it is preferable
 to share `&` pointers whenever possible.
 
-[arc]: ../std/sync/struct.Arc.html
+[arc]: ../../std/sync/struct.Arc.html
 
 ## `Mutex<T>` and `RwLock<T>`
 
@@ -291,9 +293,9 @@ the inner data (mutably), and the lock will be released when the guard goes out 
 ```rust,ignore
 {
     let guard = mutex.lock();
-    // guard dereferences mutably to the inner type
+    // `guard` dereferences mutably to the inner type.
     *guard += 1;
-} // lock released when destructor runs
+} // Lock is released when destructor runs.
 ```
 
 
@@ -314,8 +316,8 @@ These use internal atomic-like types to maintain the locks, which are pretty cos
 all memory reads across processors till they're done). Waiting on these locks can also be slow when
 there's a lot of concurrent access happening.
 
-[rwlock]: ../std/sync/struct.RwLock.html
-[mutex]: ../std/sync/struct.Mutex.html
+[rwlock]: ../../std/sync/struct.RwLock.html
+[mutex]: ../../std/sync/struct.Mutex.html
 [sessions]: https://github.com/Munksgaard/rust-sessions
 
 # Composition

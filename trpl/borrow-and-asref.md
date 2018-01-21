@@ -1,14 +1,14 @@
-% Borrow and AsRef
+# Borrow and AsRef
 
 The [`Borrow`][borrow] and [`AsRef`][asref] traits are very similar, but
 different. Here’s a quick refresher on what these two traits mean.
 
-[borrow]: ../std/borrow/trait.Borrow.html
-[asref]: ../std/convert/trait.AsRef.html
+[borrow]: ../../std/borrow/trait.Borrow.html
+[asref]: ../../std/convert/trait.AsRef.html
 
 # Borrow
 
-The `Borrow` trait is used when you’re writing a datastructure, and you want to
+The `Borrow` trait is used when you’re writing a data structure, and you want to
 use either an owned or borrowed type as synonymous for some purpose.
 
 For example, [`HashMap`][hashmap] has a [`get` method][get] which uses `Borrow`:
@@ -19,8 +19,8 @@ fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
           Q: Hash + Eq
 ```
 
-[hashmap]: ../std/collections/struct.HashMap.html
-[get]: ../std/collections/struct.HashMap.html#method.get
+[hashmap]: ../../std/collections/struct.HashMap.html
+[get]: ../../std/collections/struct.HashMap.html#method.get
 
 This signature is pretty complicated. The `K` parameter is what we’re interested
 in here. It refers to a parameter of the `HashMap` itself:
@@ -86,7 +86,7 @@ We can see how they’re kind of the same: they both deal with owned and borrowe
 versions of some type. However, they’re a bit different.
 
 Choose `Borrow` when you want to abstract over different kinds of borrowing, or
-when you’re building a datastructure that treats owned and borrowed values in
+when you’re building a data structure that treats owned and borrowed values in
 equivalent ways, such as hashing and comparison.
 
 Choose `AsRef` when you want to convert something to a reference directly, and

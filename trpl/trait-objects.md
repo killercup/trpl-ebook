@@ -1,4 +1,4 @@
-% Trait Objects
+# Trait Objects
 
 When code involves polymorphism, there needs to be a mechanism to determine
 which specific version is actually run. This is called ‘dispatch’. There are
@@ -195,7 +195,7 @@ pub struct TraitObject {
 # }
 ```
 
-[stdraw]: ../std/raw/struct.TraitObject.html
+[stdraw]: ../../std/raw/struct.TraitObject.html
 
 That is, a trait object like `&Foo` consists of a ‘data’ pointer and a ‘vtable’
 pointer.
@@ -221,8 +221,8 @@ struct FooVtable {
 // u8:
 
 fn call_method_on_u8(x: *const ()) -> String {
-    // the compiler guarantees that this function is only called
-    // with `x` pointing to a u8
+    // The compiler guarantees that this function is only called
+    // with `x` pointing to a u8.
     let byte: &u8 = unsafe { &*(x as *const u8) };
 
     byte.method()
@@ -233,7 +233,7 @@ static Foo_for_u8_vtable: FooVtable = FooVtable {
     size: 1,
     align: 1,
 
-    // cast to a function pointer
+    // Cast to a function pointer:
     method: call_method_on_u8 as fn(*const ()) -> String,
 };
 
@@ -241,8 +241,8 @@ static Foo_for_u8_vtable: FooVtable = FooVtable {
 // String:
 
 fn call_method_on_String(x: *const ()) -> String {
-    // the compiler guarantees that this function is only called
-    // with `x` pointing to a String
+    // The compiler guarantees that this function is only called
+    // with `x` pointing to a String.
     let string: &String = unsafe { &*(x as *const String) };
 
     string.method()
@@ -250,7 +250,7 @@ fn call_method_on_String(x: *const ()) -> String {
 
 static Foo_for_String_vtable: FooVtable = FooVtable {
     destructor: /* compiler magic */,
-    // values for a 64-bit computer, halve them for 32-bit ones
+    // Values for a 64-bit computer, halve them for 32-bit ones.
     size: 24,
     align: 8,
 
@@ -263,10 +263,7 @@ any resources of the vtable’s type: for `u8` it is trivial, but for `String` i
 will free the memory. This is necessary for owning trait objects like
 `Box<Foo>`, which need to clean-up both the `Box` allocation as well as the
 internal type when they go out of scope. The `size` and `align` fields store
-the size of the erased type, and its alignment requirements; these are
-essentially unused at the moment since the information is embedded in the
-destructor, but will be used in the future, as trait objects are progressively
-made more flexible.
+the size of the erased type, and its alignment requirements.
 
 Suppose we’ve got some values that implement `Foo`. The explicit form of
 construction and use of `Foo` trait objects might look a bit like (ignoring the
@@ -278,17 +275,17 @@ let x: u8 = 1;
 
 // let b: &Foo = &a;
 let b = TraitObject {
-    // store the data
+    // Store the data:
     data: &a,
-    // store the methods
+    // Store the methods:
     vtable: &Foo_for_String_vtable
 };
 
 // let y: &Foo = x;
 let y = TraitObject {
-    // store the data
+    // Store the data:
     data: &x,
-    // store the methods
+    // Store the methods:
     vtable: &Foo_for_u8_vtable
 };
 

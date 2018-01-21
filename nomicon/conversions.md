@@ -1,4 +1,4 @@
-% Type Conversions
+# Type Conversions
 
 At the end of the day, everything is just a pile of bits somewhere, and type
 systems are just there to help us use those bits right. There are two common

@@ -1,4 +1,4 @@
-% Variable Bindings
+# Variable Bindings
 
 Virtually every non-'Hello World’ Rust program uses *variable bindings*. They
 bind some value to a name, so it can be used later. `let` is
@@ -47,7 +47,7 @@ let x: i32 = 5;
 ```
 
 If I asked you to read this out loud to the rest of the class, you’d say “`x`
-is a binding with the type `i32` and the value `five`.”
+is a binding with the type `i32` and the value `5`.”
 
 In this case we chose to represent `x` as a 32-bit signed integer. Rust has
 many different primitive integer types. They begin with `i` for signed integers
@@ -102,7 +102,7 @@ mutation, then the solution is quite easy: add `mut`.
 There are other good reasons to avoid mutable state when possible, but they’re
 out of the scope of this guide. In general, you can often avoid explicit
 mutation, and so it is preferable in Rust. That said, sometimes, mutation is
-what you need, so it’s not verboten.
+what you need, so it’s not forbidden.
 
 # Initializing bindings
 
@@ -161,7 +161,7 @@ Could not compile `hello_world`.
 
 Rust will not let us use a value that has not been initialized.
 
-Let take a minute to talk about this stuff we've added to `println!`.
+Let us take a minute to talk about this stuff we've added to `println!`.
 
 If you include two curly braces (`{}`, some call them moustaches...) in your
 string to print, Rust will interpret this as a request to interpolate some sort
@@ -176,12 +176,12 @@ more detailed manner, there are a [wide number of options available][format].
 For now, we'll stick to the default: integers aren't very complicated to
 print.
 
-[format]: ../std/fmt/index.html
+[format]: ../../std/fmt/index.html
 
 # Scope and shadowing
 
 Let’s get back to bindings. Variable bindings have a scope - they are
-constrained to live in a block they were defined in. A block is a collection
+constrained to live in the block they were defined in. A block is a collection
 of statements enclosed by `{` and `}`. Function definitions are also blocks!
 In the following example we define two variable bindings, `x` and `y`, which
 live in different blocks. `x` can be accessed from inside the `fn main() {}`
@@ -194,7 +194,7 @@ fn main() {
         let y: i32 = 3;
         println!("The value of x is {} and value of y is {}", x, y);
     }
-    println!("The value of x is {} and value of y is {}", x, y); // This won't work
+    println!("The value of x is {} and value of y is {}", x, y); // This won't work.
 }
 ```
 
@@ -207,7 +207,7 @@ Instead we get this error:
 $ cargo build
    Compiling hello v0.1.0 (file:///home/you/projects/hello_world)
 main.rs:7:62: 7:63 error: unresolved name `y`. Did you mean `x`? [E0425]
-main.rs:7     println!("The value of x is {} and value of y is {}", x, y); // This won't work
+main.rs:7     println!("The value of x is {} and value of y is {}", x, y); // This won't work.
                                                                        ^
 note: in expansion of format_args!
 <std macros>:2:25: 2:56 note: expansion site
@@ -229,13 +229,13 @@ scope will override the previous binding.
 ```rust
 let x: i32 = 8;
 {
-    println!("{}", x); // Prints "8"
+    println!("{}", x); // Prints "8".
     let x = 12;
-    println!("{}", x); // Prints "12"
+    println!("{}", x); // Prints "12".
 }
-println!("{}", x); // Prints "8"
+println!("{}", x); // Prints "8".
 let x =  42;
-println!("{}", x); // Prints "42"
+println!("{}", x); // Prints "42".
 ```
 
 Shadowing and mutable bindings may appear as two sides of the same coin, but
@@ -249,8 +249,8 @@ by any means.
 ```rust
 let mut x: i32 = 1;
 x = 7;
-let x = x; // x is now immutable and is bound to 7
+let x = x; // `x` is now immutable and is bound to `7`.
 
 let y = 4;
-let y = "I can also be bound to text!"; // y is now of a different type
+let y = "I can also be bound to text!"; // `y` is now of a different type.
 ```

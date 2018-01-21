@@ -1,4 +1,4 @@
-% The Rust Programming Language
+# The Rust Programming Language
 
 Welcome! This book will teach you about the [Rust Programming Language][rust].
 Rust is a systems programming language focused on three goals: safety, speed,
@@ -21,7 +21,6 @@ is the first. After this:
 * [Tutorial: Guessing Game][gg] - Learn some Rust with a small project.
 * [Syntax and Semantics][ss] - Each bit of Rust, broken down into small chunks.
 * [Effective Rust][er] - Higher-level concepts for writing excellent Rust code.
-* [Nightly Rust][nr] - Cutting-edge features that aren’t in stable builds yet.
 * [Glossary][gl] - A reference of terms used in the book.
 * [Bibliography][bi] - Background on Rust's influences, papers about Rust.
 
@@ -29,7 +28,6 @@ is the first. After this:
 [gg]: guessing-game.html
 [er]: effective-rust.html
 [ss]: syntax-and-semantics.html
-[nr]: nightly-rust.html
 [gl]: glossary.html
 [bi]: bibliography.html
 
@@ -38,4 +36,16 @@ is the first. After this:
 The source files from which this book is generated can be found on
 [GitHub][book].
 
-[book]: https://github.com/rust-lang/rust/tree/master/src/doc/book
+### Second edition of this book
+
+There are two editions of "The Rust Programming Language", this being the
+[first edition][first-edition].
+
+The [second edition][second-edition] is a complete re-write. It is still under
+construction, though it is far enough along to learn most of Rust. We suggest
+reading the second edition and then checking out the first edition later to pick
+up some of the more esoteric parts of the language.
+
+[book]: https://github.com/rust-lang/book/tree/master/first-edition/src
+[first-edition]: first-edition/index.html
+[second-edition]: second-edition/index.html

@@ -1,4 +1,4 @@
-% Patterns
+# Patterns
 
 Patterns are quite common in Rust. We use them in [variable
 bindings][bindings], [match expressions][match], and other places, too. Let’s go
@@ -22,6 +22,33 @@ match x {
 ```
 
 This prints `one`.
+
+It's possible to create a binding for the value in the any case:
+
+```rust
+let x = 1;
+
+match x {
+    y => println!("x: {} y: {}", x, y),
+}
+```
+
+This prints:
+
+```text
+x: 1 y: 1
+```
+
+Note it is an error to have both a catch-all `_` and a catch-all binding in the same match block:
+
+```rust
+let x = 1;
+
+match x {
+    y => println!("x: {} y: {}", x, y),
+    _ => println!("anything"), // this causes an error as it is unreachable
+}
+```
 
 There’s one pitfall with patterns: like anything that introduces a new binding,
 they introduce shadowing. For example:
@@ -163,7 +190,7 @@ ignore parts of a larger structure:
 
 ```rust
 fn coordinate() -> (i32, i32, i32) {
-    // generate and return some sort of triple tuple
+    // Generate and return some sort of triple tuple.
 # (1, 2, 3)
 }
 
@@ -182,7 +209,7 @@ let tuple: (u32, String) = (5, String::from("five"));
 // Here, tuple is moved, because the String moved:
 let (x, _s) = tuple;
 
-// The next line would give "error: use of partially moved value: `tuple`"
+// The next line would give "error: use of partially moved value: `tuple`".
 // println!("Tuple is: {:?}", tuple);
 
 // However,

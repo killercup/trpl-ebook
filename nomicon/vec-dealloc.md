@@ -1,4 +1,4 @@
-% Deallocating
+# Deallocating
 
 Next we should implement Drop so that we don't massively leak tons of resources.
 The easiest way is to just call `pop` until it yields None, and then deallocate
@@ -21,7 +21,7 @@ impl<T> Drop for Vec<T> {
             let elem_size = mem::size_of::<T>();
             let num_bytes = elem_size * self.cap;
             unsafe {
-                heap::deallocate(*self.ptr as *mut _, num_bytes, align);
+                heap::deallocate(self.ptr.as_ptr() as *mut _, num_bytes, align);
             }
         }
     }

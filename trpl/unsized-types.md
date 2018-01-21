@@ -1,4 +1,4 @@
-% Unsized Types
+# Unsized Types
 
 Most types have a particular size, in bytes, that is knowable at compile time.
 For example, an `i32` is thirty-two bits big, or four bytes. However, there are
