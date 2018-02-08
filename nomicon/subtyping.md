@@ -1,4 +1,4 @@
-% Subtyping and Variance
+# Subtyping and Variance
 
 Although Rust doesn't have any notion of structural inheritance, it *does*
 include subtyping. In Rust, subtyping derives entirely from lifetimes. Since

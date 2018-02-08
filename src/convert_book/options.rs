@@ -1,4 +1,4 @@
-pub const RELEASE_DATE: &'static str = "2016-10-01";
+pub const RELEASE_DATE: &'static str = "2017-06-12";
 
 pub const MARKDOWN: &'static str = "markdown+grid_tables+pipe_tables-simple_tables+raw_html+implicit_figures+footnotes+intraword_underscores+auto_identifiers-inline_code_attributes";
 
@@ -6,4 +6,4 @@ pub const HTML: &'static str = "--smart --normalize --standalone --self-containe
 
 pub const EPUB: &'static str = "--smart --normalize --standalone --self-contained --highlight-style=tango --epub-stylesheet=lib/epub.css --table-of-contents";
 
-pub const LATEX: &'static str = "--smart --normalize --standalone --self-contained --highlight-style=tango --chapters --table-of-contents --template=lib/template.tex --latex-engine=xelatex --to=latex";
+pub const LATEX: &'static str = "--smart --normalize --standalone --self-contained --highlight-style=tango --top-level-division=chapter --table-of-contents --template=lib/template.tex --latex-engine=xelatex --to=latex";

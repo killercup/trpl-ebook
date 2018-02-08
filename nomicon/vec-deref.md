@@ -1,4 +1,4 @@
-% Deref
+# Deref
 
 Alright! We've got a decent minimal stack implemented. We can push, we can
 pop, and we can clean up after ourselves. However there's a whole mess of

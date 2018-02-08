@@ -1,4 +1,4 @@
-% References
+# References
 
 This section gives a high-level view of the memory model that *all* Rust
 programs must satisfy to be correct. Safe code is statically verified

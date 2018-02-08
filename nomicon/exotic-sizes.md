@@ -1,4 +1,4 @@
-% Exotically Sized Types
+# Exotically Sized Types
 
 Most of the time, we think in terms of types with a fixed, positive size. This
 is not always the case, however.

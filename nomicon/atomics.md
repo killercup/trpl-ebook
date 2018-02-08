@@ -1,4 +1,4 @@
-% Atomics
+# Atomics
 
 Rust pretty blatantly just inherits C11's memory model for atomics. This is not
 due to this model being particularly excellent or easy to understand. Indeed,
@@ -24,10 +24,10 @@ exactly what we said but, you know, fast. Wouldn't that be great?
 
 # Compiler Reordering
 
-Compilers fundamentally want to be able to do all sorts of crazy transformations
-to reduce data dependencies and eliminate dead code. In particular, they may
-radically change the actual order of events, or make events never occur! If we
-write something like
+Compilers fundamentally want to be able to do all sorts of complicated
+transformations to reduce data dependencies and eliminate dead code. In
+particular, they may radically change the actual order of events, or make events
+never occur! If we write something like
 
 ```rust,ignore
 x = 1;

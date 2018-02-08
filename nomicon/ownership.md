@@ -1,4 +1,4 @@
-% Ownership and Lifetimes
+# Ownership and Lifetimes
 
 Ownership is the breakout feature of Rust. It allows Rust to be completely
 memory-safe and efficient, while avoiding garbage collection. Before getting
@@ -52,7 +52,7 @@ let mut data = vec![1, 2, 3];
 let x = &data[0];
 
 // OH NO! `push` causes the backing storage of `data` to be reallocated.
-// Dangling pointer! User after free! Alas!
+// Dangling pointer! Use after free! Alas!
 // (this does not compile in Rust)
 data.push(4);
 

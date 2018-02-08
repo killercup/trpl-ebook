@@ -24,8 +24,8 @@ struct Chapter {
 
 fn get_chapters(toc: &str) -> Vec<Chapter> {
     let toc_pattern = Regex::new(r"(?x)
-        (?P<indent>\s*?)
-        \*\s
+        (?P<indent>\s-?)
+        \s
         \[
         (?P<title>.+?)
         \]
@@ -76,10 +76,10 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
 
     {
         // Readme ~ "Getting Started"
-        let file = try!(file::get_file_content(&src_path.join("README.md")));
-        let mut content = try!(adjust_header_level::adjust_header_level(&file, 1));
+        let file = try!(file::get_file_content(&src_path.join("ch01-00-introduction.md")));
+        let mut content = try!(adjust_header_level::adjust_header_level(&file, 0));
         content = try!(remove_file_title::remove_file_title(&content));
-        content = try!(adjust_reference_names::adjust_reference_name(&content, "readme"));
+        content = try!(adjust_reference_names::adjust_reference_name(&content, "ch01-00-introduction"));
         content = try!(normalize::normalize(&content));
 
         put!(".");
@@ -93,7 +93,7 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
     for chapter in &get_chapters(&toc) {
         let file = try!(file::get_file_content(&src_path.join(&chapter.file)));
 
-        let mut content = try!(adjust_header_level::adjust_header_level(&file, 3));
+        let mut content = try!(adjust_header_level::adjust_header_level(&file, 0));
         content = try!(remove_file_title::remove_file_title(&content));
         content = try!(adjust_reference_names::adjust_reference_name(&content, &chapter.file));
         content = try!(normalize::normalize(&content));

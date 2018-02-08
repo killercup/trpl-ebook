@@ -1,4 +1,4 @@
-% Drain
+# Drain
 
 Let's move on to Drain. Drain is largely the same as IntoIter, except that
 instead of consuming the Vec, it borrows the Vec and leaves its allocation
