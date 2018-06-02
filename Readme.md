@@ -6,6 +6,21 @@ This repository contains stuff to convert [this book](http://doc.rust-lang.org/b
 
 [![Build Status](https://travis-ci.org/killercup/trpl-ebook.svg?branch=master)](https://travis-ci.org/killercup/trpl-ebook)
 
+## Docker
+The simplest way to execute this is to use docker. With a installed and running docker service you can use the Makefile to build all books: 
+
+```sh
+$ make all
+```
+Or just build a specific book (rustonomicon, trpl or trpl2):
+
+```sh
+$ make trpl
+```
+
+Results will appear into the *dist* directory.
+
+
 ## DIY
 
 Install:
