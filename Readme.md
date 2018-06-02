@@ -40,8 +40,13 @@ There are some CLI arguments that you can use to compile books other than the de
 You can build it like this:
 
 ```sh
-$ cargo run --release -- --prefix=nomicon --source=nomicon --meta=nomicon_meta.yml
+$ cargo run --release -- --prefix=rustonomicon --source=book_src/nomicon
 ```
+
+```sh
+$ cargo run --release -- --source=book_src/trpl
+```
+If your books meta.yml is not in the document directory supply the `--meta=...` argument.
 
 ## License
 

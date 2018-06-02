@@ -23,12 +23,12 @@ static USAGE: &'static str = r#"
 Compile Rustbook to EBook formats.
 
 Usage:
-  compile-trpl [--prefix=<prefix>] [--source=<directory>] [--meta=<meta_file>]
+  compile-trpl --source=<directory> [--prefix=<prefix>]  [--meta=<meta_file>]
 
 Options:
-  --prefix=<prefix>     Prefix/short name of your book, e.g. "trpl" or "nomicon".
   --source=<directory>  Directory containing the git book files, especially SUMMARY.md and README.md.
-  --meta=<meta_file>    Meta data of your book, needs to contain `date: {release_date}`.
+  --prefix=<prefix>     (Optional) Prefix/short name of your book, e.g. "trpl" or "nomicon".
+  --meta=<meta_file>    (Optional) Meta data of your book, needs to contain `date: {release_date}`.
 "#;
 
 #[derive(Debug, RustcDecodable)]
@@ -43,11 +43,9 @@ fn main() {
         .and_then(|d| d.decode())
         .unwrap_or_else(|e| e.exit());
 
-    let prefix = args.flag_prefix.unwrap_or("trpl".to_owned());
-    let source = args.flag_source.unwrap_or("trpl".to_owned());
-    let meta = args.flag_meta.unwrap_or("trpl_meta.yml".to_owned());
+    let source = args.flag_source.unwrap_or("book_src/trpl".to_owned());
 
-    convert_book::render_book(&prefix, &Path::new(&source), &meta).unwrap();
+    convert_book::render_book(args.flag_prefix, &Path::new(&source), args.flag_meta).unwrap();
 
     let index = convert_book::index::render_index("dist/").unwrap();
     helpers::file::write_string_to_file(&index, "dist/index.html").unwrap();

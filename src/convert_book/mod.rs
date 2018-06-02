@@ -11,8 +11,14 @@ use helpers;
 use convert_book::pandoc::save_as;
 
 /// Render book in different formats
-pub fn render_book(prefix: &str, src_path: &Path, meta_file: &str) -> Result<(), Box<Error>> {
-    let meta_data = try!(helpers::file::get_file_content(meta_file));
+pub fn render_book(prefix: Option<String>, src_path: &Path, meta_file: Option<String>) -> Result<(), Box<Error>> {
+    let src_folder = src_path.file_name().unwrap().to_str().unwrap();
+    let new_prefix = prefix.unwrap_or(src_folder.to_string());
+
+    let meta_file_path = src_path.join("meta.yml");
+    let meta_file_str = meta_file_path.to_str().unwrap();
+    let new_meta_file = meta_file.unwrap_or(meta_file_str.to_string());
+    let meta_data = try!(helpers::file::get_file_content(new_meta_file));
 
     let book = try!(markdown::to_single_file(src_path,
                                              &meta_data.replace("{release_date}",
@@ -20,23 +26,23 @@ pub fn render_book(prefix: &str, src_path: &Path, meta_file: &str) -> Result<(),
 
     try!(helpers::file::write_string_to_file(&book,
                                              &format!("dist/{}-{}.md",
-                                                      prefix,
+                                                      &new_prefix,
                                                       options::RELEASE_DATE)));
     println!("[✓] {}", "MD");
 
-    try!(save_as(&book, prefix, "html", options::HTML));
-    try!(save_as(&book, prefix, "epub", options::EPUB));
+    try!(save_as(&book, &new_prefix, "html", options::HTML));
+    try!(save_as(&book, &new_prefix, "epub", options::EPUB));
 
     let cc_book = helpers::convert_checkmarks::convert_checkmarks(&book);    
-    try!(save_as(&cc_book, prefix, "tex", options::LATEX));
+    try!(save_as(&cc_book, &new_prefix, "tex", options::LATEX));
 
     let plain_book = helpers::remove_emojis::remove_emojis(&cc_book);
     try!(save_as(&plain_book,
-                 prefix,
+                 &new_prefix,
                  "a4.pdf",
                  &format!(r"{} --variable papersize=a4paper", options::LATEX)));
     try!(save_as(&plain_book,
-                 prefix,
+                 &new_prefix,
                  "letter.pdf",
                  &format!(r"{} --variable papersize=letterpaper",
                           options::LATEX)));

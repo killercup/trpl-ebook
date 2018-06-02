@@ -1,19 +1,19 @@
-use std::path::Path;
-use std::error::Error;
 use regex::Regex;
+use std::error::Error;
+use std::path::Path;
 
 use helpers::*;
 
 /// Poor man's progress indicator
 macro_rules! put {
-    ($e:expr) => ({
+    ($e:expr) => {{
         {
             use std::io;
             use std::io::Write;
             print!($e);
             io::stdout().flush().unwrap();
         }
-    })
+    }};
 }
 
 #[derive(Debug, Hash, PartialEq, Eq)]
@@ -23,7 +23,8 @@ struct Chapter {
 }
 
 fn get_chapters(toc: &str) -> Vec<Chapter> {
-    let toc_pattern = Regex::new(r"(?x)
+    let toc_pattern = Regex::new(
+        r"(?x)
         (?P<indent>\s*?)
         \*\s
         \[
@@ -32,35 +33,46 @@ fn get_chapters(toc: &str) -> Vec<Chapter> {
         \(
         (?P<filename>.+?)
         \)
-    ").unwrap();
+    ",
+    ).unwrap();
 
-    let filename_pattern = Regex::new(r"(?x)
+    let filename_pattern = Regex::new(
+        r"(?x)
         ^
         (?P<path>(.*)/)?
         (?P<name>(.*?))
         (?P<ext>\.(\w*))?
         $
-    ").unwrap();
+    ",
+    ).unwrap();
 
     toc.lines()
-    .filter_map(|l| toc_pattern.captures(l))
-    .map(|link| {
-        let level = if link.name("indent").unwrap().chars().count() == 0 { "#" } else { "##" };
-        let id = filename_pattern.captures(
-            link.name("filename").unwrap()
-        ).unwrap().name("name").unwrap();
+        .filter_map(|l| toc_pattern.captures(l))
+        .map(|link| {
+            let level = if link.name("indent").unwrap().chars().count() == 0 {
+                "#"
+            } else {
+                "##"
+            };
+            let id = filename_pattern
+                .captures(link.name("filename").unwrap())
+                .unwrap()
+                .name("name")
+                .unwrap();
 
-        let headline = format!(
-            "{level} {name} {{#sec--{link}}}\n",
-            level = level, name = link.name("title").unwrap(), link = id
-        );
+            let headline = format!(
+                "{level} {name} {{#sec--{link}}}\n",
+                level = level,
+                name = link.name("title").unwrap(),
+                link = id
+            );
 
-        Chapter {
-            file: link.name("filename").unwrap().into(),
-            headline: headline,
-        }
-    })
-    .collect::<Vec<Chapter>>()
+            Chapter {
+                file: link.name("filename").unwrap().into(),
+                headline: headline,
+            }
+        })
+        .collect::<Vec<Chapter>>()
 }
 
 pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>> {
@@ -79,7 +91,9 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
         let file = try!(file::get_file_content(&src_path.join("README.md")));
         let mut content = try!(adjust_header_level::adjust_header_level(&file, 1));
         content = try!(remove_file_title::remove_file_title(&content));
-        content = try!(adjust_reference_names::adjust_reference_name(&content, "readme"));
+        content = try!(adjust_reference_names::adjust_reference_name(
+            &content, "readme"
+        ));
         content = try!(normalize::normalize(&content));
 
         put!(".");
@@ -95,7 +109,10 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
 
         let mut content = try!(adjust_header_level::adjust_header_level(&file, 3));
         content = try!(remove_file_title::remove_file_title(&content));
-        content = try!(adjust_reference_names::adjust_reference_name(&content, &chapter.file));
+        content = try!(adjust_reference_names::adjust_reference_name(
+            &content,
+            &chapter.file
+        ));
         content = try!(normalize::normalize(&content));
 
         put!(".");
