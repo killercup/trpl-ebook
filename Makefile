@@ -15,7 +15,7 @@ build:
 	docker build -t trpl-ebook -f Dockerfile .
 
 interactive: build
-	docker run --rm -it -v $(LOCAL_DIST_DIR):$(DIST_DIR) trpl-ebook bash
+	docker run --rm -it -v $(MAKEFILE_DIR):/trpl-ebook trpl-ebook bash
 
 all: build
 	docker run --rm -it -v $(LOCAL_DIST_DIR):$(DIST_DIR) trpl-ebook bash build.sh
