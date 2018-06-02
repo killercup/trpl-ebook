@@ -1,4 +1,4 @@
-% Foreign Function Interface
+# Foreign Function Interface
 
 # Introduction
 
@@ -28,8 +28,7 @@ and add `extern crate libc;` to your crate root.
 The following is a minimal example of calling a foreign function which will
 compile if snappy is installed:
 
-```rust,no_run
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 use libc::size_t;
 
@@ -56,14 +55,13 @@ almost any function that takes a pointer argument isn't valid for all possible
 inputs since the pointer could be dangling, and raw pointers fall outside of
 Rust's safe memory model.
 
-When declaring the argument types to a foreign function, the Rust compiler can
-not check if the declaration is correct, so specifying it correctly is part of
-keeping the binding correct at runtime.
+When declaring the argument types to a foreign function, the Rust compiler
+cannot check if the declaration is correct, so specifying it correctly is part
+of keeping the binding correct at runtime.
 
 The `extern` block can be extended to cover the entire snappy API:
 
-```rust,no_run
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 use libc::{c_int, size_t};
 
@@ -95,11 +93,10 @@ internal details.
 
 Wrapping the functions which expect buffers involves using the `slice::raw` module to manipulate Rust
 vectors as pointers to memory. Rust's vectors are guaranteed to be a contiguous block of memory. The
-length is number of elements currently contained, and the capacity is the total size in elements of
+length is the number of elements currently contained, and the capacity is the total size in elements of
 the allocated memory. The length is less than or equal to the capacity.
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 # extern crate libc;
 # use libc::{c_int, size_t};
 # unsafe fn snappy_validate_compressed_buffer(_: *const u8, _: size_t) -> c_int { 0 }
@@ -123,8 +120,7 @@ required capacity to hold the compressed output. The vector can then be passed t
 `snappy_compress` function as an output parameter. An output parameter is also passed to retrieve
 the true length after compression for setting the length.
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 # extern crate libc;
 # use libc::{size_t, c_int};
 # unsafe fn snappy_compress(a: *const u8, b: size_t, c: *mut u8,
@@ -150,8 +146,7 @@ pub fn compress(src: &[u8]) -> Vec<u8> {
 Decompression is similar, because snappy stores the uncompressed size as part of the compression
 format and `snappy_uncompressed_length` will retrieve the exact buffer size required.
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 # extern crate libc;
 # use libc::{size_t, c_int};
 # unsafe fn snappy_uncompress(compressed: *const u8,
@@ -185,8 +180,7 @@ pub fn uncompress(src: &[u8]) -> Option<Vec<u8>> {
 
 Then, we can add some tests to show how to use them.
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 # extern crate libc;
 # use libc::{c_int, size_t};
 # unsafe fn snappy_compress(input: *const u8,
@@ -246,7 +240,7 @@ Foreign libraries often hand off ownership of resources to the calling code.
 When this occurs, we must use Rust's destructors to provide safety and guarantee
 the release of these resources (especially in the case of panic).
 
-For more about destructors, see the [Drop trait](../std/ops/trait.Drop.html).
+For more about destructors, see the [Drop trait](../../std/ops/trait.Drop.html).
 
 # Callbacks from C code to Rust functions
 
@@ -277,7 +271,7 @@ extern {
 fn main() {
     unsafe {
         register_callback(callback);
-        trigger_callback(); // Triggers the callback
+        trigger_callback(); // Triggers the callback.
     }
 }
 ```
@@ -294,7 +288,7 @@ int32_t register_callback(rust_callback callback) {
 }
 
 void trigger_callback() {
-  cb(7); // Will call callback(7) in Rust
+  cb(7); // Will call callback(7) in Rust.
 }
 ```
 
@@ -309,7 +303,7 @@ However it is often desired that the callback is targeted to a special
 Rust object. This could be the object that represents the wrapper for the
 respective C object.
 
-This can be achieved by passing an raw pointer to the object down to the
+This can be achieved by passing a raw pointer to the object down to the
 C library. The C library can then include the pointer to the Rust object in
 the notification. This will allow the callback to unsafely access the
 referenced Rust object.
@@ -320,13 +314,13 @@ Rust code:
 #[repr(C)]
 struct RustObject {
     a: i32,
-    // other members
+    // Other members...
 }
 
 extern "C" fn callback(target: *mut RustObject, a: i32) {
     println!("I'm called from C with value {0}", a);
     unsafe {
-        // Update the value in RustObject with the value received from the callback
+        // Update the value in RustObject with the value received from the callback:
         (*target).a = a;
     }
 }
@@ -339,7 +333,7 @@ extern {
 }
 
 fn main() {
-    // Create the object that will be referenced in the callback
+    // Create the object that will be referenced in the callback:
     let mut rust_object = Box::new(RustObject { a: 5 });
 
     unsafe {
@@ -363,7 +357,7 @@ int32_t register_callback(void* callback_target, rust_callback callback) {
 }
 
 void trigger_callback() {
-  cb(cb_target, 7); // Will call callback(&rustObject, 7) in Rust
+  cb(cb_target, 7); // Will call callback(&rustObject, 7) in Rust.
 }
 ```
 
@@ -408,7 +402,7 @@ libraries:
 * Static - `#[link(name = "my_build_dependency", kind = "static")]`
 * Frameworks - `#[link(name = "CoreFoundation", kind = "framework")]`
 
-Note that frameworks are only available on OSX targets.
+Note that frameworks are only available on macOS targets.
 
 The different `kind` values are meant to differentiate how the native library
 participates in linkage. From a linkage perspective, the Rust compiler creates
@@ -437,7 +431,7 @@ A few examples of how this model can be used are:
   is included in a final target (like a binary), the native library will be
   linked in.
 
-On OSX, frameworks behave with the same semantics as a dynamic library.
+On macOS, frameworks behave with the same semantics as a dynamic library.
 
 # Unsafe blocks
 
@@ -460,8 +454,7 @@ Foreign APIs often export a global variable which could do something like track
 global state. In order to access these variables, you declare them in `extern`
 blocks with the `static` keyword:
 
-```rust,no_run
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 
 #[link(name = "readline")]
@@ -471,7 +464,7 @@ extern {
 
 fn main() {
     println!("You have readline version {} installed.",
-             rl_readline_version as i32);
+             unsafe { rl_readline_version as i32 });
 }
 ```
 
@@ -479,8 +472,7 @@ Alternatively, you may need to alter global state provided by a foreign
 interface. To do this, statics can be declared with `mut` so we can mutate
 them.
 
-```rust,no_run
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 
 use std::ffi::CString;
@@ -512,8 +504,7 @@ Most foreign code exposes a C ABI, and Rust uses the platform's C calling conven
 calling foreign functions. Some foreign functions, most notably the Windows API, use other calling
 conventions. Rust provides a way to tell the compiler which convention to use:
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 
 #[cfg(all(target_os = "win32", target_arch = "x86"))]
@@ -539,11 +530,12 @@ This is currently hidden behind the `abi_vectorcall` gate and is subject to chan
 * `system`
 * `C`
 * `win64`
+* `sysv64`
 
-Most of the abis in this list are self-explanatory, but the `system` abi may
+Most of the ABIs in this list are self-explanatory, but the `system` ABI may
 seem a little odd. This constraint selects whatever the appropriate ABI is for
 interoperating with the target's libraries. For example, on win32 with a x86
-architecture, this means that the abi used would be `stdcall`. On x86_64,
+architecture, this means that the ABI used would be `stdcall`. On x86_64,
 however, windows uses the `C` calling convention, so `C` would be used. This
 means that in our previous example, we could have used `extern "system" { ... }`
 to define a block for all windows systems, not only x86 ones.
@@ -573,6 +565,31 @@ The [`libc` crate on crates.io][libc] includes type aliases and function
 definitions for the C standard library in the `libc` module, and Rust links
 against `libc` and `libm` by default.
 
+# Variadic functions
+
+In C, functions can be 'variadic', meaning they accept a variable number of arguments. This can
+be achieved in Rust by specifying `...` within the argument list of a foreign function declaration:
+
+```rust,no_run
+extern {
+    fn foo(x: i32, ...);
+}
+
+fn main() {
+    unsafe {
+        foo(10, 20, 30, 40, 50);
+    }
+}
+```
+
+Normal Rust functions can *not* be variadic:
+
+```rust,ignore
+// This will not compile
+
+fn foo(x: i32, ...) { }
+```
+
 # The "nullable pointer optimization"
 
 Certain Rust types are defined to never be `null`. This includes references (`&T`,
@@ -598,14 +615,13 @@ callback, which gets called in certain situations. The callback is passed a func
 and an integer and it is supposed to run the function with the integer as a parameter. So
 we have function pointers flying across the FFI boundary in both directions.
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 use libc::c_int;
 
 # #[cfg(hidden)]
 extern "C" {
-    /// Register the callback.
+    /// Registers the callback.
     fn register(cb: Option<extern "C" fn(Option<extern "C" fn(c_int) -> c_int>, c_int) -> c_int>);
 }
 # unsafe fn register(_: Option<extern "C" fn(Option<extern "C" fn(c_int) -> c_int>,
@@ -661,25 +677,30 @@ attribute turns off Rust's name mangling, so that it is easier to link to.
 
 It’s important to be mindful of `panic!`s when working with FFI. A `panic!`
 across an FFI boundary is undefined behavior. If you’re writing code that may
-panic, you should run it in another thread, so that the panic doesn’t bubble up
-to C:
+panic, you should run it in a closure with [`catch_unwind`]:
 
 ```rust
-use std::thread;
+use std::panic::catch_unwind;
 
 #[no_mangle]
 pub extern fn oh_no() -> i32 {
-    let h = thread::spawn(|| {
+    let result = catch_unwind(|| {
         panic!("Oops!");
     });
-
-    match h.join() {
-        Ok(_) => 1,
-        Err(_) => 0,
+    match result {
+        Ok(_) => 0,
+        Err(_) => 1,
     }
 }
-# fn main() {}
+
+fn main() {}
 ```
+
+Please note that [`catch_unwind`] will only catch unwinding panics, not
+those who abort the process. See the documentation of [`catch_unwind`]
+for more information.
+
+[`catch_unwind`]: ../../std/panic/fn.catch_unwind.html
 
 # Representing opaque structs
 
@@ -694,8 +715,7 @@ void bar(void *arg);
 
 We can represent this in Rust with the `c_void` type:
 
-```rust
-# #![feature(libc)]
+```rust,ignore
 extern crate libc;
 
 extern "C" {
@@ -717,11 +737,11 @@ void foo(struct Foo *arg);
 void bar(struct Bar *arg);
 ```
 
-To do this in Rust, let’s create our own opaque types with `enum`:
+To do this in Rust, let’s create our own opaque types:
 
 ```rust
-pub enum Foo {}
-pub enum Bar {}
+#[repr(C)] pub struct Foo { private: [u8; 0] }
+#[repr(C)] pub struct Bar { private: [u8; 0] }
 
 extern "C" {
     pub fn foo(arg: *mut Foo);
@@ -730,7 +750,9 @@ extern "C" {
 # fn main() {}
 ```
 
-By using an `enum` with no variants, we create an opaque type that we can’t
-instantiate, as it has no variants. But because our `Foo` and `Bar` types are
+By including a private field and no constructor,
+we create an opaque type that we can’t instantiate outside of this module.
+An empty array is both zero-size and compatible with `#[repr(C)]`.
+But because our `Foo` and `Bar` types are
 different, we’ll get type safety between the two of them, so we cannot
 accidentally pass a pointer to `Foo` to `bar()`.

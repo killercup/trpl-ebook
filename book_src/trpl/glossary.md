@@ -1,4 +1,4 @@
-% Glossary
+# Glossary
 
 Not every Rustacean has a background in systems programming, nor in computer
 science, so we've added explanations of terms that might be unfamiliar.
@@ -56,7 +56,7 @@ They can be used to manage control flow in a modular fashion.
 
 A type without a statically known size or alignment. ([more info][link])
 
-[link]: ../nomicon/exotic-sizes.html#dynamically-sized-types-dsts
+[link]: ../../nomicon/exotic-sizes.html#dynamically-sized-types-dsts
 
 ### Expression
 

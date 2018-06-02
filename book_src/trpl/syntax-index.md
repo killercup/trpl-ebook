@@ -1,4 +1,4 @@
-% Syntax Index
+# Syntax Index
 
 ## Keywords
 
@@ -45,7 +45,7 @@
 * `%` (`expr % expr`): arithmetic remainder.  Overloadable (`Rem`).
 * `%=` (`var %= expr`): arithmetic remainder & assignment. Overloadable (`RemAssign`).
 * `&` (`expr & expr`): bitwise and.  Overloadable (`BitAnd`).
-* `&` (`&expr`): borrow.  See [References and Borrowing].
+* `&` (`&expr`, `&mut expr`): borrow.  See [References and Borrowing].
 * `&` (`&type`, `&mut type`, `&'a type`, `&'a mut type`): borrowed pointer type.  See [References and Borrowing].
 * `&=` (`var &= expr`): bitwise and & assignment. Overloadable (`BitAndAssign`).
 * `&&` (`expr && expr`): logical and.
@@ -61,7 +61,6 @@
 * `-` (`- expr`): arithmetic negation.  Overloadable (`Neg`).
 * `-=` (`var -= expr`): arithmetic subtraction & assignment. Overloadable (`SubAssign`).
 * `->` (`fn(…) -> type`, `|…| -> type`): function and closure return type.  See [Functions], [Closures].
-* `-> !` (`fn(…) -> !`, `|…| -> !`): diverging function or closure. See [Diverging Functions].
 * `.` (`expr.ident`): member access.  See [Structs], [Method Syntax].
 * `..` (`..`, `expr..`, `..expr`, `expr..expr`): right-exclusive range literal.
 * `..` (`..expr`): struct literal update syntax.  See [Structs (Update syntax)].
@@ -95,6 +94,7 @@
 * `|=` (`var |= expr`): bitwise or & assignment. Overloadable (`BitOrAssign`).
 * `||` (`expr || expr`): logical or.
 * `_`: "ignored" pattern binding (see [Patterns (Ignoring bindings)]). Also used to make integer-literals readable (see [Reference (Integer literals)]).
+* `?` (`expr?`): Error propagation. Returns early when `Err(_)` is encountered, unwraps otherwise. Similar to the [`try!` macro].
 
 ## Other Syntax
 
@@ -125,7 +125,7 @@
 <!-- Generics -->
 
 * `path<…>` (*e.g.* `Vec<u8>`): specifies parameters to generic type *in a type*.  See [Generics].
-* `path::<…>`, `method::<…>` (*e.g.* `"42".parse::<i32>()`): specifies parameters to generic type, function, or method *in an expression*.
+* `path::<…>`, `method::<…>` (*e.g.* `"42".parse::<i32>()`): specifies parameters to generic type, function, or method *in an expression*.  See [Generics § Resolving ambiguities](generics.html#resolving-ambiguities).
 * `fn ident<…> …`: define generic function.  See [Generics].
 * `struct ident<…> …`: define generic structure.  See [Generics].
 * `enum ident<…> …`: define generic enumeration.  See [Generics].
@@ -158,6 +158,10 @@
 * `/*…*/`: block comment.  See [Comments].
 * `/*!…*/`: inner block doc comment.  See [Comments].
 * `/**…*/`: outer block doc comment.  See [Comments].
+
+<!-- Special types -->
+
+* `!`: always empty Never type.  See [Diverging Functions].
 
 <!-- Various things involving parens and tuples -->
 
@@ -207,6 +211,7 @@
 [Functions]: functions.html
 [Generics]: generics.html
 [Iterators]: iterators.html
+[`try!` macro]: error-handling.html#the-try-macro
 [Lifetimes]: lifetimes.html
 [Loops (`for`)]: loops.html#for
 [Loops (`loop`)]: loops.html#loop
@@ -230,10 +235,10 @@
 [Primitive Types (Tuple Indexing)]: primitive-types.html#tuple-indexing
 [Primitive Types (Tuples)]: primitive-types.html#tuples
 [Raw Pointers]: raw-pointers.html
-[Reference (Byte String Literals)]: ../reference.html#byte-string-literals
-[Reference (Integer literals)]: ../reference.html#integer-literals
-[Reference (Raw Byte String Literals)]: ../reference.html#raw-byte-string-literals
-[Reference (Raw String Literals)]: ../reference.html#raw-string-literals
+[Reference (Byte String Literals)]: ../../reference/tokens.html#byte-and-byte-string-literals
+[Reference (Integer literals)]: ../../reference/tokens.html#integer-literals
+[Reference (Raw Byte String Literals)]: ../../reference/tokens.html#raw-byte-string-literals
+[Reference (Raw String Literals)]: ../../reference/tokens.html#raw-string-literals
 [References and Borrowing]: references-and-borrowing.html
 [Strings]: strings.html
 [Structs (Update syntax)]: structs.html#update-syntax

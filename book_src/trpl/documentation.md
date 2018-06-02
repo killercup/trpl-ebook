@@ -1,4 +1,4 @@
-% Documentation
+# Documentation
 
 Documentation is an important part of any software project, and it's
 first-class in Rust. Let's talk about the tooling Rust gives you to
@@ -28,7 +28,7 @@ code. You can use documentation comments for this purpose:
 /// let five = Rc::new(5);
 /// ```
 pub fn new(value: T) -> Rc<T> {
-    // implementation goes here
+    // Implementation goes here.
 }
 ```
 
@@ -76,7 +76,7 @@ This [unfortunate error](https://github.com/rust-lang/rust/issues/22547) is
 correct; documentation comments apply to the thing after them, and there's
 nothing after that last comment.
 
-[rc-new]: ../std/rc/struct.Rc.html#method.new
+[rc-new]: ../../std/rc/struct.Rc.html#method.new
 
 ### Writing documentation comments
 
@@ -170,8 +170,6 @@ more than one section:
 # fn foo() {}
 ```
 
-Let's discuss the details of these code blocks.
-
 #### Code block annotations
 
 To write some Rust code in a comment, use the triple graves:
@@ -183,23 +181,8 @@ To write some Rust code in a comment, use the triple graves:
 # fn foo() {}
 ```
 
-If you want something that's not Rust code, you can add an annotation:
-
-```rust
-/// ```c
-/// printf("Hello, world\n");
-/// ```
-# fn foo() {}
-```
-
-This will highlight according to whatever language you're showing off.
-If you're only showing plain text, choose `text`.
-
-It's important to choose the correct annotation here, because `rustdoc` uses it
-in an interesting way: It can be used to actually test your examples in a
-library crate, so that they don't get out of date. If you have some C code but
-`rustdoc` thinks it's Rust because you left off the annotation, `rustdoc` will
-complain when trying to generate the documentation.
+This will add code highlighting. If you are only showing plain text, put `text`
+instead of `rust` after the triple graves (see below).
 
 ## Documentation as tests
 
@@ -460,8 +443,9 @@ not actually pass as a test.
 ```
 
 The `no_run` attribute will compile your code, but not run it. This is
-important for examples such as "Here's how to start up a network service,"
-which you would want to make sure compile, but might run in an infinite loop!
+important for examples such as "Here's how to retrieve a web page,"
+which you would want to ensure compiles, but might be run in a test
+environment that has no network access.
 
 ### Documenting modules
 
@@ -483,7 +467,7 @@ you have a module in `foo.rs`, you'll often open its code and see this:
 ```rust
 //! A module for using `foo`s.
 //!
-//! The `foo` module contains a lot of useful functionality blah blah blah
+//! The `foo` module contains a lot of useful functionality blah blah blah...
 ```
 
 ### Crate documentation
@@ -600,7 +584,7 @@ is documented, especially when you are working on a library. Rust allows you to
 to generate warnings or errors, when an item is missing documentation.
 To generate warnings you use `warn`:
 
-```rust
+```rust,ignore
 #![warn(missing_docs)]
 ```
 
@@ -630,7 +614,7 @@ struct Hidden;
 You can control a few aspects of the HTML that `rustdoc` generates through the
 `#![doc]` version of the attribute:
 
-```rust
+```rust,ignore
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/")]

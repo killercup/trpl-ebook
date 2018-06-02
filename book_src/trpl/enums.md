@@ -1,4 +1,4 @@
-% Enums
+# Enums
 
 An `enum` in Rust is a type that represents data that is one of
 several possible variants. Each variant in the `enum` can optionally
@@ -51,7 +51,7 @@ possible variants:
 
 ```rust,ignore
 fn process_color_change(msg: Message) {
-    let Message::ChangeColor(r, g, b) = msg; // compile-time error
+    let Message::ChangeColor(r, g, b) = msg; // This causes a compile-time error.
 }
 ```
 

@@ -1,4 +1,4 @@
-% The Stack and the Heap
+# The Stack and the Heap
 
 As a systems language, Rust operates at a low level. If you’re coming from a
 high-level language, there are some aspects of systems programming that you may
@@ -86,7 +86,7 @@ to a large number, representing how much RAM your computer has. For example, if
 you have a gigabyte of RAM, your addresses go from `0` to `1,073,741,823`. That
 number comes from 2<sup>30</sup>, the number of bytes in a gigabyte. [^gigabyte]
 
-[^gigabyte]: ‘Gigabyte’ can mean two things: 10^9, or 2^30. The SI standard resolved this by stating that ‘gigabyte’ is 10^9, and ‘gibibyte’ is 2^30. However, very few people use this terminology, and rely on context to differentiate. We follow in that tradition here.
+[^gigabyte]: ‘Gigabyte’ can mean two things: 10<sup>9</sup>, or 2<sup>30</sup>. The IEC standard resolved this by stating that ‘gigabyte’ is 10<sup>9</sup>, and ‘gibibyte’ is 2<sup>30</sup>. However, very few people use this terminology, and rely on context to differentiate. We follow in that tradition here.
 
 This memory is kind of like a giant array: addresses start at zero and go
 up to the final number. So here’s a diagram of our first stack frame:
@@ -106,7 +106,9 @@ When `foo()` is called, a new stack frame is allocated:
 | 0       | x    | 42    |
 
 Because `0` was taken by the first frame, `1` and `2` are used for `foo()`’s
-stack frame. It grows upward, the more functions we call.
+stack frame. It grows upward, the more functions we call. Notice that we are **not**
+taking into account the size of each variable (for example, a 32 bit variable would
+use the memory addresses from 0 to 3, or 4 bytes).
 
 
 There are some important things we have to take note of here. The numbers 0, 1,
@@ -215,7 +217,7 @@ fn main() {
 }
 ```
 
-[box]: ../std/boxed/index.html
+[box]: ../../std/boxed/index.html
 
 Here’s what happens in memory when `main()` is called:
 
@@ -238,7 +240,7 @@ like this:
 | 1                    | y    | 42                     |
 | 0                    | x    | → (2<sup>30</sup>) - 1 |
 
-We have (2<sup>30</sup>) - 1 addresses in our hypothetical computer with 1GB of RAM. And since
+We have (2<sup>30</sup>) addresses in our hypothetical computer with 1GiB of RAM. And since
 our stack grows from zero, the easiest place to allocate memory is from the
 other end. So our first value is at the highest place in memory. And the value
 of the struct at `x` has a [raw pointer][rawpointer] to the place we’ve

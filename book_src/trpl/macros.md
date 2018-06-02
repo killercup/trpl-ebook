@@ -1,4 +1,4 @@
-% Macros
+# Macros
 
 By now you’ve learned about many of the tools Rust provides for abstracting and
 reusing code. These units of code reuse have a rich semantic structure. For
@@ -58,6 +58,7 @@ We can implement this shorthand, using a macro: [^actual]
 
 [^actual]: The actual definition of `vec!` in libcollections differs from the
            one presented here, for reasons of efficiency and reusability.
+		   
 
 ```rust
 macro_rules! vec {
@@ -101,7 +102,7 @@ trees, at compile time. The semicolon is optional on the last (here, only)
 case. The "pattern" on the left-hand side of `=>` is known as a ‘matcher’.
 These have [their own little grammar] within the language.
 
-[their own little grammar]: ../reference.html#macros
+[their own little grammar]: ../../reference/macros.html
 
 The matcher `$x:expr` will match any Rust expression, binding that syntax tree
 to the ‘metavariable’ `$x`. The identifier `expr` is a ‘fragment specifier’;
@@ -261,36 +262,34 @@ The metavariable `$x` is parsed as a single expression node, and keeps its
 place in the syntax tree even after substitution.
 
 Another common problem in macro systems is ‘variable capture’. Here’s a C
-macro, using [a GNU C extension] to emulate Rust’s expression blocks.
-
-[a GNU C extension]: https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
+macro using a block with multiple statements.
 
 ```text
-#define LOG(msg) ({ \
+#define LOG(msg) do { \
     int state = get_log_state(); \
     if (state > 0) { \
         printf("log(%d): %s\n", state, msg); \
     } \
-})
+} while (0)
 ```
 
 Here’s a simple use case that goes terribly wrong:
 
 ```text
 const char *state = "reticulating splines";
-LOG(state)
+LOG(state);
 ```
 
 This expands to
 
 ```text
 const char *state = "reticulating splines";
-{
+do {
     int state = get_log_state();
     if (state > 0) {
         printf("log(%d): %s\n", state, state);
     }
-}
+} while (0);
 ```
 
 The second variable named `state` shadows the first one.  This is a problem
@@ -365,7 +364,7 @@ fn main() {
 }
 ```
 
-[items]: ../reference.html#items
+[items]: ../../reference/items.html
 
 # Recursive macros
 
@@ -492,7 +491,7 @@ be forced to choose between parsing `$i` and parsing `$e`. Changing the
 invocation syntax to put a distinctive token in front can solve the problem. In
 this case, you can write `$(I $i:ident)* E $e:expr`.
 
-[item]: ../reference.html#items
+[item]: ../../reference/items.html
 
 # Scoping and macro import/export
 
@@ -503,7 +502,29 @@ constructs in the language.
 Definition and expansion of macros both happen in a single depth-first,
 lexical-order traversal of a crate’s source. So a macro defined at module scope
 is visible to any subsequent code in the same module, which includes the body
-of any subsequent child `mod` items.
+of any subsequent child `mod` items. If you want to use your macro, which is
+defined in a different module, you need to use `macro_use` attribute *before*
+using the macro. Let's say our macros are defined in module `macros` and we
+would like to use them inside module `client`. This is the required module
+definition order:
+
+```rust
+#[macro_use]
+mod macros;
+mod client;
+```
+
+The opposite order would result in a compilation failure:
+
+```rust
+mod client;
+#[macro_use]
+mod macros;
+```
+
+```bash
+error: cannot find macro `my_macro!` in this scope
+```
 
 A macro defined within the body of a single `fn`, or anywhere else not at
 module scope, is visible only within that item.
@@ -533,33 +554,33 @@ An example:
 ```rust
 macro_rules! m1 { () => (()) }
 
-// visible here: m1
+// Visible here: `m1`.
 
 mod foo {
-    // visible here: m1
+    // Visible here: `m1`.
 
     #[macro_export]
     macro_rules! m2 { () => (()) }
 
-    // visible here: m1, m2
+    // Visible here: `m1`, `m2`.
 }
 
-// visible here: m1
+// Visible here: `m1`.
 
 macro_rules! m3 { () => (()) }
 
-// visible here: m1, m3
+// Visible here: `m1`, `m3`.
 
 #[macro_use]
 mod bar {
-    // visible here: m1, m3
+    // Visible here: `m1`, `m3`.
 
     macro_rules! m4 { () => (()) }
 
-    // visible here: m1, m3, m4
+    // Visible here: `m1`, `m3`, `m4`.
 }
 
-// visible here: m1, m3, m4
+// Visible here: `m1`, `m3`, `m4`.
 # fn main() { }
 ```
 
@@ -567,7 +588,7 @@ When this library is loaded with `#[macro_use] extern crate`, only `m2` will
 be imported.
 
 The Rust Reference has a [listing of macro-related
-attributes](../reference.html#macro-related-attributes).
+attributes](../../reference/attributes.html#macro-related-attributes).
 
 # The variable `$crate`
 
@@ -644,7 +665,7 @@ macro_rules! bct {
     (1, $p:tt, $($ps:tt),* ; $($ds:tt),*)
         => (bct!($($ps),*, 1, $p ; $($ds),*));
 
-    // halt on empty data string
+    // Halt on empty data string:
     ( $($ps:tt),* ; )
         => (());
 }
@@ -662,7 +683,7 @@ Here are some common macros you’ll see in Rust code.
 This macro causes the current thread to panic. You can give it a message
 to panic with:
 
-```rust,no_run
+```rust,should_panic
 panic!("oh no!");
 ```
 
@@ -688,13 +709,13 @@ These two macros are used in tests. `assert!` takes a boolean. `assert_eq!`
 takes two values and checks them for equality. `true` passes, `false` `panic!`s.
 Like this:
 
-```rust,no_run
+```rust,should_panic
 // A-ok!
 
 assert!(true);
 assert_eq!(5, 3 + 2);
 
-// nope :(
+// Nope :(
 
 assert!(5 < 3);
 assert_eq!(5, 3);
@@ -763,12 +784,3 @@ to typecheck, and don’t want to worry about writing out the body of the
 function. One example of this situation is implementing a trait with multiple
 required methods, where you want to tackle one at a time. Define the others
 as `unimplemented!` until you’re ready to write them.
-
-# Procedural macros
-
-If Rust’s macro system can’t do what you need, you may want to write a
-[compiler plugin](compiler-plugins.html) instead. Compared to `macro_rules!`
-macros, this is significantly more work, the interfaces are much less stable,
-and bugs can be much harder to track down. In exchange you get the
-flexibility of running arbitrary Rust code within the compiler. Syntax
-extension plugins are sometimes called ‘procedural macros’ for this reason.

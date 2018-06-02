@@ -1,5 +1,7 @@
 # Summary
 
+[Introduction](README.md)
+
 * [Getting Started](getting-started.md)
 * [Tutorial: Guessing Game](guessing-game.md)
 * [Syntax and Semantics](syntax-and-semantics.md)
@@ -52,18 +54,7 @@
     * [Borrow and AsRef](borrow-and-asref.md)
     * [Release Channels](release-channels.md)
     * [Using Rust without the standard library](using-rust-without-the-standard-library.md)
-* [Nightly Rust](nightly-rust.md)
-    * [Compiler Plugins](compiler-plugins.md)
-    * [Inline Assembly](inline-assembly.md)
-    * [No stdlib](no-stdlib.md)
-    * [Intrinsics](intrinsics.md)
-    * [Lang items](lang-items.md)
-    * [Advanced linking](advanced-linking.md)
-    * [Benchmark Tests](benchmark-tests.md)
-    * [Box Syntax and Patterns](box-syntax-and-patterns.md)
-    * [Slice Patterns](slice-patterns.md)
-    * [Associated Constants](associated-constants.md)
-    * [Custom Allocators](custom-allocators.md)
+    * [Procedural Macros (and custom derive)](procedural-macros.md)
 * [Glossary](glossary.md)
 * [Syntax Index](syntax-index.md)
 * [Bibliography](bibliography.md)
