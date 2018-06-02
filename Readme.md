@@ -25,7 +25,7 @@ Results will appear into the *dist* directory.
 
 Install:
 
-- pandoc
+- pandoc version >= 2.0
 - Rust and cargo
 - XeLaTeX, up to date (`sudo tlmgr update -all`) and probably some additional packages (`sudo tlmgr install $pkg`) such as:
     + framed
@@ -61,7 +61,7 @@ $ cargo run --release -- --prefix=rustonomicon --source=book_src/nomicon
 ```sh
 $ cargo run --release -- --source=book_src/trpl
 ```
-If your books meta.yml is not in the document directory supply the `--meta=...` argument.
+If your books meta.yml is not in the document directory supply the `--meta=$path-to-file` argument.
 
 ## License
 
