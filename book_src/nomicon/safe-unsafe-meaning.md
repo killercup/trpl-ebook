@@ -1,150 +1,145 @@
-% How Safe and Unsafe Interact
+# How Safe and Unsafe Interact
 
-So what's the relationship between Safe and Unsafe Rust? How do they interact?
+What's the relationship between Safe Rust and Unsafe Rust? How do they
+interact?
 
-Rust models the separation between Safe and Unsafe Rust with the `unsafe`
-keyword, which can be thought as a sort of *foreign function interface* (FFI)
-between Safe and Unsafe Rust. This is the magic behind why we can say Safe Rust
-is a safe language: all the scary unsafe bits are relegated exclusively to FFI
-*just like every other safe language*.
+The separation between Safe Rust and Unsafe Rust is controlled with the
+`unsafe` keyword, which acts as an interface from one to the other. This is
+why we can say Safe Rust is a safe language: all the unsafe parts are kept
+exclusively behind the `unsafe` boundary. If you wish, you can even toss
+`#![forbid(unsafe_code)]` into your code base to statically guarantee that
+you're only writing Safe Rust.
 
-However because one language is a subset of the other, the two can be cleanly
-intermixed as long as the boundary between Safe and Unsafe Rust is denoted with
-the `unsafe` keyword. No need to write headers, initialize runtimes, or any of
-that other FFI boiler-plate.
+The `unsafe` keyword has two uses: to declare the existence of contracts the
+compiler can't check, and to declare that a programmer has checked that these
+contracts have been upheld.
 
-There are several places `unsafe` can appear in Rust today, which can largely be
-grouped into two categories:
+You can use `unsafe` to indicate the existence of unchecked contracts on
+_functions_ and _trait declarations_. On functions, `unsafe` means that
+users of the function must check that function's documentation to ensure
+they are using it in a way that maintains the contracts the function
+requires. On trait declarations, `unsafe` means that implementors of the
+trait must check the trait documentation to ensure their implementation
+maintains the contracts the trait requires.
 
-* There are unchecked contracts here. To declare you understand this, I require
-you to write `unsafe` elsewhere:
-    * On functions, `unsafe` is declaring the function to be unsafe to call.
-      Users of the function must check the documentation to determine what this
-      means, and then have to write `unsafe` somewhere to identify that they're
-      aware of the danger.
-    * On trait declarations, `unsafe` is declaring that *implementing* the trait
-      is an unsafe operation, as it has contracts that other unsafe code is free
-      to trust blindly. (More on this below.)
+You can use `unsafe` on a block to declare that all unsafe actions performed
+within are verified to uphold the contracts of those operations. For instance,
+the index passed to `slice::get_unchecked` is in-bounds.
 
-* I am declaring that I have, to the best of my knowledge, adhered to the
-unchecked contracts:
-    * On trait implementations, `unsafe` is declaring that the contract of the
-      `unsafe` trait has been upheld.
-    * On blocks, `unsafe` is declaring any unsafety from an unsafe
-      operation within to be handled, and therefore the parent function is safe.
+You can use `unsafe` on a trait implementation to declare that the implementation
+upholds the trait's contract. For instance, that a type implementing `Send` is
+really safe to move to another thread.
 
-There is also `#[unsafe_no_drop_flag]`, which is a special case that exists for
-historical reasons and is in the process of being phased out. See the section on
-[drop flags] for details.
+The standard library has a number of unsafe functions, including:
 
-Some examples of unsafe functions:
-
-* `slice::get_unchecked` will perform unchecked indexing, allowing memory
-  safety to be freely violated.
-* every raw pointer to sized type has intrinsic `offset` method that invokes
-  Undefined Behavior if it is not "in bounds" as defined by LLVM.
-* `mem::transmute` reinterprets some value as having the given type,
-  bypassing type safety in arbitrary ways. (see [conversions] for details)
-* All FFI functions are `unsafe` because they can do arbitrary things.
-  C being an obvious culprit, but generally any language can do something
-  that Rust isn't happy about.
+* `slice::get_unchecked`, which performs unchecked indexing, allowing
+  memory safety to be freely violated.
+* `mem::transmute` reinterprets some value as having a given type, bypassing
+  type safety in arbitrary ways (see [conversions] for details).
+* Every raw pointer to a sized type has an `offset` method that
+  invokes Undefined Behavior if the passed offset is not ["in bounds"][ptr_offset].
+* All FFI (Foreign Function Interface) functions are `unsafe` to call because the
+  other language can do arbitrary operations that the Rust compiler can't check.
 
 As of Rust 1.0 there are exactly two unsafe traits:
 
-* `Send` is a marker trait (it has no actual API) that promises implementors
-  are safe to send (move) to another thread.
-* `Sync` is a marker trait that promises that threads can safely share
-  implementors through a shared reference.
+* `Send` is a marker trait (a trait with no API) that promises implementors are
+  safe to send (move) to another thread.
+* `Sync` is a marker trait that promises threads can safely share implementors
+  through a shared reference.
 
-The need for unsafe traits boils down to the fundamental property of safe code:
+Much of the Rust standard library also uses Unsafe Rust internally. These
+implementations have generally been rigorously manually checked, so the Safe Rust
+interfaces built on top of these implementations can be assumed to be safe.
 
-**No matter how completely awful Safe code is, it can't cause Undefined
-Behavior.**
+The need for all of this separation boils down a single fundamental property
+of Safe Rust:
 
-This means that Unsafe Rust, **the royal vanguard of Undefined Behavior**, has to be
-*super paranoid* about generic safe code. To be clear, Unsafe Rust is totally free to trust
-specific safe code. Anything else would degenerate into infinite spirals of
-paranoid despair. In particular it's generally regarded as ok to trust the standard library
-to be correct. `std` is effectively an extension of the language, and you
-really just have to trust the language. If `std` fails to uphold the
-guarantees it declares, then it's basically a language bug.
+**No matter what, Safe Rust can't cause Undefined Behavior.**
 
-That said, it would be best to minimize *needlessly* relying on properties of
-concrete safe code. Bugs happen! Of course, I must reinforce that this is only
-a concern for Unsafe code. Safe code can blindly trust anyone and everyone
-as far as basic memory-safety is concerned.
+The design of the safe/unsafe split means that there is an asymmetric trust
+relationship between Safe and Unsafe Rust. Safe Rust inherently has to
+trust that any Unsafe Rust it touches has been written correctly.
+On the other hand, Unsafe Rust has to be very careful about trusting Safe Rust.
 
-On the other hand, safe traits are free to declare arbitrary contracts, but because
-implementing them is safe, unsafe code can't trust those contracts to actually
-be upheld. This is different from the concrete case because *anyone* can
-randomly implement the interface. There is something fundamentally different
-about trusting a particular piece of code to be correct, and trusting *all the
-code that will ever be written* to be correct.
+As an example, Rust has the `PartialOrd` and `Ord` traits to differentiate
+between types which can "just" be compared, and those that provide a "total"
+ordering (which basically means that comparison behaves reasonably).
 
-For instance Rust has `PartialOrd` and `Ord` traits to try to differentiate
-between types which can "just" be compared, and those that actually implement a
-total ordering. Pretty much every API that wants to work with data that can be
-compared wants Ord data. For instance, a sorted map like BTreeMap
-*doesn't even make sense* for partially ordered types. If you claim to implement
-Ord for a type, but don't actually provide a proper total ordering, BTreeMap will
-get *really confused* and start making a total mess of itself. Data that is
-inserted may be impossible to find!
+`BTreeMap` doesn't really make sense for partially-ordered types, and so it
+requires that its keys implement `Ord`. However, `BTreeMap` has Unsafe Rust code
+inside of its implementation. Because it would be unacceptable for a sloppy `Ord`
+implementation (which is Safe to write) to cause Undefined Behavior, the Unsafe
+code in BTreeMap must be written to be robust against `Ord` implementations which
+aren't actually total — even though that's the whole point of requiring `Ord`.
 
-But that's okay. BTreeMap is safe, so it guarantees that even if you give it a
-completely garbage Ord implementation, it will still do something *safe*. You
-won't start reading uninitialized or unallocated memory. In fact, BTreeMap
-manages to not actually lose any of your data. When the map is dropped, all the
-destructors will be successfully called! Hooray!
+The Unsafe Rust code just can't trust the Safe Rust code to be written correctly.
+That said, `BTreeMap` will still behave completely erratically if you feed in
+values that don't have a total ordering. It just won't ever cause Undefined
+Behavior.
 
-However BTreeMap is implemented using a modest spoonful of Unsafe Rust (most collections
-are). That means that it's not necessarily *trivially true* that a bad Ord
-implementation will make BTreeMap behave safely. BTreeMap must be sure not to rely
-on Ord *where safety is at stake*. Ord is provided by safe code, and safety is not
-safe code's responsibility to uphold.
+One may wonder, if `BTreeMap` cannot trust `Ord` because it's Safe, why can it
+trust *any* Safe code? For instance `BTreeMap` relies on integers and slices to
+be implemented correctly. Those are safe too, right?
 
-But wouldn't it be grand if there was some way for Unsafe to trust some trait
-contracts *somewhere*? This is the problem that unsafe traits tackle: by marking
-*the trait itself* as unsafe to implement, unsafe code can trust the implementation
-to uphold the trait's contract. Although the trait implementation may be
-incorrect in arbitrary other ways.
+The difference is one of scope. When `BTreeMap` relies on integers and slices,
+it's relying on one very specific implementation. This is a measured risk that
+can be weighed against the benefit. In this case there's basically zero risk;
+if integers and slices are broken, *everyone* is broken. Also, they're maintained
+by the same people who maintain `BTreeMap`, so it's easy to keep tabs on them.
 
-For instance, given a hypothetical UnsafeOrd trait, this is technically a valid
-implementation:
+On the other hand, `BTreeMap`'s key type is generic. Trusting its `Ord` implementation
+means trusting every `Ord` implementation in the past, present, and future.
+Here the risk is high: someone somewhere is going to make a mistake and mess up
+their `Ord` implementation, or even just straight up lie about providing a total
+ordering because "it seems to work". When that happens, `BTreeMap` needs to be
+prepared.
+
+The same logic applies to trusting a closure that's passed to you to behave
+correctly.
+
+This problem of unbounded generic trust is the problem that `unsafe` traits
+exist to resolve. The `BTreeMap` type could theoretically require that keys
+implement a new trait called `UnsafeOrd`, rather than `Ord`, that might look
+like this:
 
 ```rust
-# use std::cmp::Ordering;
-# struct MyType;
-# unsafe trait UnsafeOrd { fn cmp(&self, other: &Self) -> Ordering; }
-unsafe impl UnsafeOrd for MyType {
-    fn cmp(&self, other: &Self) -> Ordering {
-        Ordering::Equal
-    }
+use std::cmp::Ordering;
+
+unsafe trait UnsafeOrd {
+    fn cmp(&self, other: &Self) -> Ordering;
 }
 ```
 
-But it's probably not the implementation you want.
+Then, a type would use `unsafe` to implement `UnsafeOrd`, indicating that
+they've ensured their implementation maintains whatever contracts the
+trait expects. In this situation, the Unsafe Rust in the internals of
+`BTreeMap` would be justified in trusting that the key type's `UnsafeOrd`
+implementation is correct. If it isn't, it's the fault of the unsafe trait
+implementation, which is consistent with Rust's safety guarantees.
 
-Rust has traditionally avoided making traits unsafe because it makes Unsafe
-pervasive, which is not desirable. The reason Send and Sync are unsafe is because thread
-safety is a *fundamental property* that unsafe code cannot possibly hope to defend
-against in the same way it would defend against a bad Ord implementation. The
-only way to possibly defend against thread-unsafety would be to *not use
-threading at all*. Making every load and store atomic isn't even sufficient,
-because it's possible for complex invariants to exist between disjoint locations
-in memory. For instance, the pointer and capacity of a Vec must be in sync.
+The decision of whether to mark a trait `unsafe` is an API design choice.
+Rust has traditionally avoided doing this because it makes Unsafe
+Rust pervasive, which isn't desirable. `Send` and `Sync` are marked unsafe
+because thread safety is a *fundamental property* that unsafe code can't
+possibly hope to defend against in the way it could defend against a bad
+`Ord` implementation. The decision of whether to mark your own traits `unsafe`
+depends on the same sort of consideration. If `unsafe` code can't reasonably
+expect to defend against a bad implementation of the trait, then marking the
+trait `unsafe` is a reasonable choice.
 
-Even concurrent paradigms that are traditionally regarded as Totally Safe like
-message passing implicitly rely on some notion of thread safety -- are you
-really message-passing if you pass a pointer? Send and Sync therefore require
-some fundamental level of trust that Safe code can't provide, so they must be
-unsafe to implement. To help obviate the pervasive unsafety that this would
-introduce, Send (resp. Sync) is automatically derived for all types composed only
-of Send (resp. Sync) values. 99% of types are Send and Sync, and 99% of those
-never actually say it (the remaining 1% is overwhelmingly synchronization
-primitives).
+As an aside, while `Send` and `Sync` are `unsafe` traits, they are *also*
+automatically implemented for types when such derivations are provably safe
+to do. `Send` is automatically derived for all types composed only of values
+whose types also implement `Send`. `Sync` is automatically derived for all
+types composed only of values whose types also implement `Sync`. This minimizes
+the pervasive unsafety of making these two traits `unsafe`.
 
+This is the balance between Safe and Unsafe Rust. The separation is designed to
+make using Safe Rust as ergonomic as possible, but requires extra effort and
+care when writing Unsafe Rust. The rest of this book is largely a discussion
+of the sort of care that must be taken, and what contracts Unsafe Rust must uphold.
 
-
-
-[drop flags]: drop-flags.html
 [conversions]: conversions.html
+[ptr_offset]: ../std/primitive.pointer.html#method.offset
+

@@ -1,4 +1,4 @@
-% PhantomData
+# PhantomData
 
 When working with unsafe code, we can often end up in a situation where
 types or lifetimes are logically associated with a struct, but not actually
@@ -50,13 +50,13 @@ struct Vec<T> {
 }
 ```
 
-Unlike the previous example it *appears* that everything is exactly as we
-want. Every generic argument to Vec shows up in the at least one field.
+Unlike the previous example, it *appears* that everything is exactly as we
+want. Every generic argument to Vec shows up in at least one field.
 Good to go!
 
 Nope.
 
-The drop checker will generously determine that Vec<T> does not own any values
+The drop checker will generously determine that `Vec<T>` does not own any values
 of type T. This will in turn make it conclude that it doesn't need to worry
 about Vec dropping any T's in its destructor for determining drop check
 soundness. This will in turn allow people to create unsoundness using
@@ -70,7 +70,7 @@ that:
 use std::marker;
 
 struct Vec<T> {
-    data: *const T, // *const for covariance!
+    data: *const T, // *const for variance!
     len: usize,
     cap: usize,
     _marker: marker::PhantomData<T>,
@@ -81,7 +81,24 @@ Raw pointers that own an allocation is such a pervasive pattern that the
 standard library made a utility for itself called `Unique<T>` which:
 
 * wraps a `*const T` for variance
-* includes a `PhantomData<T>`,
-* auto-derives Send/Sync as if T was contained
-* marks the pointer as NonZero for the null-pointer optimization
+* includes a `PhantomData<T>`
+* auto-derives `Send`/`Sync` as if T was contained
+* marks the pointer as `NonZero` for the null-pointer optimization
 
+## Table of `PhantomData` patterns
+
+Here’s a table of all the wonderful ways `PhantomData` could be used:
+
+| Phantom type                | `'a`      | `T`                       |
+|-----------------------------|-----------|---------------------------|
+| `PhantomData<T>`            | -         | variant (with drop check) |
+| `PhantomData<&'a T>`        | variant   | variant                   |
+| `PhantomData<&'a mut T>`    | variant   | invariant                 |
+| `PhantomData<*const T>`     | -         | variant                   |
+| `PhantomData<*mut T>`       | -         | invariant                 |
+| `PhantomData<fn(T)>`        | -         | contravariant (*)         |
+| `PhantomData<fn() -> T>`    | -         | variant                   |
+| `PhantomData<fn(T) -> T>`   | -         | invariant                 |
+| `PhantomData<Cell<&'a ()>>` | invariant | -                         |
+
+(*) If contravariance gets scrapped, this would be invariant.

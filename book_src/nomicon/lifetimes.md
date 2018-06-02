@@ -1,4 +1,4 @@
-% Lifetimes
+# Lifetimes
 
 Rust enforces these rules through *lifetimes*. Lifetimes are effectively
 just names for scopes somewhere in the program. Each reference,

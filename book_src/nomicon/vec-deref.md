@@ -1,4 +1,4 @@
-% Deref
+# Deref
 
 Alright! We've got a decent minimal stack implemented. We can push, we can
 pop, and we can clean up after ourselves. However there's a whole mess of
@@ -18,7 +18,7 @@ impl<T> Deref for Vec<T> {
     type Target = [T];
     fn deref(&self) -> &[T] {
         unsafe {
-            ::std::slice::from_raw_parts(*self.ptr, self.len)
+            ::std::slice::from_raw_parts(self.ptr.as_ptr(), self.len)
         }
     }
 }
@@ -32,7 +32,7 @@ use std::ops::DerefMut;
 impl<T> DerefMut for Vec<T> {
     fn deref_mut(&mut self) -> &mut [T] {
         unsafe {
-            ::std::slice::from_raw_parts_mut(*self.ptr, self.len)
+            ::std::slice::from_raw_parts_mut(self.ptr.as_ptr(), self.len)
         }
     }
 }

@@ -8,17 +8,18 @@ pub fn run(args: &str, input: &str) -> Result<String, Box<Error>> {
     shell_pipe::run("pandoc", args, input)
 }
 
-pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str) -> Result<(), Box<Error>> {
+pub fn save_as(book: &str, prefix: &str, format: &str, opts: &str, resource_path: &str) -> Result<(), Box<Error>> {
     let opts = format!(
         "--from={markdown_opts} {opts} \
+         --resource-path=.:{resource_path} \
          --output=dist/{prefix}-{release_date}.{format}",
         markdown_opts = options::MARKDOWN,
         opts = opts,
+        resource_path = resource_path,
         prefix = prefix,
         release_date = options::RELEASE_DATE,
         format = format
     );
-
     try!(run(&opts, &book));
 
     println!("[✓] {}", format.to_ascii_uppercase());

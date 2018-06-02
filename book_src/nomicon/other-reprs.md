@@ -1,4 +1,4 @@
-% Alternative representations
+# Alternative representations
 
 Rust allows you to specify alternative data layout strategies from the default.
 
@@ -23,32 +23,52 @@ passed through the FFI boundary.
 C, and is explicitly contrary to the behavior of an empty type in C++, which
 still consumes a byte of space.
 
-* DSTs, tuples, and tagged unions are not a concept in C and as such are never
-FFI safe.
+* DST pointers (fat pointers), tuples, and enums with fields are not a concept
+  in C, and as such are never FFI-safe.
+
+* If `T` is an [FFI-safe non-nullable pointer
+  type](ffi.html#the-nullable-pointer-optimization),
+  `Option<T>` is guaranteed to have the same layout and ABI as `T` and is
+  therefore also FFI-safe. As of this writing, this covers `&`, `&mut`,
+  and function pointers, all of which can never be null.
 
 * Tuple structs are like structs with regards to `repr(C)`, as the only
   difference from a struct is that the fields aren’t named.
 
-* **If the type would have any [drop flags], they will still be added**
-
 * This is equivalent to one of `repr(u*)` (see the next section) for enums. The
-chosen size is the default enum size for the target platform's C ABI. Note that
-enum representation in C is implementation defined, so this is really a "best
-guess". In particular, this may be incorrect when the C code of interest is
-compiled with certain flags.
+chosen size is the default enum size for the target platform's C application
+binary interface (ABI). Note that enum representation in C is implementation
+defined, so this is really a "best guess". In particular, this may be incorrect
+when the C code of interest is compiled with certain flags.
+
+* Field-less enums with `repr(C)` or `repr(u*)` still may not be set to an
+integer value without a corresponding variant, even though this is
+permitted behavior in C or C++. It is undefined behavior to (unsafely)
+construct an instance of an enum that does not match one of its
+variants. (This allows exhaustive matches to continue to be written and
+compiled as normal.)
 
 
 
-# repr(u8), repr(u16), repr(u32), repr(u64)
+# repr(u*), repr(i*)
 
-These specify the size to make a C-like enum. If the discriminant overflows the
-integer it has to fit in, it will produce a compile-time error. You can manually
-ask Rust to allow this by setting the overflowing element to explicitly be 0.
-However Rust will not allow you to create an enum where two variants have the
-same discriminant.
+These specify the size to make a field-less enum. If the discriminant overflows
+the integer it has to fit in, it will produce a compile-time error. You can
+manually ask Rust to allow this by setting the overflowing element to explicitly
+be 0. However Rust will not allow you to create an enum where two variants have
+the same discriminant.
 
-On non-C-like enums, this will inhibit certain optimizations like the null-
-pointer optimization.
+The term "field-less enum" only means that the enum doesn't have data in any
+of its variants. A field-less enum without a `repr(u*)` or `repr(C)` is
+still a Rust native type, and does not have a stable ABI representation.
+Adding a `repr` causes it to be treated exactly like the specified
+integer size for ABI purposes.
+
+Any enum with fields is a Rust type with no guaranteed ABI (even if the
+only data is `PhantomData` or something else with zero size).
+
+Adding an explicit `repr` to an enum suppresses the null-pointer
+optimization.
 
 These reprs have no effect on a struct.
 

@@ -1,4 +1,4 @@
-% Allocating Memory
+# Allocating Memory
 
 Using Unique throws a wrench in an important feature of Vec (and indeed all of
 the std collections): an empty Vec doesn't actually allocate at all. So if we
@@ -7,15 +7,11 @@ can't allocate, but also can't put a null pointer in `ptr`, what do we do in
 
 This is perfectly fine because we already have `cap == 0` as our sentinel for no
 allocation. We don't even need to handle it specially in almost any code because
-we usually need to check if `cap > len` or `len > 0` anyway. The traditional
-Rust value to put here is `0x01`. The standard library actually exposes this
-as `alloc::heap::EMPTY`. There are quite a few places where we'll
-want to use `heap::EMPTY` because there's no real allocation to talk about but
+we usually need to check if `cap > len` or `len > 0` anyway. The recommended
+Rust value to put here is `mem::align_of::<T>()`. Unique provides a convenience
+for this: `Unique::empty()`. There are quite a few places where we'll
+want to use `empty` because there's no real allocation to talk about but
 `null` would make the compiler do bad things.
-
-All of the `heap` API is totally unstable under the `heap_api` feature, though.
-We could trivially define `heap::EMPTY` ourselves, but we'll want the rest of
-the `heap` API anyway, so let's just get that dependency over with.
 
 So:
 
@@ -24,16 +20,10 @@ So:
 
 use std::mem;
 
-use alloc::heap::EMPTY;
-
 impl<T> Vec<T> {
     fn new() -> Self {
         assert!(mem::size_of::<T>() != 0, "We're not ready to handle ZSTs");
-        unsafe {
-            // need to cast EMPTY to the actual ptr type we want, let
-            // inference handle it.
-            Vec { ptr: Unique::new(heap::EMPTY as *mut _), len: 0, cap: 0 }
-        }
+        Vec { ptr: Unique::empty(), len: 0, cap: 0 }
     }
 }
 ```
@@ -47,10 +37,11 @@ that, we'll need to use the rest of the heap APIs. These basically allow us to
 talk directly to Rust's allocator (jemalloc by default).
 
 We'll also need a way to handle out-of-memory (OOM) conditions. The standard
-library calls the `abort` intrinsic, which just calls an illegal instruction to
-crash the whole program. The reason we abort and don't panic is because
-unwinding can cause allocations to happen, and that seems like a bad thing to do
-when your allocator just came back with "hey I don't have any more memory".
+library calls `std::alloc::oom()`, which in turn calls the the `oom` langitem.
+By default this just aborts the program by executing an illegal cpu instruction.
+The reason we abort and don't panic is because unwinding can cause allocations
+to happen, and that seems like a bad thing to do when your allocator just came
+back with "hey I don't have any more memory".
 
 Of course, this is a bit silly since most platforms don't actually run out of
 memory in a conventional way. Your operating system will probably kill the
@@ -60,15 +51,6 @@ of memory at once (e.g. half the theoretical address space). As such it's
 *probably* fine to panic and nothing bad will happen. Still, we're trying to be
 like the standard library as much as possible, so we'll just kill the whole
 program.
-
-We said we don't want to use intrinsics, so doing exactly what `std` does is
-out. Instead, we'll call `std::process::exit` with some random number.
-
-```rust
-fn oom() {
-    ::std::process::exit(-9999);
-}
-```
 
 Okay, now we can write growing. Roughly, we want to have this logic:
 
@@ -175,6 +157,8 @@ such we will guard against this case explicitly.
 Ok with all the nonsense out of the way, let's actually allocate some memory:
 
 ```rust,ignore
+use std::alloc::oom;
+
 fn grow(&mut self) {
     // this is all pretty delicate, so let's say it's all unsafe
     unsafe {
@@ -202,7 +186,7 @@ fn grow(&mut self) {
                     "capacity overflow");
 
             let new_num_bytes = old_num_bytes * 2;
-            let ptr = heap::reallocate(*self.ptr as *mut _,
+            let ptr = heap::reallocate(self.ptr.as_ptr() as *mut _,
                                         old_num_bytes,
                                         new_num_bytes,
                                         align);

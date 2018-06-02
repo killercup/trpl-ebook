@@ -1,4 +1,4 @@
-% Drop Check
+# Drop Check
 
 We have seen how lifetimes provide us some fairly simple rules for ensuring
 that we never read dangling references. However up to this point we have only ever
@@ -80,27 +80,21 @@ fn main() {
 ```
 
 ```text
-<anon>:12:28: 12:32 error: `days` does not live long enough
-<anon>:12     inspector = Inspector(&days);
-                                     ^~~~
-<anon>:9:11: 15:2 note: reference must be valid for the block at 9:10...
-<anon>:9 fn main() {
-<anon>:10     let (inspector, days);
-<anon>:11     days = Box::new(1);
-<anon>:12     inspector = Inspector(&days);
-<anon>:13     // Let's say `days` happens to get dropped first.
-<anon>:14     // Then when Inspector is dropped, it will try to read free'd memory!
-          ...
-<anon>:10:27: 15:2 note: ...but borrowed value is only valid for the block suffix following statement 0 at 10:26
-<anon>:10     let (inspector, days);
-<anon>:11     days = Box::new(1);
-<anon>:12     inspector = Inspector(&days);
-<anon>:13     // Let's say `days` happens to get dropped first.
-<anon>:14     // Then when Inspector is dropped, it will try to read free'd memory!
-<anon>:15 }
+error: `days` does not live long enough
+  --> <anon>:15:1
+   |
+12 |     inspector = Inspector(&days);
+   |                            ---- borrow occurs here
+...
+15 | }
+   | ^ `days` dropped here while still borrowed
+   |
+   = note: values in a scope are dropped in the opposite order they are created
+
+error: aborting due to previous error
 ```
 
-Implementing Drop lets the Inspector execute some arbitrary code during its
+Implementing `Drop` lets the `Inspector` execute some arbitrary code during its
 death. This means it can potentially observe that types that are supposed to
 live as long as it does actually were destroyed first.
 
@@ -125,7 +119,7 @@ is that some Drop implementations will not access borrowed data even
 though their type gives them the capability for such access.
 
 For example, this variant of the above `Inspector` example will never
-accessed borrowed data:
+access borrowed data:
 
 ```rust,ignore
 struct Inspector<'a>(&'a u8, &'static str);
@@ -174,7 +168,7 @@ checker during the analysis of `fn main`, saying that `days` does not
 live long enough.
 
 The reason is that the borrow checking analysis of `main` does not
-know about the internals of each Inspector's Drop implementation.  As
+know about the internals of each `Inspector`'s `Drop` implementation.  As
 far as the borrow checker knows while it is analyzing `main`, the body
 of an inspector's destructor might access that borrowed data.
 
@@ -191,7 +185,7 @@ borrowed data in a value to outlive that value, which is certainly sound.
 
 Future versions of the language may make the analysis more precise, to
 reduce the number of cases where sound code is rejected as unsafe.
-This would help address cases such as the two Inspectors above that
+This would help address cases such as the two `Inspector`s above that
 know not to inspect during destruction.
 
 In the meantime, there is an unstable attribute that one can use to
@@ -199,23 +193,40 @@ assert (unsafely) that a generic type's destructor is *guaranteed* to
 not access any expired data, even if its type gives it the capability
 to do so.
 
-That attribute is called `unsafe_destructor_blind_to_params`.
-To deploy it on the Inspector example from above, we would write:
+That attribute is called `may_dangle` and was introduced in [RFC 1327][rfc1327].
+To deploy it on the `Inspector` example from above, we would write:
 
 ```rust,ignore
 struct Inspector<'a>(&'a u8, &'static str);
 
-impl<'a> Drop for Inspector<'a> {
-    #[unsafe_destructor_blind_to_params]
+unsafe impl<#[may_dangle] 'a> Drop for Inspector<'a> {
     fn drop(&mut self) {
         println!("Inspector(_, {}) knows when *not* to inspect.", self.1);
     }
 }
 ```
 
-This attribute has the word `unsafe` in it because the compiler is not
-checking the implicit assertion that no potentially expired data
+Use of this attribute requires the `Drop` impl to be marked `unsafe` because the
+compiler is not checking the implicit assertion that no potentially expired data
 (e.g. `self.0` above) is accessed.
+
+The attribute can be applied to any number of lifetime and type parameters. In
+the following example, we assert that we access no data behind a reference of
+lifetime `'b` and that the only uses of `T` will be moves or drops, but omit
+the attribute from `'a` and `U`, because we do access data with that lifetime
+and that type:
+
+```rust,ignore
+use std::fmt::Display;
+
+struct Inspector<'a, 'b, T, U: Display>(&'a u8, &'b u8, T, U);
+
+unsafe impl<'a, #[may_dangle] 'b, #[may_dangle] T, U: Display> Drop for Inspector<'a, 'b, T, U> {
+    fn drop(&mut self) {
+        println!("Inspector({}, _, _, {})", self.0, self.3);
+    }
+}
+```
 
 It is sometimes obvious that no such access can occur, like the case above.
 However, when dealing with a generic type parameter, such access can
@@ -263,7 +274,7 @@ some other method invoked by the destructor, rather than being written
 directly within it.
 
 In all of the above cases where the `&'a u8` is accessed in the
-destructor, adding the `#[unsafe_destructor_blind_to_params]`
+destructor, adding the `#[may_dangle]`
 attribute makes the type vulnerable to misuse that the borrower
 checker will not catch, inviting havoc. It is better to avoid adding
 the attribute.
@@ -275,3 +286,4 @@ worry at all about doing the right thing for the drop checker. However there
 is one special case that you need to worry about, which we will look at in
 the next section.
 
+[rfc1327]: https://github.com/rust-lang/rfcs/blob/master/text/1327-dropck-param-eyepatch.md

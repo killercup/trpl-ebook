@@ -1,4 +1,4 @@
-% Exotically Sized Types
+# Exotically Sized Types
 
 Most of the time, we think in terms of types with a fixed, positive size. This
 is not always the case, however.
@@ -38,12 +38,6 @@ struct Foo {
     data: [u8],
 }
 ```
-
-**NOTE: [As of Rust 1.0 struct DSTs are broken if the last field has
-a variable position based on its alignment][dst-issue].**
-
-
-
 
 
 # Zero Sized Types (ZSTs)

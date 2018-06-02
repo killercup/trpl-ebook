@@ -88,20 +88,22 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
 
     {
         // Readme ~ "Getting Started"
-        let file = try!(file::get_file_content(&src_path.join("README.md")));
-        let mut content = try!(adjust_header_level::adjust_header_level(&file, 1));
-        content = try!(remove_file_title::remove_file_title(&content));
-        content = try!(adjust_reference_names::adjust_reference_name(
-            &content, "readme"
-        ));
-        content = try!(normalize::normalize(&content));
+        if src_path.join("README.md").exists(){
+            let file = try!(file::get_file_content(&src_path.join("README.md")));
+            let mut content = try!(adjust_header_level::adjust_header_level(&file, 1));
+            content = try!(remove_file_title::remove_file_title(&content));
+            content = try!(adjust_reference_names::adjust_reference_name(
+                &content, "readme"
+            ));
+            content = try!(normalize::normalize(&content));
 
-        put!(".");
+            put!(".");
 
-        book.push_str("\n\n");
-        book.push_str("# Introduction");
-        book.push_str("\n\n");
+            book.push_str("\n\n");
+            book.push_str("# Introduction");
+            book.push_str("\n\n");
         book.push_str(&content);
+        }
     }
 
     for chapter in &get_chapters(&toc) {
@@ -118,8 +120,6 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
         put!(".");
 
         book.push_str("\n\n");
-        book.push_str(&chapter.headline);
-        book.push_str("\n");
         book.push_str(&content);
     }
 

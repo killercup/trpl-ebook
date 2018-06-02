@@ -1,4 +1,4 @@
-% Casts
+# Casts
 
 Casts are a superset of coercions: every coercion can be explicitly
 invoked via a cast. However some conversions require a cast.
@@ -28,7 +28,7 @@ primitive:
  * `*T as integer`
  * `integer as *T`
  * `number as number`
- * `C-like-enum as integer`
+ * `field-less enum as integer`
  * `bool as integer`
  * `char as integer`
  * `u8 as char`
@@ -56,16 +56,11 @@ For numeric casts, there are quite a few cases to consider:
       value cannot be represented by the target integer type][float-int]**.
       This includes Inf and NaN. This is a bug and will be fixed.
 * casting from an integer to float will produce the floating point
-  representation of the integer, rounded if necessary (rounding strategy
-  unspecified)
+  representation of the integer, rounded if necessary (rounding to
+  nearest, ties to even)
 * casting from an f32 to an f64 is perfect and lossless
 * casting from an f64 to an f32 will produce the closest possible value
-  (rounding strategy unspecified)
-    * **[NOTE: currently this will cause Undefined Behavior if the value
-      is finite but larger or smaller than the largest or smallest finite
-      value representable by f32][float-float]**. This is a bug and will
-      be fixed.
+  (rounding to nearest, ties to even)
 
 
 [float-int]: https://github.com/rust-lang/rust/issues/10184
-[float-float]: https://github.com/rust-lang/rust/issues/15536
