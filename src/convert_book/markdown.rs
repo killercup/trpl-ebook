@@ -118,8 +118,9 @@ pub fn to_single_file(src_path: &Path, meta: &str) -> Result<String, Box<Error>>
         content = try!(normalize::normalize(&content));
 
         put!(".");
-
         book.push_str("\n\n");
+        book.push_str(&chapter.headline);
+        book.push_str("\n");
         book.push_str(&content);
     }
 

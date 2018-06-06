@@ -27,6 +27,18 @@ RUN \
   rm ipafont.zip && \
   fc-cache -fv
 
-ADD . /trpl-ebook
+# Workaround to build dependencies beforehand.
+
+WORKDIR /
+RUN USER=root ~/.cargo/bin/cargo new trpl-ebook
 WORKDIR /trpl-ebook
+COPY Cargo.toml /trpl-ebook
+COPY Cargo.lock /trpl-ebook
+RUN ~/.cargo/bin/cargo build
+RUN ~/.cargo/bin/cargo clean -p compile-trpl
+
+
+COPY . /trpl-ebook
+RUN  chmod +x build.sh && chmod +x adjust_book_src.sh && ./adjust_book_src.sh
+RUN ~/.cargo/bin/cargo build
 CMD ["bash"]
