@@ -1,6 +1,9 @@
 #! /bin/sh
 
-RUN="cargo run --release --"
+RUN="cargo run --"
 
-$RUN --prefix=trpl --source=trpl --meta=trpl_meta.yml && \
-$RUN --prefix=nomicon --source=nomicon --meta=nomicon_meta.yml
+sh ./adjust_book_src.sh
+
+$RUN --source=book_src/trpl && \
+$RUN --source=book_src/trpl2 && \
+$RUN --source=book_src/nomicon
